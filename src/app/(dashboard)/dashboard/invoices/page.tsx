@@ -119,7 +119,7 @@ export default function InvoicesPage() {
         <div className="glass-card inv-summary-card">
           <AlertTriangle size={18} style={{ color: '#f43f5e' }} />
           <div>
-            <span className="inv-summary-value value-financial value-negative">{formatCurrency(demoInvoices.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amountDue, 0))}</span>
+            <span className="inv-summary-value value-financial value-negative">{formatCurrency(activeInvoices.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amountDue, 0))}</span>
             <span className="inv-summary-label">Overdue</span>
           </div>
         </div>
