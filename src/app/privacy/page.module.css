@@ -1,0 +1,21 @@
+.legalPage { min-height: 100vh; position: relative; overflow-x: hidden; background: var(--color-bg-primary); }
+.bgMesh { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(147, 51, 234, 0.03) 0%, transparent 100%); pointer-events: none; z-index: 0; }
+.bgOrb1 { position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%); border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+
+.nav { position: relative; z-index: 10; border-bottom: 1px solid var(--color-border-primary); background: rgba(10, 10, 10, 0.5); backdrop-filter: blur(12px); }
+.navInner { max-width: 1200px; margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; }
+.logoIcon { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: var(--radius-md); color: white; }
+.logoText { font-weight: var(--weight-bold); font-size: var(--text-lg); color: var(--color-text-primary); letter-spacing: -0.02em; }
+
+.legalContent { position: relative; z-index: 10; max-width: 800px; margin: 0 auto; padding: var(--space-16) var(--space-6); }
+.legalHeader { text-align: center; margin-bottom: var(--space-12); }
+.legalHeader h1 { font-size: var(--text-4xl); margin-bottom: var(--space-2); background: linear-gradient(to right, #fff, #a1a1aa); -webkit-background-clip: text; color: transparent; }
+.legalHeader p { color: var(--color-text-tertiary); }
+
+.legalBody { padding: var(--space-10); display: flex; flex-direction: column; gap: var(--space-8); }
+.legalBody section h2 { font-size: var(--text-xl); color: var(--color-text-primary); margin-bottom: var(--space-4); }
+.legalBody section p { color: var(--color-text-secondary); line-height: 1.7; margin-bottom: var(--space-4); }
+
+.footer { border-top: 1px solid var(--color-border-primary); padding: var(--space-8) 0; position: relative; z-index: 10; margin-top: auto; }
+.footerInner { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-6); text-align: center; color: var(--color-text-tertiary); }
