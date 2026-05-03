@@ -81,6 +81,9 @@ export default function ExpensesPage() {
     e.preventDefault();
     const finalCategory = newExpense.category === 'Other' ? newExpense.customCategory : newExpense.category;
     
+    const dateObj = new Date(newExpense.date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
     const newExp = {
       id: Math.random().toString(),
       date: newExpense.date,
@@ -91,7 +94,10 @@ export default function ExpensesPage() {
       confidence: 1,
       status: 'pending' as const,
       description: 'Manually added expense',
-      recurrance: 'None'
+      recurrance: 'None',
+      weekId: 'Wk 1',
+      monthId: months[dateObj.getMonth()],
+      yearId: dateObj.getFullYear().toString()
     };
     
     setExpenses(prev => [newExp, ...prev]);
