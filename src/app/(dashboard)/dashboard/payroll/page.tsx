@@ -50,7 +50,7 @@ export default function PayrollPage() {
         <div className="glass-card pay-card">
           <Users size={18} style={{ color: '#10b981' }} />
           <div>
-            <span className="pay-value">{employees.length}</span>
+            <span className="pay-value">{activeEmployees.length}</span>
             <span className="pay-label">Employees</span>
           </div>
         </div>
