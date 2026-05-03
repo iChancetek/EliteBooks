@@ -1,0 +1,110 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Bot, CheckCircle2, X, AlertTriangle } from 'lucide-react';
+
+const agentWorkflows = [
+  {
+    id: 1,
+    message: "I detected an unusually high AWS bill this month. Would you like me to run an anomaly report?",
+    type: "warning"
+  },
+  {
+    id: 2,
+    message: "You have 3 invoices overdue by 15 days. Shall I draft and send polite reminder emails?",
+    type: "info"
+  },
+  {
+    id: 3,
+    message: "Payroll is due in 3 days, but Contractor W-9s are missing. Shall I email them the forms?",
+    type: "warning"
+  }
+];
+
+export default function AutonomousAgentWidget() {
+  const [activeWorkflow, setActiveWorkflow] = useState<typeof agentWorkflows[0] | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Simulate autonomous detection popping up after 10 seconds of user inactivity
+    const timer = setTimeout(() => {
+      const randomWorkflow = agentWorkflows[Math.floor(Math.random() * agentWorkflows.length)];
+      setActiveWorkflow(randomWorkflow);
+      setIsVisible(true);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isVisible || !activeWorkflow) return null;
+
+  const handleApprove = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setIsVisible(false);
+      alert('Workflow approved and executed by Agent.');
+    }, 2000);
+  };
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+  };
+
+  return (
+    <div 
+      className="glass-card animate-fade-in-up"
+      style={{
+        position: 'fixed',
+        bottom: 'var(--space-6)',
+        left: 'calc(var(--sidebar-width) + var(--space-6))', // Avoid overlapping sidebar
+        zIndex: 9999,
+        maxWidth: '380px',
+        padding: 'var(--space-4)',
+        border: `1px solid ${activeWorkflow.type === 'warning' ? '#f59e0b' : '#3b82f6'}`,
+        boxShadow: 'var(--shadow-xl)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-3)'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+        <div style={{ background: 'var(--color-bg-secondary)', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)' }}>
+          <Bot size={20} style={{ color: activeWorkflow.type === 'warning' ? '#f59e0b' : '#3b82f6' }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            Agent Action Required
+            {activeWorkflow.type === 'warning' && <AlertTriangle size={14} style={{ color: '#f59e0b' }} />}
+          </h4>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+            {activeWorkflow.message}
+          </p>
+        </div>
+        <button onClick={handleDismiss} className="btn-icon btn-ghost" style={{ padding: '2px' }}>
+          <X size={16} />
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+        <button 
+          className="btn btn-sm" 
+          style={{ flex: 1, background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)' }}
+          onClick={handleDismiss}
+          disabled={isProcessing}
+        >
+          Dismiss
+        </button>
+        <button 
+          className="btn btn-sm btn-primary" 
+          style={{ flex: 1, display: 'flex', justifyContent: 'center' }}
+          onClick={handleApprove}
+          disabled={isProcessing}
+        >
+          {isProcessing ? 'Executing...' : <><CheckCircle2 size={14} /> Approve</>}
+        </button>
+      </div>
+    </div>
+  );
+}
