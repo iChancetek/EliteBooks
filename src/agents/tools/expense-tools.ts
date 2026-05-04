@@ -24,7 +24,7 @@ export const detectAnomalySchema = z.object({
 });
 
 export async function categorizeExpense(args: z.infer<typeof categorizeExpenseSchema>) {
-  // In production, uses GPT-5.2 for intelligent categorization
+  // In production, uses GPT-5.5 for intelligent categorization
   const categoryMap: Record<string, string> = {
     'aws': 'Software & SaaS', 'google': 'Software & SaaS', 'azure': 'Software & SaaS',
     'uber': 'Travel & Transport', 'lyft': 'Travel & Transport',

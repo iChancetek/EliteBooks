@@ -117,7 +117,7 @@ export default function ReportsPage() {
     { category: 'Product Sales', amount: totalRevenue * 0.25, type: 'revenue' },
     ...Object.entries(expenseCategories).map(([cat, amt]) => ({
       category: cat,
-      amount: -amt,
+      amount: -(amt as number),
       type: 'expense'
     }))
   ];
