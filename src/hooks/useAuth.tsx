@@ -22,18 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (u) {
-        setUser(u);
-      } else {
-        // MOCK USER FOR PREVIEW / DEMO
-        setUser({
-          uid: 'demo-user-123',
-          displayName: 'Elite User',
-          email: 'demo@elitebooks.app',
-          photoURL: null,
-          emailVerified: true,
-        } as any);
-      }
+      setUser(u);
       setLoading(false);
     });
     return unsub;
