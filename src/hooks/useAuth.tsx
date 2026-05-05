@@ -7,22 +7,28 @@ import { auth } from '@/lib/firebase/config';
 interface AuthContext {
   user: User | null;
   loading: boolean;
+  isSuperAdmin: boolean;
   signOut: () => Promise<void>;
 }
+
+const SUPER_ADMINS = ['chancellor@ichancetek.com', 'chanceminus@gmail.com'];
 
 const AuthCtx = createContext<AuthContext>({
   user: null,
   loading: true,
+  isSuperAdmin: false,
   signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      setIsSuperAdmin(!!u?.email && SUPER_ADMINS.includes(u.email));
       setLoading(false);
     });
     return unsub;
@@ -33,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthCtx.Provider value={{ user, loading, signOut: handleSignOut }}>
+    <AuthCtx.Provider value={{ user, loading, isSuperAdmin, signOut: handleSignOut }}>
       {children}
     </AuthCtx.Provider>
   );

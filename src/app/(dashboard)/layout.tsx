@@ -5,26 +5,30 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Sparkles, Home, FileText, Receipt, Users, BarChart3, Package,
-  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot
+  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AutonomousAgentWidget from '@/components/AutonomousAgentWidget';
 
-const navItems = [
-  { href: '/dashboard', label: 'Command Center', icon: Home },
-  { href: '/dashboard/invoices', label: 'Invoices', icon: FileText },
-  { href: '/dashboard/expenses', label: 'Expenses', icon: Receipt },
-  { href: '/dashboard/payroll', label: 'Payroll', icon: Users },
-  { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/dashboard/inventory', label: 'Inventory', icon: Package },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-];
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isSuperAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = [
+    { href: '/dashboard', label: 'Command Center', icon: Home },
+    { href: '/dashboard/invoices', label: 'Invoices', icon: FileText },
+    { href: '/dashboard/expenses', label: 'Expenses', icon: Receipt },
+    { href: '/dashboard/payroll', label: 'Payroll', icon: Users },
+    { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
+    { href: '/dashboard/inventory', label: 'Inventory', icon: Package },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  ];
+
+  if (isSuperAdmin) {
+    navItems.push({ href: '/dashboard/admin', label: 'Admin', icon: ShieldCheck });
+  }
 
   return (
     <div className="dash-layout">
