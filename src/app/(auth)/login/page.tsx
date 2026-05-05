@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from 'lucide-react';
-import { signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -18,12 +18,25 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [resetMessage, setResetMessage] = useState('');
 
-  // Automatically redirect if already authenticated (especially useful after PWA redirect login)
+  // Automatically redirect if already authenticated (handles both popup and redirect flows)
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
   }, [user, router]);
+
+  // Handle redirect result when returning from Google sign-in on mobile/PWA
+  useEffect(() => {
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) {
+        router.push('/dashboard');
+      }
+    }).catch((err) => {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        console.error('Redirect result error:', err);
+      }
+    });
+  }, [router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,14 +52,26 @@ export default function LoginPage() {
     }
   };
 
+  // Detect if running as PWA or on mobile where popups are blocked
+  const isPWAOrMobile = () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    return isStandalone || isMobile;
+  };
+
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError('');
     try {
       const provider = new GoogleAuthProvider();
-      // Use redirect for PWA/Mobile compatibility
-      await signInWithRedirect(auth, provider);
-      // We don't push to dashboard here; the redirect handles returning and useAuth will catch the login state
+      if (isPWAOrMobile()) {
+        // Use redirect for PWA/Mobile where popups are blocked
+        await signInWithRedirect(auth, provider);
+      } else {
+        // Use popup for desktop browsers (immediate, no page reload)
+        await signInWithPopup(auth, provider);
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       console.error('Google Login Error:', err);
       setError(`Google sign-in failed: ${err.message || 'Please try again'}`);
