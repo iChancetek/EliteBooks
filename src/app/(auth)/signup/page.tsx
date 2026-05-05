@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Mail, Lock, User, Building2, ArrowRight, Globe, Eye, EyeOff } from 'lucide-react';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendEmailVerification } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, signInWithRedirect, GoogleAuthProvider, sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -22,25 +22,12 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Automatically redirect if already authenticated (handles both popup and redirect flows)
+  // Automatically redirect if already authenticated
   useEffect(() => {
-    if (user) {
+    if (user && !authLoading) {
       router.push('/dashboard');
     }
-  }, [user, router]);
-
-  // Handle redirect result when returning from Google sign-up on mobile/PWA
-  useEffect(() => {
-    getRedirectResult(auth).then((result) => {
-      if (result?.user) {
-        router.push('/dashboard');
-      }
-    }).catch((err) => {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        console.error('Redirect result error:', err);
-      }
-    });
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,29 +65,27 @@ export default function SignupPage() {
     }
   };
 
-  // Detect if running as PWA or on mobile where popups are blocked
-  const isPWAOrMobile = () => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    return isStandalone || isMobile;
-  };
-
   const handleGoogleSignup = async () => {
     setLoading(true);
     setError('');
     try {
       const provider = new GoogleAuthProvider();
-      if (isPWAOrMobile()) {
-        // Use redirect for PWA/Mobile where popups are blocked
-        await signInWithRedirect(auth, provider);
-      } else {
-        // Use popup for desktop browsers (immediate, no page reload)
+      // Try popup first (works on desktop and most mobile browsers)
+      try {
         await signInWithPopup(auth, provider);
         router.push('/dashboard');
+      } catch (popupErr: any) {
+        // If popup was blocked (common in PWA/mobile), fall back to redirect
+        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+        } else {
+          throw popupErr;
+        }
       }
     } catch (err: any) {
       console.error('Google Sign-up Error:', err);
       setError(`Google sign-up failed: ${err.message || 'Please try again'}`);
+    } finally {
       setLoading(false);
     }
   };

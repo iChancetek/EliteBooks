@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from 'lucide-react';
-import { signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,25 +18,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [resetMessage, setResetMessage] = useState('');
 
-  // Automatically redirect if already authenticated (handles both popup and redirect flows)
+  // Automatically redirect if already authenticated
   useEffect(() => {
-    if (user) {
+    if (user && !authLoading) {
       router.push('/dashboard');
     }
-  }, [user, router]);
-
-  // Handle redirect result when returning from Google sign-in on mobile/PWA
-  useEffect(() => {
-    getRedirectResult(auth).then((result) => {
-      if (result?.user) {
-        router.push('/dashboard');
-      }
-    }).catch((err) => {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        console.error('Redirect result error:', err);
-      }
-    });
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,18 +32,18 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
-    } catch {
-      setError('Invalid email or password. Please try again.');
+    } catch (err: any) {
+      console.error('Login Error:', err);
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        setError('Invalid email or password. Please try again.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Too many failed attempts. Please try again later.');
+      } else {
+        setError('Sign-in failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  // Detect if running as PWA or on mobile where popups are blocked
-  const isPWAOrMobile = () => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    return isStandalone || isMobile;
   };
 
   const handleGoogleLogin = async () => {
@@ -64,17 +51,22 @@ export default function LoginPage() {
     setError('');
     try {
       const provider = new GoogleAuthProvider();
-      if (isPWAOrMobile()) {
-        // Use redirect for PWA/Mobile where popups are blocked
-        await signInWithRedirect(auth, provider);
-      } else {
-        // Use popup for desktop browsers (immediate, no page reload)
+      // Try popup first (works on desktop and most mobile browsers)
+      try {
         await signInWithPopup(auth, provider);
         router.push('/dashboard');
+      } catch (popupErr: any) {
+        // If popup was blocked (common in PWA/mobile), fall back to redirect
+        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+        } else {
+          throw popupErr;
+        }
       }
     } catch (err: any) {
       console.error('Google Login Error:', err);
       setError(`Google sign-in failed: ${err.message || 'Please try again'}`);
+    } finally {
       setLoading(false);
     }
   };
