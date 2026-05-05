@@ -76,7 +76,7 @@ export default function LandingPage() {
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
             <div className={styles.logoIcon}>
-              <Sparkles size={20} />
+              <img src="/icon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
             </div>
             <span className={styles.logoText}>EliteBooks</span>
           </Link>
@@ -239,7 +239,7 @@ export default function LandingPage() {
           <div className={styles.footerBrand}>
             <div className={styles.logo}>
               <div className={styles.logoIcon}>
-                <Sparkles size={18} />
+                <img src="/icon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
               </div>
               <span className={styles.logoText}>EliteBooks</span>
             </div>

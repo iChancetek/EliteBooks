@@ -17,11 +17,13 @@ export const metadata: Metadata = {
     siteName: 'EliteBooks',
     title: 'EliteBooks — AI-Powered Accounting',
     description: 'Accounting that runs itself, explained simply. AI agents handle your bookkeeping, invoicing, payroll, and reporting automatically.',
+    images: ['/icon.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'EliteBooks — AI-Powered Accounting',
     description: 'Accounting that runs itself, explained simply.',
+    images: ['/icon.png'],
   },
   appleWebApp: {
     capable: true,

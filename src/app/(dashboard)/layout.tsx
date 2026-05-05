@@ -43,7 +43,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`dash-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="dash-sidebar-header">
           <Link href="/dashboard" className="dash-logo">
-            <div className="dash-logo-icon"><Sparkles size={18} /></div>
+            <div className="dash-logo-icon">
+              <img src="/icon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+            </div>
             {!collapsed && <span className="dash-logo-text">EliteBooks</span>}
           </Link>
           <button
