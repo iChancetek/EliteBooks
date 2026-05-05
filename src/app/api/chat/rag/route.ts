@@ -118,10 +118,15 @@ ${context}`;
     let finalAnswer = assistantMessage.content || '';
     
     // Extract predicted questions
-    const predictedMatch = finalAnswer.match(/\[PREDICTED: (.*?)\]/);
-    const predictedQuestions = predictedMatch 
-      ? JSON.parse(`[${predictedMatch[1]}]`)
-      : ["How do I set up payroll?", "Tell me about invoicing", "Show my reports"];
+    let predictedQuestions = ["How do I set up payroll?", "Tell me about invoicing", "Show my reports"];
+    try {
+      const predictedMatch = finalAnswer.match(/\[PREDICTED: (.*?)\]/);
+      if (predictedMatch) {
+        predictedQuestions = JSON.parse(`[${predictedMatch[1]}]`);
+      }
+    } catch (e) {
+      console.warn('[RAG API] Failed to parse predicted questions:', e);
+    }
     
     // Remove the predicted questions from the visible answer
     finalAnswer = finalAnswer.replace(/\[PREDICTED: .*?\]/, '').trim();
@@ -139,11 +144,18 @@ ${context}`;
       success: true,
       answer: finalAnswer,
       predictedQuestions,
-      sources: searchResults.matches.map((m: any) => m.metadata.title),
+      sources: (searchResults.matches || []).map((m: any) => m.metadata?.title || 'Unknown Source'),
     });
 
-  } catch (error) {
-    console.error('[RAG API Error]', error);
-    return NextResponse.json({ error: 'Failed to process RAG request' }, { status: 500 });
+  } catch (error: any) {
+    console.error('[RAG API Error Details]:', {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    });
+    return NextResponse.json({ 
+      error: 'Failed to process RAG request', 
+      details: error.message 
+    }, { status: 500 });
   }
 }
