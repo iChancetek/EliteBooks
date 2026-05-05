@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       .join('\n\n---\n\n');
 
     const memoryContext = memories.length > 0
-      ? memories.map(m => `[Memory from ${m.metadata.timestamp}]: ${m.text}`).join('\n')
+      ? memories.map((m: any) => `[Memory from ${m.metadata.timestamp}]: ${m.text}`).join('\n')
       : 'No relevant long-term memories found.';
 
     // 3. Define Tools for Platform Info Gathering
