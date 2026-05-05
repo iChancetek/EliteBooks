@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
-import { ALL_EXPENSES, filterByDate } from '@/lib/mockData';
+import { useAuth } from '@/hooks/useAuth';
+import { ALL_EXPENSES, filterByDate, getMockExpenses } from '@/lib/mockData';
 
 const categories = [
   { name: 'Office & Supplies', icon: ShoppingBag, color: '#3b82f6', amount: 2840 },
@@ -30,6 +31,7 @@ const categories = [
 // demoExpenses removed, using ALL_EXPENSES from mockData
 
 export default function ExpensesPage() {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,12 +39,16 @@ export default function ExpensesPage() {
   const [newExpense, setNewExpense] = useState({ vendor: '', amount: '', category: 'Office & Supplies', date: '', customCategory: '' });
   
   // Interactive States
-  const [expenses, setExpenses] = useState(ALL_EXPENSES);
+  const [expenses, setExpenses] = useState<any[]>([]);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'info' | 'warning' } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const [selectedMonth, setSelectedMonth] = useState('Apr');
   const [selectedYear, setSelectedYear] = useState('2026');
+
+  useEffect(() => {
+    setExpenses(getMockExpenses(user?.email));
+  }, [user]);
 
   const activeExpenses = filterByDate(expenses, selectedYear, selectedMonth);
 

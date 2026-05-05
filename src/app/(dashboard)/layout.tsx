@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Sparkles, Home, FileText, Receipt, Users, BarChart3, Package,
-  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck
+  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck, Mail, Wallet
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AutonomousAgentWidget from '@/components/AutonomousAgentWidget';
@@ -15,6 +15,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, signOut, isSuperAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState('');
+
+  const handleResendVerification = async () => {
+    if (!user) return;
+    setResending(true);
+    setResendStatus('');
+    try {
+      const { sendEmailVerification } = await import('firebase/auth');
+      await sendEmailVerification(user);
+      setResendStatus('Verification email sent! Please check your inbox.');
+    } catch (err: any) {
+      setResendStatus('Failed to send email. Please try again later.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleCheckVerification = async () => {
+    if (user) {
+      try {
+        await user.reload();
+        window.location.reload();
+      } catch (err) {
+        console.error('Error reloading user:', err);
+      }
+    }
+  };
+
+  // Enforcement: If user exists but email is NOT verified, block access
+  const isVerified = user?.emailVerified || user?.providerData?.[0]?.providerId === 'google.com';
 
   const navItems = [
     { href: '/dashboard', label: 'Command Center', icon: Home },
@@ -24,6 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
     { href: '/dashboard/inventory', label: 'Inventory', icon: Package },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard/personal', label: 'Personal', icon: Wallet },
   ];
 
   if (isSuperAdmin) {
@@ -44,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="dash-sidebar-header">
           <Link href="/dashboard" className="dash-logo">
             <div className="dash-logo-icon">
-              <img src="/icon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+              <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
             </div>
             {!collapsed && <span className="dash-logo-text">EliteBooks</span>}
           </Link>
@@ -66,10 +98,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             return (
               <Link
                 key={item.href}
-                href={item.href}
-                className={`dash-nav-item ${isActive ? 'active' : ''}`}
-                onClick={() => setMobileOpen(false)}
+                href={isVerified ? item.href : '#'}
+                className={`dash-nav-item ${isActive ? 'active' : ''} ${!isVerified ? 'disabled' : ''}`}
+                onClick={() => isVerified && setMobileOpen(false)}
                 title={collapsed ? item.label : undefined}
+                style={!isVerified ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
               >
                 <item.icon size={20} />
                 {!collapsed && <span>{item.label}</span>}
@@ -124,7 +157,86 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Page Content */}
         <main className="dash-content">
-          {children}
+          {!isVerified ? (
+            <div className="verification-gate">
+              <div className="gate-content">
+                <div className="gate-icon">
+                  <Mail size={48} />
+                </div>
+                <h2>Verify your email</h2>
+                <p>
+                  To protect your financial data, EliteBooks requires email verification. 
+                  We&apos;ve sent a link to <strong>{user?.email}</strong>. 
+                  Please check your <strong>junk or spam folder</strong> if you don&apos;t see it in your inbox.
+                </p>
+                <div className="gate-actions">
+                  <button 
+                    onClick={handleResendVerification} 
+                    className="btn btn-primary"
+                    disabled={resending}
+                  >
+                    {resending ? 'Sending...' : 'Resend Verification Email'}
+                  </button>
+                  <button onClick={handleCheckVerification} className="btn btn-secondary">
+                    I&apos;ve verified my email
+                  </button>
+                </div>
+                {resendStatus && <p className="resend-status">{resendStatus}</p>}
+                <button onClick={signOut} className="gate-logout">
+                  Sign out and use another account
+                </button>
+              </div>
+              <style jsx>{`
+                .verification-gate {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-height: 60vh;
+                  text-align: center;
+                }
+                .gate-content {
+                  max-width: 440px;
+                  background: var(--color-bg-secondary);
+                  padding: var(--space-10);
+                  border-radius: var(--radius-xl);
+                  border: 1px solid var(--color-border-secondary);
+                  box-shadow: var(--shadow-xl);
+                }
+                .gate-icon {
+                  width: 80px;
+                  height: 80px;
+                  background: var(--color-accent-subtle);
+                  color: var(--color-accent-primary);
+                  border-radius: var(--radius-full);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 0 auto var(--space-6);
+                }
+                .gate-content h2 { font-size: var(--text-2xl); margin-bottom: var(--space-3); }
+                .gate-content p { color: var(--color-text-secondary); margin-bottom: var(--space-8); line-height: 1.6; }
+                .gate-actions { display: flex; flex-direction: column; gap: var(--space-3); }
+                .resend-status { 
+                  margin-top: var(--space-4); 
+                  font-size: var(--text-sm); 
+                  color: var(--color-accent-primary); 
+                  font-weight: var(--weight-medium);
+                }
+                .gate-logout {
+                  margin-top: var(--space-8);
+                  background: none;
+                  border: none;
+                  color: var(--color-text-tertiary);
+                  font-size: var(--text-sm);
+                  cursor: pointer;
+                  text-decoration: underline;
+                }
+                .gate-logout:hover { color: var(--color-text-primary); }
+              `}</style>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
 
@@ -169,10 +281,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .dash-logo-icon {
           width: 34px; height: 34px;
           display: flex; align-items: center; justify-content: center;
-          background: var(--gradient-brand);
-          border-radius: var(--radius-sm);
-          color: white;
+          background: transparent;
+          position: relative;
           flex-shrink: 0;
+        }
+        .dash-logo-icon::after {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          background: var(--color-accent-glow);
+          filter: blur(8px);
+          border-radius: 50%;
+          opacity: 0.3;
+          z-index: -1;
+        }
+        .dash-logo-icon img {
+          width: 100%; height: 100%;
+          object-fit: contain;
+          filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
         }
         .dash-logo-text {
           font-size: var(--text-lg);

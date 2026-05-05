@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { 
   Sparkles, ArrowLeft, Brain, Receipt, FileText, 
   CreditCard, TrendingUp, DollarSign, Shield, ArrowRight,
-  BarChart3, Users, PieChart, CheckCircle2
+  BarChart3, Users, PieChart, CheckCircle2, ArrowUpRight
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -134,10 +134,119 @@ export default function FeaturesPage() {
               </div>
               
               <div className={styles.featureVisual}>
-                <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)' }}>
-                  <feature.icon size={64} style={{ color: feature.color, opacity: 0.5 }} />
-                  <span style={{ color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}>Interactive UI Component</span>
-                </div>
+                {feature.id === 'invoicing' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '1rem' }}>
+                      <div style={{ fontWeight: 'bold' }}>Invoice #INV-2026</div>
+                      <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>Paid</div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Acme Corporation</span>
+                      <span style={{ fontWeight: 'bold' }}>$4,500.00</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Software Development</span>
+                    </div>
+                    <div style={{ marginTop: 'auto', padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', fontSize: '0.85rem' }}>
+                        <CheckCircle2 size={16} /> AI Auto-Reminded on Apr 12
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'expenses' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--color-bg-tertiary)', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', background: '#00704a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>☕</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold' }}>Starbucks</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-tertiary)' }}>Apr 15, 2026</div>
+                      </div>
+                      <div style={{ fontWeight: 'bold', color: 'var(--color-negative)' }}>-$8.45</div>
+                    </div>
+                    <div style={{ marginTop: 'auto', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontSize: '0.85rem' }}>
+                        <CheckCircle2 size={16} /> Categorized as: Meals & Entertainment
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'reports' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem', height: '150px', borderBottom: '1px solid var(--color-border-secondary)' }}>
+                      {[40, 60, 45, 80, 65, 90, 75].map((h, i) => (
+                        <div key={i} style={{ flex: 1, background: i === 6 ? '#8b5cf6' : 'var(--color-bg-tertiary)', height: `${h}%`, borderRadius: '4px 4px 0 0', transition: 'all 0.3s' }} />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Net Profit</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>$24,500</div>
+                      </div>
+                      <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <ArrowUpRight size={16} /> +12%
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'payroll' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    {[
+                      { name: 'Sarah Johnson', role: 'Engineering', amt: '$8,500' },
+                      { name: 'Michael Chen', role: 'Design', amt: '$6,200' },
+                      { name: 'Emma Davis', role: 'Marketing', amt: '$5,800' }
+                    ].map((emp, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--color-bg-tertiary)', borderRadius: '8px' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{emp.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{emp.role}</div>
+                        </div>
+                        <div style={{ fontWeight: 'bold' }}>{emp.amt}</div>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 'auto', padding: '0.75rem', background: '#f59e0b', color: 'white', borderRadius: '8px', textAlign: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                      Run Payroll
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'inventory' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--color-border-secondary)' }}>
+                      <span style={{ fontWeight: 'bold' }}>MacBook Pro 16"</span>
+                      <span style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>Low Stock</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ flex: 1, background: 'var(--color-bg-tertiary)', height: '8px', borderRadius: '4px' }}>
+                        <div style={{ width: '15%', background: '#f43f5e', height: '100%', borderRadius: '4px' }} />
+                      </div>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>3 Left</span>
+                    </div>
+                    <div style={{ marginTop: 'auto', padding: '1rem', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '8px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ec4899', fontSize: '0.85rem' }}>
+                        <Sparkles size={16} /> AI reordered 10 units
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'compliance' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                      <Shield size={48} style={{ color: '#06b6d4', margin: '0 auto', opacity: 0.8 }} />
+                      <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>Audit Log Intact</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                        <CheckCircle2 size={14} style={{ color: '#10b981' }} /> Q2 Estimated Taxes Filed
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                        <CheckCircle2 size={14} style={{ color: '#10b981' }} /> W-9s Collected (12/12)
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                        <CheckCircle2 size={14} style={{ color: '#10b981' }} /> Anomalies Detected: 0
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -6,14 +6,16 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useState } from 'react';
 import DateFilter from '@/components/DateFilter';
 
-import { BASE_EMPLOYEES } from '@/lib/mockData';
+import { useAuth } from '@/hooks/useAuth';
+import { getMockEmployees } from '@/lib/mockData';
 
 export default function PayrollPage() {
+  const { user } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState('Apr');
   const [selectedYear, setSelectedYear] = useState('2026');
 
   const trendMultiplier = selectedYear === 'All Years' ? 1 : Math.pow(1.05, parseInt(selectedYear) - 2016);
-  const activeEmployees = BASE_EMPLOYEES
+  const activeEmployees = getMockEmployees(user?.email)
     .filter(e => selectedYear === 'All Years' || e.startYear <= parseInt(selectedYear))
     .map(e => ({
       ...e,

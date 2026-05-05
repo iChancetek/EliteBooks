@@ -1,31 +1,65 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Mail, Lock, User, Building2, ArrowRight, Globe } from 'lucide-react';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { Sparkles, Mail, Lock, User, Building2, ArrowRight, Globe, Eye, EyeOff } from 'lucide-react';
+import { createUserWithEmailAndPassword, updateProfile, signInWithRedirect, GoogleAuthProvider, sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SignupPage() {
   const router = useRouter();
-  const [name, setName] = useState('');
+  const { user } = useAuth();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [company, setCompany] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Automatically redirect if already authenticated (especially useful after PWA redirect login)
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(cred.user, { displayName: name });
-      router.push('/dashboard');
-    } catch {
-      setError('Could not create account. The email may already be in use.');
+      
+      // Send verification email immediately
+      await sendEmailVerification(cred.user);
+      
+      // Update profile with the chosen display name
+      await updateProfile(cred.user, { 
+        displayName: displayName || `${firstName} ${lastName}`.trim() 
+      });
+
+      // Redirect to a specific "Check your email" view or dashboard which will now be gated
+      router.push('/dashboard'); 
+    } catch (err: any) {
+      console.error('Signup Error:', err);
+      if (err.code === 'auth/email-already-in-use') {
+        setError('The email is already in use by another account.');
+      } else {
+        setError(err.message || 'Could not create account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -36,12 +70,12 @@ export default function SignupPage() {
     setError('');
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push('/dashboard');
+      // Use redirect for PWA/Mobile compatibility
+      await signInWithRedirect(auth, provider);
+      // We don't push to dashboard here; the redirect handles returning and useAuth will catch the login state
     } catch (err: any) {
       console.error('Google Sign-up Error:', err);
       setError(`Google sign-up failed: ${err.message || 'Please try again'}`);
-    } finally {
       setLoading(false);
     }
   };
@@ -49,11 +83,15 @@ export default function SignupPage() {
   return (
     <div className="auth-card">
       <div className="auth-header">
-        <div className="auth-logo">
-          <Sparkles size={22} />
+        <div className="auth-logo" style={{ background: 'transparent' }}>
+          <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
         <h1>Create your account</h1>
         <p>Get started with EliteBooks in under 2 minutes</p>
+        <div className="verification-info">
+          <Mail size={14} />
+          <span>A verification link will be sent to your email. Check your junk/spam folder if it doesn&apos;t appear in your inbox. Access is gated until verified.</span>
+        </div>
       </div>
 
       {error && <div className="auth-error">{error}</div>}
@@ -68,12 +106,33 @@ export default function SignupPage() {
       </div>
 
       <form onSubmit={handleSignup} className="auth-form">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+          <div className="auth-field">
+            <label htmlFor="signup-firstname">First Name</label>
+            <div className="auth-input-wrap">
+              <User size={16} className="auth-input-icon" />
+              <input id="signup-firstname" type="text" className="input" placeholder="John"
+                value={firstName} onChange={(e) => setFirstName(e.target.value)} required
+                style={{ paddingLeft: '42px' }} />
+            </div>
+          </div>
+          <div className="auth-field">
+            <label htmlFor="signup-lastname">Last Name</label>
+            <div className="auth-input-wrap">
+              <User size={16} className="auth-input-icon" />
+              <input id="signup-lastname" type="text" className="input" placeholder="Doe"
+                value={lastName} onChange={(e) => setLastName(e.target.value)} required
+                style={{ paddingLeft: '42px' }} />
+            </div>
+          </div>
+        </div>
+
         <div className="auth-field">
-          <label htmlFor="signup-name">Full Name</label>
+          <label htmlFor="signup-displayname">Display Name (Public Name)</label>
           <div className="auth-input-wrap">
             <User size={16} className="auth-input-icon" />
-            <input id="signup-name" type="text" className="input" placeholder="John Doe"
-              value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name"
+            <input id="signup-displayname" type="text" className="input" placeholder="johndoe_elite"
+              value={displayName} onChange={(e) => setDisplayName(e.target.value)} required
               style={{ paddingLeft: '42px' }} />
           </div>
         </div>
@@ -83,7 +142,7 @@ export default function SignupPage() {
           <div className="auth-input-wrap">
             <Building2 size={16} className="auth-input-icon" />
             <input id="signup-company" type="text" className="input" placeholder="Acme Inc."
-              value={company} onChange={(e) => setCompany(e.target.value)}
+              value={company} onChange={(e) => setCompany(e.target.value)} required
               style={{ paddingLeft: '42px' }} />
           </div>
         </div>
@@ -102,9 +161,27 @@ export default function SignupPage() {
           <label htmlFor="signup-password">Password</label>
           <div className="auth-input-wrap">
             <Lock size={16} className="auth-input-icon" />
-            <input id="signup-password" type="password" className="input" placeholder="Min. 8 characters"
+            <input id="signup-password" type={showPassword ? 'text' : 'password'} className="input" placeholder="Min. 8 characters"
               value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
-              autoComplete="new-password" style={{ paddingLeft: '42px' }} />
+              autoComplete="new-password" style={{ paddingLeft: '42px', paddingRight: '42px' }} />
+            <button 
+              type="button" 
+              className="auth-password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="signup-confirm-password">Confirm Password</label>
+          <div className="auth-input-wrap">
+            <Lock size={16} className="auth-input-icon" />
+            <input id="signup-confirm-password" type={showPassword ? 'text' : 'password'} className="input" placeholder="Repeat your password"
+              value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8}
+              autoComplete="new-password" style={{ paddingLeft: '42px', paddingRight: '42px' }} />
           </div>
         </div>
 
@@ -135,7 +212,14 @@ export default function SignupPage() {
           margin: 0 auto var(--space-5);
         }
         .auth-header h1 { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
-        .auth-header p { font-size: var(--text-sm); color: var(--color-text-tertiary); }
+        .auth-header p { font-size: var(--text-sm); color: var(--color-text-tertiary); margin-bottom: var(--space-4); }
+        .verification-info {
+          display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+          background: var(--color-accent-subtle); border: 1px solid rgba(59, 130, 246, 0.1);
+          padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+          color: var(--color-accent-primary); font-size: 11px; font-weight: var(--weight-medium);
+          margin-top: var(--space-2);
+        }
         .auth-error {
           background: var(--color-negative-bg); border: 1px solid rgba(244,63,94,0.2);
           color: var(--color-negative); padding: var(--space-3) var(--space-4);
@@ -151,6 +235,13 @@ export default function SignupPage() {
           position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
           color: var(--color-text-muted); pointer-events: none;
         }
+        .auth-password-toggle {
+          position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+          background: none; border: none; color: var(--color-text-muted);
+          cursor: pointer; display: flex; align-items: center; justify-content: center;
+          padding: 4px; border-radius: 4px; transition: all var(--duration-fast);
+        }
+        .auth-password-toggle:hover { color: var(--color-text-primary); background: var(--color-bg-tertiary); }
         .auth-submit { width: 100%; margin-top: var(--space-2); }
         .auth-divider { text-align: center; margin: var(--space-6) 0; position: relative; }
         .auth-divider::before {

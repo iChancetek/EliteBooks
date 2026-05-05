@@ -117,6 +117,15 @@ export const ALL_EXPENSES = generateMockExpenses();
 export const ALL_INVOICES = generateMockInvoices();
 export const BASE_EMPLOYEES = generateMockPayroll();
 
+// Restriction logic
+const MOCK_USER = 'chancellor@ichancetek.com';
+
+export const isMockUser = (email: string | null | undefined) => email === MOCK_USER;
+
+export const getMockExpenses = (email: string | null | undefined) => isMockUser(email) ? ALL_EXPENSES : [];
+export const getMockInvoices = (email: string | null | undefined) => isMockUser(email) ? ALL_INVOICES : [];
+export const getMockEmployees = (email: string | null | undefined) => isMockUser(email) ? BASE_EMPLOYEES : [];
+
 // Date Filter Utility
 export const filterByDate = (items: any[], year: string, month: string) => {
   return items.filter(item => {

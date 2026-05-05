@@ -1,19 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from 'lucide-react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
+
+  // Automatically redirect if already authenticated (especially useful after PWA redirect login)
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,11 +44,30 @@ export default function LoginPage() {
     setError('');
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push('/dashboard');
+      // Use redirect for PWA/Mobile compatibility
+      await signInWithRedirect(auth, provider);
+      // We don't push to dashboard here; the redirect handles returning and useAuth will catch the login state
     } catch (err: any) {
       console.error('Google Login Error:', err);
       setError(`Google sign-in failed: ${err.message || 'Please try again'}`);
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address to reset your password.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setResetMessage('');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetMessage('A password reset link has been sent to your email.');
+    } catch (err: any) {
+      console.error('Password Reset Error:', err);
+      setError('Could not send reset email. Please verify your email address.');
     } finally {
       setLoading(false);
     }
@@ -47,8 +76,8 @@ export default function LoginPage() {
   return (
     <div className="auth-card">
       <div className="auth-header">
-        <div className="auth-logo">
-          <Sparkles size={22} />
+        <div className="auth-logo" style={{ background: 'transparent' }}>
+          <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
         <h1>Welcome back</h1>
         <p>Sign in to your EliteBooks account</p>
@@ -99,14 +128,21 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              className="auth-toggle-pw"
+              className="auth-password-toggle"
               onClick={() => setShowPassword(!showPassword)}
-              aria-label="Toggle password visibility"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
+            <button type="button" onClick={handleForgotPassword} className="btn btn-ghost btn-sm" style={{ padding: 0, height: 'auto', fontSize: 'var(--text-xs)', color: 'var(--color-accent-primary)' }}>
+              Forgot Password?
+            </button>
+          </div>
         </div>
+
+        {resetMessage && <div style={{ color: 'var(--color-positive)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>{resetMessage}</div>}
 
         <button type="submit" className="btn btn-primary btn-lg auth-submit" id="login-submit" disabled={loading}>
           {loading ? 'Signing in...' : 'Sign In'}
@@ -130,79 +166,37 @@ export default function LoginPage() {
           padding: var(--space-10);
           animation: fadeInUp 0.6s var(--ease-out-expo) both;
         }
-        .auth-header {
-          text-align: center;
-          margin-bottom: var(--space-8);
-        }
+        .auth-header { text-align: center; margin-bottom: var(--space-8); }
         .auth-logo {
-          width: 48px; height: 48px;
-          display: flex; align-items: center; justify-content: center;
-          background: var(--gradient-brand);
-          border-radius: var(--radius-lg);
-          color: white;
+          width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+          background: var(--gradient-brand); border-radius: var(--radius-lg); color: white;
           margin: 0 auto var(--space-5);
         }
-        .auth-header h1 {
-          font-size: var(--text-2xl);
-          margin-bottom: var(--space-2);
-        }
-        .auth-header p {
-          font-size: var(--text-sm);
-          color: var(--color-text-tertiary);
-        }
+        .auth-header h1 { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+        .auth-header p { font-size: var(--text-sm); color: var(--color-text-tertiary); }
         .auth-error {
-          background: var(--color-negative-bg);
-          border: 1px solid rgba(244,63,94,0.2);
-          color: var(--color-negative);
-          padding: var(--space-3) var(--space-4);
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          margin-bottom: var(--space-5);
-          text-align: center;
+          background: var(--color-negative-bg); border: 1px solid rgba(244,63,94,0.2);
+          color: var(--color-negative); padding: var(--space-3) var(--space-4);
+          border-radius: var(--radius-md); font-size: var(--text-sm); margin-bottom: var(--space-5); text-align: center;
         }
-        .auth-form {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-5);
-        }
+        .auth-form { display: flex; flex-direction: column; gap: var(--space-5); }
         .auth-field label {
-          display: block;
-          font-size: var(--text-sm);
-          font-weight: var(--weight-medium);
-          color: var(--color-text-secondary);
-          margin-bottom: var(--space-2);
+          display: block; font-size: var(--text-sm); font-weight: var(--weight-medium);
+          color: var(--color-text-secondary); margin-bottom: var(--space-2);
         }
-        .auth-input-wrap {
-          position: relative;
-        }
-        .auth-input-wrap .input {
-          padding-left: 42px;
-          padding-right: 42px;
-        }
+        .auth-input-wrap { position: relative; }
         .auth-input-icon {
-          position: absolute;
-          left: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--color-text-muted);
-          pointer-events: none;
+          position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+          color: var(--color-text-muted); pointer-events: none;
         }
-        .auth-toggle-pw {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          color: var(--color-text-muted);
-          padding: 4px;
-          cursor: pointer;
+        .auth-password-toggle {
+          position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+          background: none; border: none; color: var(--color-text-muted);
+          cursor: pointer; display: flex; align-items: center; justify-content: center;
+          padding: 4px; border-radius: 4px; transition: all var(--duration-fast);
         }
-        .auth-toggle-pw:hover { color: var(--color-text-secondary); }
-        .auth-submit {
-          width: 100%;
-          margin-top: var(--space-2);
-        }
+        .auth-password-toggle:hover { color: var(--color-text-primary); background: var(--color-bg-tertiary); }
+        .auth-submit { width: 100%; margin-top: var(--space-2); }
         .auth-divider {
           text-align: center;
           margin: var(--space-6) 0;

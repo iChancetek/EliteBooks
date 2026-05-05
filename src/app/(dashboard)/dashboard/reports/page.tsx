@@ -5,7 +5,8 @@ import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIc
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, Brush } from 'recharts';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
-import { ALL_EXPENSES, ALL_INVOICES, filterByDate } from '@/lib/mockData';
+import { useAuth } from '@/hooks/useAuth';
+import { ALL_EXPENSES, ALL_INVOICES, filterByDate, isMockUser } from '@/lib/mockData';
 
 const plData = [
   { category: 'Service Revenue', amount: 64200, type: 'revenue' },
@@ -93,14 +94,20 @@ const expenseData = plData.filter(d => d.type === 'expense').map(d => ({ name: d
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#14b8a6', '#6366f1', '#84cc16'];
 
 export default function ReportsPage() {
+  const { user } = useAuth();
   const [chartView, setChartView] = useState<'monthly' | 'yearly'>('yearly');
   const [nlpQuery, setNlpQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState('Apr');
   const [selectedYear, setSelectedYear] = useState('2026');
 
-  const activeExpenses = filterByDate(ALL_EXPENSES, selectedYear, selectedMonth);
-  const activeInvoices = filterByDate(ALL_INVOICES, selectedYear, selectedMonth);
+  const showMock = isMockUser(user?.email);
+
+  const activeExpenses = filterByDate(showMock ? ALL_EXPENSES : [], selectedYear, selectedMonth);
+  const activeInvoices = filterByDate(showMock ? ALL_INVOICES : [], selectedYear, selectedMonth);
+
+  const displayHistoricalMonthly = showMock ? historicalMonthlyData : [];
+  const displayHistoricalYearly = showMock ? historicalYearlyData : [];
 
   const totalRevenue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const totalExpenses = activeExpenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -230,7 +237,7 @@ export default function ReportsPage() {
           </div>
           <div style={{ height: 300, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartView === 'monthly' ? historicalMonthlyData : historicalYearlyData} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
+              <BarChart data={chartView === 'monthly' ? displayHistoricalMonthly : displayHistoricalYearly} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey={chartView === 'monthly' ? 'label' : 'year'} stroke="var(--color-text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis 
                   stroke="var(--color-text-tertiary)" 

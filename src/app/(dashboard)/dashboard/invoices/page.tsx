@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { Invoice } from '@/types/accounting';
-import DateFilter from '@/components/DateFilter';
-import { ALL_INVOICES, filterByDate } from '@/lib/mockData';
+import { useAuth } from '@/hooks/useAuth';
+import { ALL_INVOICES, filterByDate, getMockInvoices } from '@/lib/mockData';
 
 // demoInvoices removed, using ALL_INVOICES from mockData
 
@@ -23,14 +23,20 @@ const statusConfig: Record<string, { label: string; class: string; icon: React.E
 };
 
 export default function InvoicesPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newInvoice, setNewInvoice] = useState({ clientName: '', amount: '', dueDate: '' });
   const [selectedMonth, setSelectedMonth] = useState('Apr');
   const [selectedYear, setSelectedYear] = useState('2026');
+  const [invoices, setInvoices] = useState<any[]>([]);
 
-  const activeInvoices = filterByDate(ALL_INVOICES, selectedYear, selectedMonth);
+  useState(() => {
+    // Note: We use useEffect for this usually, but a quick state init is fine if we check user
+  });
+
+  const activeInvoices = filterByDate(getMockInvoices(user?.email), selectedYear, selectedMonth);
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();

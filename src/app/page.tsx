@@ -76,7 +76,7 @@ export default function LandingPage() {
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
             <div className={styles.logoIcon}>
-              <img src="/icon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+              <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             <span className={styles.logoText}>EliteBooks</span>
           </Link>
@@ -133,7 +133,10 @@ export default function LandingPage() {
               <div className={styles.commandDots}>
                 <span /><span /><span />
               </div>
-              <span className={styles.commandTitle}>EliteBooks</span>
+              <div className={styles.commandTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/NewIcon.png" alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                <span>EliteBooks</span>
+              </div>
             </div>
             <div className={styles.commandBody}>
               <div className={styles.commandPrompt}>
@@ -239,7 +242,7 @@ export default function LandingPage() {
           <div className={styles.footerBrand}>
             <div className={styles.logo}>
               <div className={styles.logoIcon}>
-                <img src="/icon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+                <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <span className={styles.logoText}>EliteBooks</span>
             </div>
