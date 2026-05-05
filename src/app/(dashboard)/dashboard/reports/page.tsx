@@ -237,12 +237,12 @@ export default function ReportsPage() {
                   fontSize={12} 
                   tickLine={false} 
                   axisLine={false}
-                  tickFormatter={(val) => `$${Number(val) / 1000}k`}
+                  tickFormatter={(val) => `$${val / 1000}k`}
                 />
                 <Tooltip 
                   cursor={{ fill: 'var(--color-bg-tertiary)', opacity: 0.4 }}
                   contentStyle={{ backgroundColor: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-primary)', borderRadius: '8px', color: 'var(--color-text-primary)' }}
-                  formatter={(value: any) => formatCurrency(Number(value))}
+                  formatter={(value: number) => formatCurrency(value)}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
                 <Bar dataKey="revenue" name="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
@@ -276,7 +276,7 @@ export default function ReportsPage() {
                 </Pie>
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-primary)', borderRadius: '8px', color: 'var(--color-text-primary)' }}
-                  formatter={(value: any) => formatCurrency(Number(value))}
+                  formatter={(value: number) => formatCurrency(value)}
                 />
                 <Legend layout="vertical" verticalAlign="middle" align="right" iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
               </PieChart>
