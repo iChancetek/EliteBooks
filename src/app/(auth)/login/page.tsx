@@ -202,6 +202,7 @@ export default function LoginPage() {
           color: var(--color-text-secondary); margin-bottom: var(--space-2);
         }
         .auth-input-wrap { position: relative; }
+        .auth-input-wrap .input { padding-left: 42px; }
         .auth-input-icon {
           position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
           color: var(--color-text-muted); pointer-events: none;

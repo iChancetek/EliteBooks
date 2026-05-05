@@ -25,6 +25,7 @@ export default function AutonomousAgentWidget() {
   const [activeWorkflow, setActiveWorkflow] = useState<typeof agentWorkflows[0] | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [autonomyMode, setAutonomyMode] = useState<'autonomous' | 'hitl'>('hitl');
 
   useEffect(() => {
     // Simulate autonomous detection popping up after 10 seconds of user inactivity
@@ -74,9 +75,17 @@ export default function AutonomousAgentWidget() {
           <Bot size={20} style={{ color: activeWorkflow.type === 'warning' ? '#f59e0b' : '#3b82f6' }} />
         </div>
         <div style={{ flex: 1 }}>
-          <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            Agent Action Required
-            {activeWorkflow.type === 'warning' && <AlertTriangle size={14} style={{ color: '#f59e0b' }} />}
+          <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>{autonomyMode === 'autonomous' ? 'Autonomous Action' : 'Human Review Required'}</span>
+            <span className={`status-pill ${autonomyMode}`} style={{ 
+              fontSize: '10px', 
+              padding: '2px 6px', 
+              borderRadius: '4px',
+              background: autonomyMode === 'autonomous' ? 'var(--color-positive-bg)' : 'var(--color-warning-bg)',
+              color: autonomyMode === 'autonomous' ? 'var(--color-positive)' : 'var(--color-warning)'
+            }}>
+              {autonomyMode.toUpperCase()}
+            </span>
           </h4>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
             {activeWorkflow.message}

@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { 
   Sparkles, ArrowLeft, Brain, Receipt, FileText, 
   CreditCard, TrendingUp, DollarSign, Shield, ArrowRight,
-  BarChart3, Users, PieChart, CheckCircle2, ArrowUpRight
+  BarChart3, Users, PieChart, CheckCircle2, ArrowUpRight,
+  Network, Library, Link2, Mic, Headphones, Cloud
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -66,6 +67,56 @@ const fullFeatures = [
     color: '#06b6d4',
     bullets: ['Quarterly tax estimations', 'Compliance document monitoring', 'Immutable audit trails', 'Instant CPA access'],
     agent: { name: 'Compliance Agent', icon: Shield }
+  },
+  {
+    id: 'orchestrator',
+    icon: Network,
+    title: 'Autonomous Orchestrator',
+    subtitle: 'The master brain coordinating your team.',
+    description: 'The Orchestrator agent manages the communication between all specialized agents. It plans workflows, delegates tasks (like matching a receipt to a journal entry), and ensures that every part of your financial system is in sync without manual intervention.',
+    color: '#6366f1',
+    bullets: ['Cross-agent coordination', 'Automated task delegation', 'Conflict resolution', 'Continuous system monitoring'],
+    agent: { name: 'Orchestrator Agent', icon: Brain }
+  },
+  {
+    id: 'bookkeeping',
+    icon: Library,
+    title: 'Professional Bookkeeping',
+    subtitle: 'Enterprise-grade accounting logic.',
+    description: 'Go beyond simple tracking. EliteBooks handles full double-entry bookkeeping, allowing you to generate professional trial balances and journal entries. Perfect for growing businesses that need high-precision financial control.',
+    color: '#0ea5e9',
+    bullets: ['Double-entry ledger system', 'Automated journal entries', 'Precise trial balances', 'GAAP/IFRS compliance support'],
+    agent: { name: 'Ledger Agent', icon: FileText }
+  },
+  {
+    id: 'reconciliation',
+    icon: Link2,
+    title: 'Bank Reconciliation',
+    subtitle: 'Never lose track of a single cent.',
+    description: 'EliteBooks automatically compares your bank statements with your internal ledger. It flags discrepancies, identifies missing transactions, and helps you reconcile accounts in minutes rather than hours.',
+    color: '#14b8a6',
+    bullets: ['Automated bank matching', 'Discrepancy detection', 'Balance verification', 'Multi-account support'],
+    agent: { name: 'Ledger Agent', icon: FileText }
+  },
+  {
+    id: 'voice',
+    icon: Mic,
+    title: 'Voice Intelligence',
+    subtitle: 'Talk to your books, in any language.',
+    description: 'Use natural language to interact with your financial data. Record voice notes to log expenses, ask questions about your profit, or dictate invoice details. Powered by advanced STT and TTS technology.',
+    color: '#f43f5e',
+    bullets: ['Multi-lingual support', 'Natural language queries', 'Voice-to-action commands', 'Premium AI voices'],
+    agent: { name: 'Orchestrator Agent', icon: Headphones }
+  },
+  {
+    id: 'finops',
+    icon: TrendingUp,
+    title: 'Cloud FinOps',
+    subtitle: 'Master your cloud economics.',
+    description: 'Optimize your infrastructure spending with dedicated FinOps intelligence. Track unit economics, identify waste, and automate commitment-based discounts across your entire cloud stack.',
+    color: '#8b5cf6',
+    bullets: ['Cloud spend forecasting', 'Resource efficiency tracking', 'Automated cost optimization', 'Departmental cost allocation'],
+    agent: { name: 'FinOps Agent', icon: Cloud }
   }
 ];
 
@@ -244,6 +295,81 @@ export default function FeaturesPage() {
                       <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                         <CheckCircle2 size={14} style={{ color: '#10b981' }} /> Anomalies Detected: 0
                       </div>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'orchestrator' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden', position: 'relative' }}>
+                    <div style={{ position: 'absolute', inset: 0, opacity: 0.1, background: `radial-gradient(circle at center, ${feature.color}, transparent)` }} />
+                    <Brain size={80} style={{ color: feature.color, zIndex: 1 }} />
+                  </div>
+                )}
+                {feature.id === 'bookkeeping' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--color-text-tertiary)', marginBottom: '0.5rem' }}>TRIAL BALANCE — APR 2026</div>
+                    {[
+                      { acc: 'Cash & Equivalents', d: '$124,500', c: '-' },
+                      { acc: 'Accounts Receivable', d: '$42,300', c: '-' },
+                      { acc: 'Retained Earnings', d: '-', c: '$166,800' }
+                    ].map((row, i) => (
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', padding: '0.5rem', background: i % 2 === 0 ? 'var(--color-bg-tertiary)' : 'transparent', fontSize: '0.85rem' }}>
+                        <span>{row.acc}</span>
+                        <span style={{ textAlign: 'right' }}>{row.d}</span>
+                        <span style={{ textAlign: 'right' }}>{row.c}</span>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 'auto', borderTop: '1px solid var(--color-border-secondary)', paddingTop: '0.5rem', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                      <span>Total</span>
+                      <span style={{ textAlign: 'right' }}>$166,800</span>
+                      <span style={{ textAlign: 'right' }}>$166,800</span>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'reconciliation' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', gap: '1rem', flex: 1 }}>
+                      <div style={{ flex: 1, background: 'var(--color-bg-tertiary)', borderRadius: '8px', padding: '1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>BANK STATEMENT</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>$12,450.00</div>
+                      </div>
+                      <div style={{ flex: 1, background: 'var(--color-bg-tertiary)', borderRadius: '8px', padding: '1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>INTERNAL LEDGER</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>$12,450.00</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '1rem', background: 'rgba(20, 184, 166, 0.1)', borderRadius: '8px', border: '1px solid rgba(20, 184, 166, 0.2)', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#14b8a6', fontWeight: 'bold' }}>
+                        <CheckCircle2 size={18} /> Perfectly Reconciled
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'voice' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', gap: '4px', height: '60px', alignItems: 'center' }}>
+                      {[30, 50, 80, 40, 90, 60, 40, 70, 40, 30].map((h, i) => (
+                        <div key={i} style={{ width: '4px', height: `${h}%`, background: feature.color, borderRadius: '2px' }} />
+                      ))}
+                    </div>
+                    <div style={{ padding: '1rem', background: 'var(--color-bg-tertiary)', borderRadius: '12px', border: '1px solid var(--color-border-primary)', fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+                      "EliteBooks, what was my total revenue last week?"
+                    </div>
+                  </div>
+                )}
+                {feature.id === 'finops' && (
+                  <div className="glass-card" style={{ width: '100%', height: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', border: `1px solid ${feature.color}30`, background: 'var(--color-bg-elevated)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Cloud Efficiency Score</div>
+                      <div style={{ color: 'var(--color-positive)', fontWeight: 'bold' }}>84%</div>
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+                      {[30, 45, 60, 40, 75, 50, 90].map((h, i) => (
+                        <div key={i} style={{ flex: 1, background: i === 6 ? feature.color : 'var(--color-bg-tertiary)', height: `${h}%`, borderRadius: '4px 4px 0 0' }} />
+                      ))}
+                    </div>
+                    <div style={{ padding: '0.75rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)', fontSize: '0.8rem' }}>
+                      <div style={{ color: feature.color, fontWeight: 'bold', marginBottom: '2px' }}>AI Optimization</div>
+                      <div style={{ color: 'var(--color-text-secondary)' }}>Saved $420/mo via RI conversion</div>
                     </div>
                   </div>
                 )}

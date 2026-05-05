@@ -55,6 +55,7 @@ export const viewport: Viewport = {
 };
 
 import { AuthProvider } from '@/hooks/useAuth';
+import AIAssistant from '@/components/AIAssistant';
 
 export default function RootLayout({
   children,
@@ -79,6 +80,7 @@ export default function RootLayout({
             }}
           />
           {children}
+          <AIAssistant />
         </AuthProvider>
       </body>
     </html>

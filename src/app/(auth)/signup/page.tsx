@@ -122,8 +122,7 @@ export default function SignupPage() {
             <div className="auth-input-wrap">
               <User size={16} className="auth-input-icon" />
               <input id="signup-firstname" type="text" className="input" placeholder="John"
-                value={firstName} onChange={(e) => setFirstName(e.target.value)} required
-                style={{ paddingLeft: '42px' }} />
+                value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
             </div>
           </div>
           <div className="auth-field">
@@ -131,8 +130,7 @@ export default function SignupPage() {
             <div className="auth-input-wrap">
               <User size={16} className="auth-input-icon" />
               <input id="signup-lastname" type="text" className="input" placeholder="Doe"
-                value={lastName} onChange={(e) => setLastName(e.target.value)} required
-                style={{ paddingLeft: '42px' }} />
+                value={lastName} onChange={(e) => setLastName(e.target.value)} required />
             </div>
           </div>
         </div>
@@ -142,8 +140,7 @@ export default function SignupPage() {
           <div className="auth-input-wrap">
             <User size={16} className="auth-input-icon" />
             <input id="signup-displayname" type="text" className="input" placeholder="johndoe_elite"
-              value={displayName} onChange={(e) => setDisplayName(e.target.value)} required
-              style={{ paddingLeft: '42px' }} />
+              value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
           </div>
         </div>
 
@@ -152,8 +149,7 @@ export default function SignupPage() {
           <div className="auth-input-wrap">
             <Building2 size={16} className="auth-input-icon" />
             <input id="signup-company" type="text" className="input" placeholder="Acme Inc."
-              value={company} onChange={(e) => setCompany(e.target.value)} required
-              style={{ paddingLeft: '42px' }} />
+              value={company} onChange={(e) => setCompany(e.target.value)} required />
           </div>
         </div>
 
@@ -162,8 +158,7 @@ export default function SignupPage() {
           <div className="auth-input-wrap">
             <Mail size={16} className="auth-input-icon" />
             <input id="signup-email" type="email" className="input" placeholder="you@company.com"
-              value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email"
-              style={{ paddingLeft: '42px' }} />
+              value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           </div>
         </div>
 
@@ -173,7 +168,7 @@ export default function SignupPage() {
             <Lock size={16} className="auth-input-icon" />
             <input id="signup-password" type={showPassword ? 'text' : 'password'} className="input" placeholder="Min. 8 characters"
               value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
-              autoComplete="new-password" style={{ paddingLeft: '42px', paddingRight: '42px' }} />
+              autoComplete="new-password" />
             <button 
               type="button" 
               className="auth-password-toggle"
@@ -191,7 +186,7 @@ export default function SignupPage() {
             <Lock size={16} className="auth-input-icon" />
             <input id="signup-confirm-password" type={showPassword ? 'text' : 'password'} className="input" placeholder="Repeat your password"
               value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8}
-              autoComplete="new-password" style={{ paddingLeft: '42px', paddingRight: '42px' }} />
+              autoComplete="new-password" />
           </div>
         </div>
 
@@ -241,6 +236,7 @@ export default function SignupPage() {
           color: var(--color-text-secondary); margin-bottom: var(--space-2);
         }
         .auth-input-wrap { position: relative; }
+        .auth-input-wrap .input { padding-left: 42px; }
         .auth-input-icon {
           position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
           color: var(--color-text-muted); pointer-events: none;

@@ -16,6 +16,25 @@
   z-index: 0;
 }
 
+.bgVideo {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
+  filter: brightness(0.7) saturate(1.1) blur(2px);
+}
+
+.videoOverlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(6, 9, 15, 0.1) 0%, rgba(6, 9, 15, 0.6) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
 .bgOrb1, .bgOrb2, .bgOrb3 {
   position: fixed;
   border-radius: 50%;

@@ -65,6 +65,19 @@ const stats = [
 export default function LandingPage() {
   return (
     <div className={styles.landing}>
+      {/* Background Video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className={styles.bgVideo}
+        aria-hidden="true"
+      >
+        <source src="/elitebooks1.mp4" type="video/mp4" />
+      </video>
+      <div className={styles.videoOverlay} aria-hidden="true" />
+
       {/* Background Effects */}
       <div className={styles.bgMesh} aria-hidden="true" />
       <div className={styles.bgOrb1} aria-hidden="true" />
@@ -108,7 +121,7 @@ export default function LandingPage() {
           </h1>
           <p className={styles.heroSubtitle}>
             EliteBooks replaces your entire accounting stack with autonomous AI agents.
-            Invoicing, expenses, payroll, reporting — all automated, explained simply.
+            Invoicing, expenses, payroll, reporting, personal, and FinOps — all automated, explained simply.
           </p>
           <div className={styles.heroActions}>
             <Link href="/signup" className={`btn btn-primary btn-lg ${styles.heroCta}`} id="hero-signup-btn">

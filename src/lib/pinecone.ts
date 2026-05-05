@@ -3,20 +3,21 @@
  */
 
 export const PINECONE_CONFIG = {
-  apiKey: process.env.PINECONE_API_KEY || '',
+  apiKey: process.env.PINECONE_API_KEY || 'pcsk_6F7rXg_BzAT7hQFHuwKrnJKTBZVEmUatWf8neBQi8U53UaR3crctP187VEUgnsaMX3aaeo',
   indexName: 'elitebooks-financial',
+  host: 'https://elitebooks-nq97767.svc.aped-4627-b74a.pinecone.io',
 };
 
 /**
  * Generate embeddings via OpenAI
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  // In production:
-  // const response = await openai.embeddings.create({ model: 'text-embedding-3-small', input: text });
-  // return response.data[0].embedding;
-
-  console.log(`[Pinecone] Generating embedding for: "${text.slice(0, 50)}..."`);
-  return Array(1536).fill(0).map(() => Math.random() - 0.5);
+  const openai = (await import('./openai')).getOpenAIClient();
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text.replace(/\n/g, ' '),
+  });
+  return response.data[0].embedding;
 }
 
 /**
@@ -26,8 +27,24 @@ export async function upsertVectors(
   vectors: Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>,
   namespace: string
 ) {
-  console.log(`[Pinecone] Upserting ${vectors.length} vectors to namespace: ${namespace}`);
-  return { upsertedCount: vectors.length };
+  const response = await fetch(`${PINECONE_CONFIG.host}/vectors/upsert`, {
+    method: 'POST',
+    headers: {
+      'Api-Key': PINECONE_CONFIG.apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      vectors,
+      namespace,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Pinecone upsert failed: ${error}`);
+  }
+
+  return response.json();
 }
 
 /**
@@ -38,6 +55,24 @@ export async function querySimilar(
   namespace: string,
   topK = 5
 ) {
-  console.log(`[Pinecone] Querying ${topK} similar vectors from namespace: ${namespace}`);
-  return { matches: [] };
+  const response = await fetch(`${PINECONE_CONFIG.host}/query`, {
+    method: 'POST',
+    headers: {
+      'Api-Key': PINECONE_CONFIG.apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      vector: queryVector,
+      topK,
+      namespace,
+      includeMetadata: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Pinecone query failed: ${error}`);
+  }
+
+  return response.json();
 }

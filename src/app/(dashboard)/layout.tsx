@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Sparkles, Home, FileText, Receipt, Users, BarChart3, Package,
-  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck, Mail, Wallet
+  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck, Mail, Wallet, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AutonomousAgentWidget from '@/components/AutonomousAgentWidget';
@@ -53,6 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/expenses', label: 'Expenses', icon: Receipt },
     { href: '/dashboard/payroll', label: 'Payroll', icon: Users },
     { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
+    { href: '/dashboard/finops', label: 'FinOps', icon: TrendingUp },
     { href: '/dashboard/inventory', label: 'Inventory', icon: Package },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     { href: '/dashboard/personal', label: 'Personal', icon: Wallet },
@@ -98,11 +99,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             return (
               <Link
                 key={item.href}
-                href={isVerified ? item.href : '#'}
-                className={`dash-nav-item ${isActive ? 'active' : ''} ${!isVerified ? 'disabled' : ''}`}
-                onClick={() => isVerified && setMobileOpen(false)}
+                href={item.href}
+                className={`dash-nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => setMobileOpen(false)}
                 title={collapsed ? item.label : undefined}
-                style={!isVerified ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
               >
                 <item.icon size={20} />
                 {!collapsed && <span>{item.label}</span>}
@@ -157,86 +157,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Page Content */}
         <main className="dash-content">
-          {!isVerified ? (
-            <div className="verification-gate">
-              <div className="gate-content">
-                <div className="gate-icon">
-                  <Mail size={48} />
-                </div>
-                <h2>Verify your email</h2>
-                <p>
-                  To protect your financial data, EliteBooks requires email verification. 
-                  We&apos;ve sent a link to <strong>{user?.email}</strong>. 
-                  Please check your <strong>junk or spam folder</strong> if you don&apos;t see it in your inbox.
-                </p>
-                <div className="gate-actions">
-                  <button 
-                    onClick={handleResendVerification} 
-                    className="btn btn-primary"
-                    disabled={resending}
-                  >
-                    {resending ? 'Sending...' : 'Resend Verification Email'}
-                  </button>
-                  <button onClick={handleCheckVerification} className="btn btn-secondary">
-                    I&apos;ve verified my email
-                  </button>
-                </div>
-                {resendStatus && <p className="resend-status">{resendStatus}</p>}
-                <button onClick={signOut} className="gate-logout">
-                  Sign out and use another account
-                </button>
-              </div>
-              <style jsx>{`
-                .verification-gate {
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  min-height: 60vh;
-                  text-align: center;
-                }
-                .gate-content {
-                  max-width: 440px;
-                  background: var(--color-bg-secondary);
-                  padding: var(--space-10);
-                  border-radius: var(--radius-xl);
-                  border: 1px solid var(--color-border-secondary);
-                  box-shadow: var(--shadow-xl);
-                }
-                .gate-icon {
-                  width: 80px;
-                  height: 80px;
-                  background: var(--color-accent-subtle);
-                  color: var(--color-accent-primary);
-                  border-radius: var(--radius-full);
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  margin: 0 auto var(--space-6);
-                }
-                .gate-content h2 { font-size: var(--text-2xl); margin-bottom: var(--space-3); }
-                .gate-content p { color: var(--color-text-secondary); margin-bottom: var(--space-8); line-height: 1.6; }
-                .gate-actions { display: flex; flex-direction: column; gap: var(--space-3); }
-                .resend-status { 
-                  margin-top: var(--space-4); 
-                  font-size: var(--text-sm); 
-                  color: var(--color-accent-primary); 
-                  font-weight: var(--weight-medium);
-                }
-                .gate-logout {
-                  margin-top: var(--space-8);
-                  background: none;
-                  border: none;
-                  color: var(--color-text-tertiary);
-                  font-size: var(--text-sm);
-                  cursor: pointer;
-                  text-decoration: underline;
-                }
-                .gate-logout:hover { color: var(--color-text-primary); }
-              `}</style>
+          {!isVerified && (
+            <div className="verification-banner">
+              <Mail size={16} />
+              <span>Please verify your email address to secure your account.</span>
+              <button onClick={handleResendVerification} disabled={resending}>
+                {resending ? 'Sending...' : 'Resend Email'}
+              </button>
+              {resendStatus && <span className="resend-status">{resendStatus}</span>}
             </div>
-          ) : (
-            children
           )}
+          {children}
         </main>
       </div>
 
@@ -463,6 +394,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .dash-content {
           flex: 1;
           padding: var(--space-8) var(--space-6);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-6);
+        }
+
+        .verification-banner {
+          display: flex;
+          align-items: center;
+          gap: var(--space-4);
+          padding: var(--space-3) var(--space-4);
+          background: var(--color-warning-bg);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          border-radius: var(--radius-md);
+          color: var(--color-warning);
+          font-size: var(--text-sm);
+          font-weight: var(--weight-medium);
+        }
+
+        .verification-banner button {
+          background: var(--color-warning);
+          color: white;
+          border: none;
+          padding: 4px 12px;
+          border-radius: var(--radius-sm);
+          font-size: var(--text-xs);
+          font-weight: var(--weight-bold);
+          cursor: pointer;
+          margin-left: auto;
+        }
+
+        .verification-banner .resend-status {
+          font-size: var(--text-xs);
+          color: var(--color-positive);
         }
 
         /* Mobile Overlay */

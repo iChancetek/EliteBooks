@@ -237,6 +237,15 @@ export default function PersonalFinancePage() {
           <p>Track your lifestyle, subscriptions, and everyday spending</p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          <div className="glass-card" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginRight: 'var(--space-4)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '9px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', textTransform: 'uppercase' }}>AI Autonomy</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: 'bold' }}>SEMI-AUTONOMOUS</span>
+            </div>
+            <div style={{ width: '32px', height: '16px', background: 'var(--color-accent-primary)', borderRadius: '16px', position: 'relative', opacity: 0.8 }}>
+              <div style={{ position: 'absolute', right: '10px', top: '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%' }} />
+            </div>
+          </div>
           <div className="pf-period-toggle">
             {(['daily', 'weekly', 'monthly', 'yearly'] as ViewPeriod[]).map(p => (
               <button key={p} className={`btn btn-sm ${view === p ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setView(p)}>
