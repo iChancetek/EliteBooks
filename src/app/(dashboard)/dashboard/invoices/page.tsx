@@ -9,6 +9,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import type { Invoice } from '@/types/accounting';
 import { useAuth } from '@/hooks/useAuth';
 import { ALL_INVOICES, filterByDate, getMockInvoices } from '@/lib/mockData';
+import DateFilter from '@/components/DateFilter';
 
 // demoInvoices removed, using ALL_INVOICES from mockData
 
