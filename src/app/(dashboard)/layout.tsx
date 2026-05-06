@@ -458,6 +458,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .desktop-only { display: none; }
           .mobile-only { display: flex; }
           .dash-search-kbd { display: none; }
+          .dash-header { 
+            padding: 0 var(--space-4);
+            gap: var(--space-2);
+          }
+          .dash-menu-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border-secondary);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .dash-search { 
+            background: none; 
+            border: none;
+            padding: 0;
+            width: auto;
+            flex: 0;
+          }
+          .dash-search-input { display: none; }
+          .dash-search svg { color: var(--color-text-secondary); }
         }
       `}</style>
     </div>

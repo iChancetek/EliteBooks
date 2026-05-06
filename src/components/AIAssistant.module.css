@@ -1,8 +1,10 @@
 .assistantContainer {
   position: fixed;
   bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   right: 24px;
-  z-index: 1000;
+  right: calc(24px + env(safe-area-inset-right, 0px));
+  z-index: 10000; /* Extremely high to stay above everything */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -194,7 +196,20 @@
 
 @media (max-width: 480px) {
   .chatWindow {
-    width: calc(100vw - 48px);
-    height: 400px;
+    width: calc(100vw - 32px);
+    height: 60vh;
+    height: calc(60vh - env(safe-area-inset-bottom, 0px));
+    bottom: 0;
+  }
+  
+  .trigger {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .assistantContainer {
+    bottom: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
   }
 }
