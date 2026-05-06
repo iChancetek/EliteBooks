@@ -126,8 +126,7 @@ export default function LandingPage() {
             <span className="text-gradient">runs itself.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            EliteBooks replaces your entire accounting stack with autonomous AI agents.
-            Invoicing, expenses, payroll, reporting, personal, and FinOps — all automated, explained simply.
+            EliteBooks is an AI-powered financial operating system with autonomous agents handling invoicing, expenses, payroll, reporting, FinOps, and personal finances — all automated and clearly explained.
           </p>
           <div className={styles.heroActions}>
             <Link href="/signup" className={`btn btn-primary btn-lg ${styles.heroCta}`} id="hero-signup-btn">
@@ -265,7 +264,7 @@ export default function LandingPage() {
               </div>
               <span className={styles.logoText}>EliteBooks</span>
             </div>
-            <p>Accounting that runs itself, explained simply.</p>
+            <p>Accounting and wealth management that runs itself, explained simply.</p>
           </div>
           <div className={styles.footerCopy}>
             <div style={{ display: 'flex', gap: 'var(--space-6)', marginBottom: 'var(--space-4)', justifyContent: 'center' }}>

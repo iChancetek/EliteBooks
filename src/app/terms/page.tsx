@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 import styles from './page.module.css';
+import PageVoiceControl from '@/components/PageVoiceControl';
 
 export default function TermsPage() {
   return (
@@ -9,6 +10,8 @@ export default function TermsPage() {
       <div className={styles.bgMesh} aria-hidden="true" />
       <div className={styles.bgOrb1} aria-hidden="true" />
       
+      <PageVoiceControl contentId="terms-main-content" pageTitle="Terms of Service" />
+
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
@@ -23,7 +26,7 @@ export default function TermsPage() {
         </div>
       </nav>
 
-      <main className={styles.legalContent}>
+      <main className={styles.legalContent} id="terms-main-content">
         <div className={styles.legalHeader}>
           <h1>Terms of Service</h1>
           <p>Last updated: May 3, 2026</p>

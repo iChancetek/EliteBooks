@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 import styles from './page.module.css';
+import PageVoiceControl from '@/components/PageVoiceControl';
 
 export default function PrivacyPage() {
   return (
@@ -9,6 +10,8 @@ export default function PrivacyPage() {
       <div className={styles.bgMesh} aria-hidden="true" />
       <div className={styles.bgOrb1} aria-hidden="true" />
       
+      <PageVoiceControl contentId="privacy-main-content" pageTitle="Privacy Policy" />
+
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
@@ -23,7 +26,7 @@ export default function PrivacyPage() {
         </div>
       </nav>
 
-      <main className={styles.legalContent}>
+      <main className={styles.legalContent} id="privacy-main-content">
         <div className={styles.legalHeader}>
           <h1>Privacy Policy</h1>
           <p>Last updated: May 3, 2026</p>

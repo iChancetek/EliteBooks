@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, ArrowLeft, Mail, MessageSquare, LifeBuoy } from 'lucide-react';
 import styles from './page.module.css';
+import PageVoiceControl from '@/components/PageVoiceControl';
 
 export default function SupportPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -19,6 +20,8 @@ export default function SupportPage() {
       <div className={styles.bgMesh} aria-hidden="true" />
       <div className={styles.bgOrb1} aria-hidden="true" />
       
+      <PageVoiceControl contentId="support-main-content" pageTitle="Support & Help" />
+
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
@@ -33,7 +36,7 @@ export default function SupportPage() {
         </div>
       </nav>
 
-      <main className={styles.supportContent}>
+      <main className={styles.supportContent} id="support-main-content">
         <div className={styles.supportHeader}>
           <h1>How can we help?</h1>
           <p>Get in touch with our elite support team or browse our FAQs.</p>
