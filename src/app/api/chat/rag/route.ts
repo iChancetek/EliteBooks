@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
     ];
 
     // 4. Augment prompt with context and formatting rules
-    // 4. Augment prompt with context and formatting rules
     const systemPrompt = `You are the EliteBooks Agentic Assistant. EliteBooks is an AI-powered financial operating system with autonomous agents handling invoicing, expenses, payroll, reporting, FinOps, and personal finances — all automated and clearly explained.
 Your goal is to provide deep, professional, and actionable financial insights while managing the platform's autonomous capabilities.
 
