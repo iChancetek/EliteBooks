@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { 
   Brain, Zap, Shield, TrendingUp, FileText, DollarSign, 
   Users, BarChart3, ArrowRight, Sparkles, Bot, ChevronRight,
-  CreditCard, Receipt, PieChart, Clock
+  CreditCard, Receipt, PieChart, Clock, Wallet
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -42,6 +42,12 @@ const features = [
     title: 'Compliance & Tax',
     description: 'Automated tax obligation tracking, filing preparation, and audit-ready reports.',
     color: '#06b6d4',
+  },
+  {
+    icon: Wallet,
+    title: 'Personal Finance',
+    description: 'Track personal accounts and wealth alongside your business. A unified view of your entire financial life.',
+    color: '#6366f1',
   },
 ];
 
