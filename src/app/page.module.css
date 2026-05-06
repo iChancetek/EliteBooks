@@ -143,12 +143,15 @@
 
 .navLink {
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  transition: color var(--duration-fast) var(--ease-smooth);
+  color: #ffffff; /* Use white by default for maximum visibility */
+  font-weight: var(--weight-medium);
+  transition: all var(--duration-fast) var(--ease-smooth);
+  opacity: 0.85;
 }
 
 .navLink:hover {
-  color: var(--color-text-primary);
+  opacity: 1;
+  color: var(--color-accent-primary);
 }
 
 .navActions {
