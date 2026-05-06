@@ -183,12 +183,12 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-accent-subtle);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  color: var(--color-accent-primary);
+  font-weight: var(--weight-bold);
+  color: #93c5fd; /* Brighter blue for contrast */
   margin-bottom: var(--space-8);
 }
 
