@@ -240,3 +240,44 @@ export interface FinancialSummary {
   expenseChange: number;
   profitChange: number;
 }
+
+/* ─── Personal Finance AI Types ─── */
+
+export interface FinancialGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline?: string;
+  category: 'savings' | 'debt' | 'investment';
+  status: 'on_track' | 'at_risk' | 'completed';
+}
+
+export interface AutonomousAction {
+  id: string;
+  timestamp: string;
+  action: string;
+  reason: string;
+  amount?: number;
+  fromAccount?: string;
+  toAccount?: string;
+  status: 'executed' | 'pending_approval' | 'reverted';
+  impact: string;
+}
+
+export interface CashFlowPoint {
+  date: string;
+  balance: number;
+  isPredicted: boolean;
+  recurringBills: string[];
+}
+
+export interface PersonalSubscription {
+  id: string;
+  name: string;
+  amount: number;
+  frequency: string;
+  nextBillingDate: string;
+  status: 'active' | 'unused_risk' | 'cancelled';
+  category: string;
+}
