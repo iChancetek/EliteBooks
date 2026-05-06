@@ -336,8 +336,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           align-items: center;
           gap: var(--space-4);
           padding: 0 var(--space-6);
-          background: rgba(6, 9, 15, 0.8);
-          backdrop-filter: var(--glass-blur);
+          background: transparent;
+          backdrop-filter: none;
           border-bottom: none;
         }
 
