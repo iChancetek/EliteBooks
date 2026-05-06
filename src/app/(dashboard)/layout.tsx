@@ -338,7 +338,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           padding: 0 var(--space-6);
           background: rgba(6, 9, 15, 0.8);
           backdrop-filter: var(--glass-blur);
-          border-bottom: 1px solid var(--color-border-secondary);
+          border-bottom: none;
         }
 
         .dash-search {
