@@ -263,11 +263,11 @@ export default function LandingPage() {
           </div>
           <div className={styles.footerCopy}>
             <div style={{ display: 'flex', gap: 'var(--space-6)', marginBottom: 'var(--space-4)', justifyContent: 'center' }}>
-              <Link href="/terms" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Terms</Link>
-              <Link href="/privacy" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Privacy</Link>
-              <Link href="/support" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Support</Link>
+              <Link href="/terms" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Terms</Link>
+              <Link href="/privacy" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Privacy</Link>
+              <Link href="/support" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Support</Link>
             </div>
-            <p>&copy; {new Date().getFullYear()} EliteBooks. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} EliteBooks. All rights reserved. | ChanceTEK LLC</p>
           </div>
         </div>
       </footer>
