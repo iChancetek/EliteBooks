@@ -10,6 +10,7 @@ import type { Invoice } from '@/types/accounting';
 import { useAuth } from '@/hooks/useAuth';
 import { ALL_INVOICES, filterByDate, getMockInvoices } from '@/lib/mockData';
 import DateFilter from '@/components/DateFilter';
+import InvoiceEditor from '@/components/InvoiceEditor';
 
 // demoInvoices removed, using ALL_INVOICES from mockData
 
@@ -58,36 +59,15 @@ export default function InvoicesPage() {
 
   return (
     <div className="page-invoices">
-      {/* New Invoice Modal */}
+      {/* New Invoice Editor */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content glass-card animate-scale-in" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Create New Invoice</h2>
-              <button className="btn btn-icon btn-ghost" onClick={() => setIsModalOpen(false)}><Plus size={20} style={{ transform: 'rotate(45deg)' }} /></button>
-            </div>
-            <form onSubmit={handleCreateInvoice} className="modal-form">
-              <div className="form-group">
-                <label>Client Name</label>
-                <input type="text" className="input" placeholder="e.g. Acme Corp" value={newInvoice.clientName} onChange={e => setNewInvoice({...newInvoice, clientName: e.target.value})} required />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Amount</label>
-                  <input type="number" step="0.01" className="input" placeholder="0.00" value={newInvoice.amount} onChange={e => setNewInvoice({...newInvoice, amount: e.target.value})} required />
-                </div>
-                <div className="form-group">
-                  <label>Due Date</label>
-                  <input type="date" className="input" value={newInvoice.dueDate} onChange={e => setNewInvoice({...newInvoice, dueDate: e.target.value})} required />
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Create Invoice</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <InvoiceEditor 
+          onClose={() => setIsModalOpen(false)}
+          onSave={(invoice) => {
+            console.log('Saving invoice:', invoice);
+            setIsModalOpen(false);
+          }}
+        />
       )}
 
       <div className="page-header">
