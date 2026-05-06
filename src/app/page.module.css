@@ -390,9 +390,10 @@
 
 .sectionHeader p {
   font-size: var(--text-lg);
-  color: var(--color-text-secondary);
-  max-width: 560px;
+  color: var(--color-text-primary); /* Brighter color for visibility */
+  max-width: 640px;
   margin: 0 auto;
+  opacity: 0.9;
 }
 
 .featureGrid {
@@ -565,7 +566,9 @@
 
 .ctaContent p {
   font-size: var(--text-lg);
+  color: var(--color-text-primary);
   margin-bottom: var(--space-8);
+  opacity: 0.9;
 }
 
 /* ─── Footer ─── */
