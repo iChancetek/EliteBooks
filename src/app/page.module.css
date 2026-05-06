@@ -267,7 +267,7 @@
 
 .commandTitle {
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary); /* Brighter for readability */
   font-weight: var(--weight-medium);
 }
 
@@ -295,7 +295,7 @@
 
 .commandText {
   font-size: var(--text-base);
-  color: var(--color-text-muted);
+  color: #ffffff; /* Bright white for primary text */
   flex: 1;
 }
 
@@ -321,7 +321,7 @@
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   transition: all var(--duration-fast) var(--ease-smooth);
 }
 
@@ -360,7 +360,7 @@
 
 .responseText {
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  color: #ffffff; /* Maximum contrast for AI response */
   line-height: var(--leading-relaxed);
 }
 
