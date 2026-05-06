@@ -199,10 +199,12 @@
 
 .heroSubtitle {
   font-size: var(--text-lg);
-  color: var(--color-text-secondary);
+  color: #ffffff; /* Pure white for maximum contrast */
   line-height: var(--leading-relaxed);
-  max-width: 520px;
+  max-width: 560px;
   margin-bottom: var(--space-10);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow for legibility over video */
+  opacity: 0.95;
 }
 
 .heroActions {
