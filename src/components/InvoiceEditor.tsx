@@ -30,6 +30,7 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
   const [taxRate, setTaxRate] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [shipping, setShipping] = useState(0);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   // Customization State
   const [themeColor, setThemeColor] = useState('#3b82f6');
@@ -96,20 +97,26 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
     onSave(invoiceData);
   };
 
+  const handlePrint = () => {
+    setIsPreviewMode(true);
+    setTimeout(() => window.print(), 100);
+  };
+
   return (
     <div className={styles.editorOverlay} onClick={onClose}>
       <div className={styles.editorContainer} onClick={e => e.stopPropagation()}>
         <main className={styles.mainForm}>
           <div className={styles.editorHeader}>
-            <h2>{initialData ? 'Edit Invoice' : 'New Invoice'}</h2>
+            <h2>{isPreviewMode ? 'Preview Invoice' : (initialData ? 'Edit Invoice' : 'New Invoice')}</h2>
             <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
               <button className="btn btn-ghost" onClick={onClose}><X size={20} /></button>
             </div>
           </div>
 
           <div className={styles.formContent}>
-            {/* Header: Branding & Client */}
-            <div className={styles.topSection}>
+            {/* Editor View */}
+            <div style={{ display: isPreviewMode ? 'none' : 'block' }}>
+              <div className={styles.topSection}>
               <div className={styles.clientSection}>
                 <div className="form-group">
                   <label>Client</label>
@@ -305,6 +312,99 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                 </div>
               </div>
             </div>
+
+            {/* Preview View */}
+            <div style={{ display: isPreviewMode ? 'block' : 'none' }}>
+              <div className={styles.previewContainer}>
+                <div className={styles.previewHeader}>
+                  {showLogo && logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className={styles.previewLogo} />
+                  ) : (
+                    <div className={styles.previewLogoPlaceholder}><h2>{clientName ? 'ELITEBOOKS' : 'YOUR LOGO'}</h2></div>
+                  )}
+                  <div className={styles.previewTitle}>
+                    <h1 style={{ color: themeColor }}>INVOICE</h1>
+                    <p>#{invoiceNumber}</p>
+                  </div>
+                </div>
+                
+                <div className={styles.previewDetails}>
+                  <div className={styles.previewClient}>
+                    <h4>Billed To:</h4>
+                    <p className={styles.previewStrong}>{clientName || 'Client Name'}</p>
+                    <p>{clientEmail}</p>
+                  </div>
+                  <div className={styles.previewDates}>
+                    <div>
+                      <h4>Date Issued:</h4>
+                      <p>{issueDate}</p>
+                    </div>
+                    <div>
+                      <h4>Due Date:</h4>
+                      <p>{dueDate}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <table className={styles.previewTable}>
+                  <thead>
+                    <tr style={{ borderBottom: `2px solid ${themeColor}` }}>
+                      <th>Description</th>
+                      <th>Type</th>
+                      <th>Qty/Hrs</th>
+                      <th>Rate</th>
+                      <th style={{ textAlign: 'right' }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, i) => (
+                      <tr key={i}>
+                        <td>{item.description || 'Item Description'}</td>
+                        <td>{item.type === 'hours' ? 'Hours' : 'Qty'}</td>
+                        <td>{item.quantity}</td>
+                        <td>{formatCurrency(Number(item.unitPrice || 0))}</td>
+                        <td style={{ textAlign: 'right' }}>{formatCurrency(item.amount || 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className={styles.previewSummaryRow}>
+                  <div className={styles.previewNotes}>
+                    <h4>Notes & Terms</h4>
+                    <p>{notes || 'Thank you for your business.'}</p>
+                  </div>
+                  <div className={styles.previewTotals}>
+                    <div className={styles.previewTotalRow}>
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(subtotal)}</span>
+                    </div>
+                    {taxRate > 0 && (
+                      <div className={styles.previewTotalRow}>
+                        <span>Tax ({taxRate}%)</span>
+                        <span>{formatCurrency(taxAmount)}</span>
+                      </div>
+                    )}
+                    {discount > 0 && (
+                      <div className={styles.previewTotalRow}>
+                        <span>Discount</span>
+                        <span>-{formatCurrency(discount)}</span>
+                      </div>
+                    )}
+                    {shipping > 0 && (
+                      <div className={styles.previewTotalRow}>
+                        <span>Shipping</span>
+                        <span>{formatCurrency(shipping)}</span>
+                      </div>
+                    )}
+                    <div className={`${styles.previewTotalRow} ${styles.previewGrandTotal}`} style={{ backgroundColor: themeColor }}>
+                      <span>Total Due</span>
+                      <span>{formatCurrency(grandTotal)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </main>
 
@@ -357,11 +457,11 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
               <Send size={16} /> Save & Send
             </button>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-              <button className="btn btn-secondary" onClick={() => window.print()}>
+              <button className="btn btn-secondary" onClick={handlePrint}>
                 <Download size={14} /> PDF
               </button>
-              <button className="btn btn-secondary" onClick={() => window.print()}>
-                <Eye size={14} /> Preview
+              <button className="btn btn-secondary" onClick={() => setIsPreviewMode(!isPreviewMode)}>
+                <Eye size={14} /> {isPreviewMode ? 'Edit' : 'Preview'}
               </button>
             </div>
             <button className="btn btn-ghost" onClick={() => handleSave('draft')}>
