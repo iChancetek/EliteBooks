@@ -24,7 +24,7 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
   const [issueDate, setIssueDate] = useState(initialData?.issueDate || new Date().toISOString().split('T')[0]);
   const [dueDate, setDueDate] = useState(initialData?.dueDate || '');
   const [items, setItems] = useState<Partial<InvoiceItem>[]>(initialData?.items || [
-    { id: '1', description: '', quantity: 1, unitPrice: 0, amount: 0 }
+    { id: '1', description: '', type: 'qty', quantity: 1, unitPrice: 0, amount: 0 }
   ]);
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [taxRate, setTaxRate] = useState(0);
@@ -50,7 +50,7 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
   const grandTotal = subtotal + taxAmount + shipping - discount;
 
   const addItem = () => {
-    setItems([...items, { id: Math.random().toString(), description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
+    setItems([...items, { id: Math.random().toString(), description: '', type: 'qty', quantity: 1, unitPrice: 0, amount: 0 }]);
   };
 
   const removeItem = (id: string) => {
@@ -174,8 +174,9 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
               <table className={styles.itemsTable}>
                 <thead>
                   <tr>
-                    <th style={{ width: '50%' }}>Description</th>
-                    <th>Qty</th>
+                    <th style={{ width: '40%' }}>Description</th>
+                    <th style={{ width: '15%' }}>Type</th>
+                    <th>Qty/Hrs</th>
                     <th>Rate</th>
                     <th style={{ textAlign: 'right' }}>Amount</th>
                     <th style={{ width: '40px' }}></th>
@@ -191,6 +192,16 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                           value={item.description}
                           onChange={e => updateItem(item.id!, 'description', e.target.value)}
                         />
+                      </td>
+                      <td>
+                        <select
+                          className={styles.itemInput}
+                          value={item.type || 'qty'}
+                          onChange={e => updateItem(item.id!, 'type', e.target.value)}
+                        >
+                          <option value="qty">Qty</option>
+                          <option value="hours">Hours</option>
+                        </select>
                       </td>
                       <td>
                         <input 

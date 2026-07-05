@@ -62,6 +62,7 @@ export interface JournalEntry {
 export interface InvoiceItem {
   id: string;
   description: string;
+  type?: 'qty' | 'hours';
   quantity: number;
   unitPrice: number;
   amount: number;
