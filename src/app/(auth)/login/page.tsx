@@ -30,7 +30,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email.trim(), password);
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login Error:', err);
@@ -80,7 +80,7 @@ export default function LoginPage() {
     setError('');
     setResetMessage('');
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email.trim());
       setResetMessage('A password reset link has been sent to your email.');
     } catch (err: any) {
       console.error('Password Reset Error:', err);

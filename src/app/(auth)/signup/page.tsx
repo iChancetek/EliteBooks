@@ -41,7 +41,7 @@ export default function SignupPage() {
     }
 
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
       
       // Send verification email immediately
       await sendEmailVerification(cred.user);
