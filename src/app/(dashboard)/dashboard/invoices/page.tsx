@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   FileText, Plus, Search, Filter, Send, Eye, MoreHorizontal,
   DollarSign, Clock, CheckCircle2, AlertTriangle, ArrowUpRight
@@ -8,11 +8,8 @@ import {
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { Invoice } from '@/types/accounting';
 import { useAuth } from '@/hooks/useAuth';
-import { ALL_INVOICES, filterByDate, getMockInvoices } from '@/lib/mockData';
 import DateFilter from '@/components/DateFilter';
 import InvoiceEditor from '@/components/InvoiceEditor';
-
-// demoInvoices removed, using ALL_INVOICES from mockData
 
 const statusConfig: Record<string, { label: string; class: string; icon: React.ElementType }> = {
   draft: { label: 'Draft', class: 'badge-neutral', icon: FileText },
@@ -29,33 +26,60 @@ export default function InvoicesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newInvoice, setNewInvoice] = useState({ clientName: '', amount: '', dueDate: '' });
-  const [selectedMonth, setSelectedMonth] = useState('Apr');
+  const [selectedMonth, setSelectedMonth] = useState('Jun');
   const [selectedYear, setSelectedYear] = useState('2026');
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useState(() => {
-    // Note: We use useEffect for this usually, but a quick state init is fine if we check user
-  });
+  const fetchInvoices = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams();
+      if (selectedYear) params.set('year', selectedYear);
+      if (selectedMonth) params.set('month', selectedMonth);
 
-  const activeInvoices = filterByDate(getMockInvoices(user?.email), selectedYear, selectedMonth);
+      const res = await fetch(`/api/invoices?${params.toString()}`);
+      const data = await res.json();
+      if (data.success) {
+        setInvoices(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch invoices:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedYear, selectedMonth]);
 
-  const handleCreateInvoice = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Creating invoice:', newInvoice);
-    setIsModalOpen(false);
-    setNewInvoice({ clientName: '', amount: '', dueDate: '' });
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
+
+  const handleSaveInvoice = async (invoiceData: Partial<Invoice>) => {
+    try {
+      const res = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invoiceData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setInvoices(prev => [data.data, ...prev]);
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Failed to create invoice:', error);
+    }
   };
 
-  const filtered = activeInvoices.filter((inv) => {
-    const matchesSearch = inv.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inv.number.toLowerCase().includes(searchQuery.toLowerCase());
+  const filtered = invoices.filter((inv) => {
+    const matchesSearch = (inv.clientName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (inv.number || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || inv.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const totalOutstanding = activeInvoices.filter(i => i.status !== 'paid' && i.status !== 'void').reduce((s, i) => s + i.amountDue, 0);
-  const totalPaid = activeInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
+  const totalOutstanding = invoices.filter(i => i.status !== 'paid' && i.status !== 'void').reduce((s, i) => s + (i.amountDue || 0), 0);
+  const totalPaid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total || 0), 0);
 
   return (
     <div className="page-invoices">
@@ -63,10 +87,7 @@ export default function InvoicesPage() {
       {isModalOpen && (
         <InvoiceEditor 
           onClose={() => setIsModalOpen(false)}
-          onSave={(invoice) => {
-            console.log('Saving invoice:', invoice);
-            setIsModalOpen(false);
-          }}
+          onSave={handleSaveInvoice}
         />
       )}
 
@@ -106,7 +127,7 @@ export default function InvoicesPage() {
         <div className="glass-card inv-summary-card">
           <AlertTriangle size={18} style={{ color: '#f43f5e' }} />
           <div>
-            <span className="inv-summary-value value-financial value-negative">{formatCurrency(activeInvoices.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amountDue, 0))}</span>
+            <span className="inv-summary-value value-financial value-negative">{formatCurrency(invoices.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.amountDue || 0), 0))}</span>
             <span className="inv-summary-label">Overdue</span>
           </div>
         </div>
@@ -141,8 +162,12 @@ export default function InvoicesPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((inv) => {
-              const sc = statusConfig[inv.status];
+            {isLoading ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-tertiary)' }}>Loading invoices...</td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-tertiary)' }}>No invoices yet. Click &quot;Create Invoice&quot; to get started.</td></tr>
+            ) : filtered.map((inv) => {
+              const sc = statusConfig[inv.status] || statusConfig.draft;
               return (
                 <tr key={inv.id}>
                   <td><strong style={{ color: 'var(--color-text-primary)' }}>{inv.number}</strong></td>

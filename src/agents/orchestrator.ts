@@ -16,7 +16,7 @@ import {
 // ─── Orchestrator Agent ───
 export const orchestratorAgent = new Agent({
   name: 'EliteBooks Orchestrator',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Master Orchestrator for EliteBooks, an AI-native autonomous accounting platform.
 
 YOUR ROLE:

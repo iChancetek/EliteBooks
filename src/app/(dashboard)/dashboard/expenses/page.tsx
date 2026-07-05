@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Receipt, Plus, Search, Tag, DollarSign, TrendingDown,
   CreditCard, Coffee, Home, Car, Wifi, ShoppingBag, ArrowDownRight,
@@ -11,7 +11,6 @@ import {
 import { formatCurrency, formatDate } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
-import { ALL_EXPENSES, filterByDate, getMockExpenses } from '@/lib/mockData';
 
 const categories = [
   { name: 'Office & Supplies', icon: ShoppingBag, color: '#3b82f6', amount: 2840 },
@@ -28,8 +27,6 @@ const categories = [
   { name: 'Miscellaneous', icon: MoreHorizontal, color: '#64748b', amount: 210 },
 ];
 
-// demoExpenses removed, using ALL_EXPENSES from mockData
-
 export default function ExpensesPage() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
@@ -40,17 +37,36 @@ export default function ExpensesPage() {
   
   // Interactive States
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'info' | 'warning' } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const [selectedMonth, setSelectedMonth] = useState('Apr');
+  const [selectedMonth, setSelectedMonth] = useState('Jun');
   const [selectedYear, setSelectedYear] = useState('2026');
 
-  useEffect(() => {
-    setExpenses(getMockExpenses(user?.email));
-  }, [user]);
+  const fetchExpenses = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams();
+      if (selectedYear) params.set('year', selectedYear);
+      if (selectedMonth) params.set('month', selectedMonth);
+      const res = await fetch(`/api/expenses?${params.toString()}`);
+      const data = await res.json();
+      if (data.success) {
+        setExpenses(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch expenses:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedYear, selectedMonth]);
 
-  const activeExpenses = filterByDate(expenses, selectedYear, selectedMonth);
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
+
+  const activeExpenses = expenses;
 
   const activeCategories = categories.map(c => {
     const total = activeExpenses.filter(e => e.category === c.name).reduce((sum, e) => sum + e.amount, 0);
@@ -68,12 +84,17 @@ export default function ExpensesPage() {
     setSelectedExpense(null);
   };
 
-  const handleSoftDelete = () => {
-    console.log('SOFT DELETE CONFIRMED FOR:', deleteConfirm);
-    setExpenses(prev => prev.filter(e => e.id !== deleteConfirm));
-    setDeleteConfirm(null);
-    setSelectedExpense(null);
-    showToast('Expense soft deleted. You have 30 days to recover this item.', 'warning');
+  const handleSoftDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await fetch(`/api/expenses/${deleteConfirm}`, { method: 'DELETE' });
+      setExpenses(prev => prev.filter(e => e.id !== deleteConfirm));
+      setDeleteConfirm(null);
+      setSelectedExpense(null);
+      showToast('Expense soft deleted. You have 30 days to recover this item.', 'warning');
+    } catch (error) {
+      console.error('Failed to delete expense:', error);
+    }
   };
 
   // Set date on client only to prevent hydration mismatch
@@ -81,35 +102,34 @@ export default function ExpensesPage() {
     setNewExpense(prev => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
   }, []);
 
-  const totalExpenses = categories.reduce((s, c) => s + c.amount, 0);
+  const totalExpenses = activeExpenses.reduce((s, e) => s + (e.amount || 0), 0);
 
-  const handleAddExpense = (e: React.FormEvent) => {
+  const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalCategory = newExpense.category === 'Other' ? newExpense.customCategory : newExpense.category;
     
-    const dateObj = new Date(newExpense.date);
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    const newExp = {
-      id: Math.random().toString(),
-      date: newExpense.date,
-      vendor: newExpense.vendor,
-      amount: parseFloat(newExpense.amount),
-      category: finalCategory,
-      aiCategorized: false,
-      confidence: 1,
-      status: 'pending' as const,
-      description: 'Manually added expense',
-      recurrance: 'None',
-      weekId: 'Wk 1',
-      monthId: months[dateObj.getMonth()],
-      yearId: dateObj.getFullYear().toString()
-    };
-    
-    setExpenses(prev => [newExp, ...prev]);
-    setIsModalOpen(false);
-    setNewExpense({ vendor: '', amount: '', category: 'Office & Supplies', date: new Date().toISOString().split('T')[0], customCategory: '' });
-    showToast('Expense added successfully');
+    try {
+      const res = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: newExpense.date,
+          vendor: newExpense.vendor,
+          amount: parseFloat(newExpense.amount),
+          category: finalCategory,
+          description: 'Manually added expense',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExpenses(prev => [data.data, ...prev]);
+        setIsModalOpen(false);
+        setNewExpense({ vendor: '', amount: '', category: 'Office & Supplies', date: new Date().toISOString().split('T')[0], customCategory: '' });
+        showToast('Expense added successfully');
+      }
+    } catch (error) {
+      console.error('Failed to create expense:', error);
+    }
   };
 
   return (
@@ -184,7 +204,7 @@ export default function ExpensesPage() {
                 <div className="exp-ai-header">
                   <Bot size={18} />
                   <span>Agentic AI Insights</span>
-                  <div className="ai-badge">GPT-5.5</div>
+                  <div className="ai-badge">GPT-5.4 Mini</div>
                 </div>
                 <div className="exp-ai-body">
                   <div className="ai-insight">

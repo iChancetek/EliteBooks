@@ -79,6 +79,23 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
     }
   };
 
+  const handleSave = (status: Invoice['status']) => {
+    const invoiceData: Partial<Invoice> = {
+      clientName,
+      clientEmail,
+      number: invoiceNumber,
+      issueDate,
+      dueDate,
+      items: items as InvoiceItem[],
+      subtotal,
+      taxAmount,
+      total: grandTotal,
+      status,
+      notes,
+    };
+    onSave(invoiceData);
+  };
+
   return (
     <div className={styles.editorOverlay} onClick={onClose}>
       <div className={styles.editorContainer} onClick={e => e.stopPropagation()}>
@@ -325,18 +342,18 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
           </div>
 
           <div className={styles.actionsSection}>
-            <button className="btn btn-primary" style={{ background: themeColor, width: '100%' }}>
+            <button className="btn btn-primary" style={{ background: themeColor, width: '100%' }} onClick={() => handleSave('sent')}>
               <Send size={16} /> Save & Send
             </button>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-              <button className="btn btn-secondary">
+              <button className="btn btn-secondary" onClick={() => window.print()}>
                 <Download size={14} /> PDF
               </button>
-              <button className="btn btn-secondary">
+              <button className="btn btn-secondary" onClick={() => window.print()}>
                 <Eye size={14} /> Preview
               </button>
             </div>
-            <button className="btn btn-ghost" onClick={onClose}>
+            <button className="btn btn-ghost" onClick={() => handleSave('draft')}>
               <Save size={16} /> Save as Draft
             </button>
           </div>

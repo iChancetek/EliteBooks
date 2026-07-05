@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, Brush } from 'recharts';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
-import { ALL_EXPENSES, ALL_INVOICES, filterByDate, isMockUser } from '@/lib/mockData';
-
 const plData = [
   { category: 'Service Revenue', amount: 64200, type: 'revenue' },
   { category: 'Product Sales', amount: 18400, type: 'revenue' },
@@ -98,23 +96,115 @@ export default function ReportsPage() {
   const [chartView, setChartView] = useState<'monthly' | 'yearly'>('yearly');
   const [nlpQuery, setNlpQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState('Apr');
+  const [selectedMonth, setSelectedMonth] = useState('Jun');
   const [selectedYear, setSelectedYear] = useState('2026');
+  const [reportData, setReportData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const showMock = isMockUser(user?.email);
+  useEffect(() => {
+    async function fetchReport() {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/reports');
+        const data = await res.json();
+        if (data.success) {
+          setReportData(data.data);
+        }
+      } catch (e) {
+        console.error('Failed to fetch reports:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchReport();
+  }, []);
 
-  const activeExpenses = filterByDate(showMock ? ALL_EXPENSES : [], selectedYear, selectedMonth);
-  const activeInvoices = filterByDate(showMock ? ALL_INVOICES : [], selectedYear, selectedMonth);
+  const allExpenses = reportData?.expenses || [];
+  const allInvoices = reportData?.invoices || [];
 
-  const displayHistoricalMonthly = showMock ? historicalMonthlyData : [];
-  const displayHistoricalYearly = showMock ? historicalYearlyData : [];
+  // Filter based on selected date
+  const activeExpenses = allExpenses.filter((e: any) => {
+    // Expense date format: "YYYY-MM-DD"
+    const dateObj = new Date(e.date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const expenseMonth = months[dateObj.getMonth()];
+    const expenseYear = dateObj.getFullYear().toString();
 
-  const totalRevenue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  const totalExpenses = activeExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const matchYear = selectedYear === 'All Years' || expenseYear === selectedYear;
+    const matchMonth = selectedMonth === 'All Months' || expenseMonth === selectedMonth;
+    return matchYear && matchMonth;
+  });
+
+  const activeInvoices = allInvoices.filter((i: any) => {
+    const dateObj = new Date(i.dueDate || i.createdAt);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const invMonth = months[dateObj.getMonth()];
+    const invYear = dateObj.getFullYear().toString();
+
+    const matchYear = selectedYear === 'All Years' || invYear === selectedYear;
+    const matchMonth = selectedMonth === 'All Months' || invMonth === selectedMonth;
+    return matchYear && matchMonth;
+  });
+
+  // Calculate historical monthly & yearly data dynamically
+  const getHistoricalData = () => {
+    const monthlyMap: Record<string, { label: string, month: string, year: string, revenue: number, expenses: number }> = {};
+    const yearlyMap: Record<string, { year: string, revenue: number, expenses: number }> = {};
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    allInvoices.forEach((inv: any) => {
+      const dateObj = new Date(inv.dueDate || inv.createdAt);
+      const m = months[dateObj.getMonth()];
+      const y = dateObj.getFullYear().toString();
+      const label = `${m} ${y}`;
+
+      if (!monthlyMap[label]) {
+        monthlyMap[label] = { label, month: m, year: y, revenue: 0, expenses: 0 };
+      }
+      monthlyMap[label].revenue += inv.total || 0;
+
+      if (!yearlyMap[y]) {
+        yearlyMap[y] = { year: y, revenue: 0, expenses: 0 };
+      }
+      yearlyMap[y].revenue += inv.total || 0;
+    });
+
+    allExpenses.forEach((exp: any) => {
+      if (exp.status === 'deleted') return;
+      const dateObj = new Date(exp.date);
+      const m = months[dateObj.getMonth()];
+      const y = dateObj.getFullYear().toString();
+      const label = `${m} ${y}`;
+
+      if (!monthlyMap[label]) {
+        monthlyMap[label] = { label, month: m, year: y, revenue: 0, expenses: 0 };
+      }
+      monthlyMap[label].expenses += exp.amount || 0;
+
+      if (!yearlyMap[y]) {
+        yearlyMap[y] = { year: y, revenue: 0, expenses: 0 };
+      }
+      yearlyMap[y].expenses += exp.amount || 0;
+    });
+
+    return {
+      monthly: Object.values(monthlyMap).sort((a, b) => {
+        const ad = new Date(`${a.month} 1, ${a.year}`);
+        const bd = new Date(`${b.month} 1, ${b.year}`);
+        return ad.getTime() - bd.getTime();
+      }),
+      yearly: Object.values(yearlyMap).sort((a, b) => parseInt(a.year) - parseInt(b.year))
+    };
+  };
+
+  const { monthly: displayHistoricalMonthly, yearly: displayHistoricalYearly } = getHistoricalData();
+
+  const totalRevenue = activeInvoices.reduce((sum: number, inv: any) => sum + (inv.total || 0), 0);
+  const totalExpenses = activeExpenses.reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
   
   // Create active PlData for rendering from the categories
-  const expenseCategories = activeExpenses.reduce((acc, exp) => {
+  const expenseCategories = activeExpenses.reduce((acc: Record<string, number>, exp: any) => {
     acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
     return acc;
   }, {} as Record<string, number>);
@@ -130,7 +220,7 @@ export default function ReportsPage() {
   ];
 
   // Derive balance sheet relative to revenue growth
-  const assetMultiplier = selectedYear === 'All Years' ? 1 : Math.pow(1.1, parseInt(selectedYear) - 2016);
+  const assetMultiplier = selectedYear === 'All Years' ? 1 : Math.max(0.1, Math.pow(1.1, parseInt(selectedYear) - 2025));
   const activeBalanceSheet = {
     assets: balanceSheet.assets.map(a => ({ ...a, amount: a.amount * assetMultiplier })),
     liabilities: balanceSheet.liabilities.map(l => ({ ...l, amount: l.amount * assetMultiplier }))

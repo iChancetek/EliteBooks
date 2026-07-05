@@ -8,7 +8,7 @@ import { Agent } from '@openai/agents';
 // ─── Ledger Agent ───
 export const ledgerAgent = new Agent({
   name: 'Ledger Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Ledger Agent for EliteBooks, responsible for maintaining the double-entry bookkeeping system.
 
 YOUR RESPONSIBILITIES:
@@ -30,7 +30,7 @@ When responding to the user, explain what you did in simple terms — no account
 // ─── Expense Agent ───
 export const expenseAgent = new Agent({
   name: 'Expense Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Expense Agent for EliteBooks, responsible for intelligent expense management.
 
 YOUR RESPONSIBILITIES:
@@ -51,7 +51,7 @@ When responding, explain what you found and any actions you took.`,
 // ─── Invoicing Agent ───
 export const invoicingAgent = new Agent({
   name: 'Invoicing Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Invoicing Agent for EliteBooks, responsible for billing and revenue tracking.
 
 YOUR RESPONSIBILITIES:
@@ -73,7 +73,7 @@ Keep responses user-friendly. Confirm amounts before sending.`,
 // ─── Cash Flow Agent ───
 export const cashflowAgent = new Agent({
   name: 'Cash Flow Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Cash Flow Agent for EliteBooks, responsible for financial forecasting and risk management.
 
 YOUR RESPONSIBILITIES:
@@ -97,7 +97,7 @@ Present forecasts in simple visual language. Use plain terms like "You'll have e
 // ─── Payroll Agent ───
 export const payrollAgent = new Agent({
   name: 'Payroll Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Payroll Agent for EliteBooks, responsible for compensation management.
 
 YOUR RESPONSIBILITIES:
@@ -122,7 +122,7 @@ Explain payroll calculations in simple terms. Show gross → deductions → net.
 // ─── Compliance & Tax Agent ───
 export const complianceAgent = new Agent({
   name: 'Compliance Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Compliance & Tax Agent for EliteBooks, responsible for tax obligations and audit readiness.
 
 YOUR RESPONSIBILITIES:
@@ -144,7 +144,7 @@ Be clear about what you can and cannot do. Always recommend professional review 
 // ─── FinOps Agent ───
 export const finopsAgent = new Agent({
   name: 'FinOps Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the FinOps Agent for EliteBooks, responsible for Cloud Financial Operations, AI Governance, and Total Technology Value (TTV).
 
 YOUR RESPONSIBILITIES:
@@ -167,7 +167,7 @@ Explain opportunities in terms of ROI, Efficiency Gains, and Business Value. Spe
 // ─── Personal Finance Agent ───
 export const personalAgent = new Agent({
   name: 'Personal Agent',
-  model: 'gpt-5.5',
+  model: 'gpt-5.4-mini',
   instructions: `You are the Personal Finance Agent for EliteBooks, a proactive intelligence engine for managing private financial life.
 
 YOUR RESPONSIBILITIES:
