@@ -3,30 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Bot, CheckCircle2, X, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-
-const agentWorkflows = [
-  {
-    id: 1,
-    message: "I detected an unusually high AWS bill this month. Would you like me to run an anomaly report?",
-    type: "warning"
-  },
-  {
-    id: 2,
-    message: "You have 3 invoices overdue by 15 days. Shall I draft and send polite reminder emails?",
-    type: "info"
-  },
-  {
-    id: 3,
-    message: "Payroll is due in 3 days, but Contractor W-9s are missing. Shall I email them the forms?",
-    type: "warning"
-  }
-];
-
-const newAccountWorkflow = {
-  id: 4,
-  message: "Welcome to EliteBooks! I am your Autonomous Agent. Shall I guide you through setting up your first invoice?",
-  type: "info"
-};
+import { formatCurrency } from '@/lib/utils';
 
 export default function AutonomousAgentWidget() {
   const { user } = useAuth();
@@ -48,18 +25,52 @@ export default function AutonomousAgentWidget() {
         
         let selectedWorkflow = null;
         if (json.success && json.data) {
-          // Context-aware checking
-          if (json.data.invoiceCount === 0 && json.data.expenseCount === 0) {
-            selectedWorkflow = newAccountWorkflow;
+          const { invoices = [], expenses = [] } = json.data;
+
+          // 1. Check for actual overdue invoices
+          const overdueInvoices = invoices.filter((inv: any) => {
+            const isOverdueStatus = inv.status === 'overdue';
+            const isPastDue = inv.dueDate && new Date(inv.dueDate) < new Date() && inv.status !== 'paid';
+            return isOverdueStatus || isPastDue;
+          });
+
+          // 2. Check for high cloud expenses
+          const highCloudExpenses = expenses.filter((exp: any) => 
+            ['aws', 'amazon', 'cloud', 'hosting', 'google cloud', 'gcp', 'azure'].some(v => exp.vendor?.toLowerCase().includes(v)) && 
+            exp.amount > 500
+          );
+
+          if (overdueInvoices.length > 0) {
+            selectedWorkflow = {
+              id: 2,
+              message: `You have ${overdueInvoices.length} invoice${overdueInvoices.length > 1 ? 's' : ''} overdue. Shall I draft and send polite reminder emails?`,
+              type: "warning"
+            };
+          } else if (highCloudExpenses.length > 0) {
+            selectedWorkflow = {
+              id: 1,
+              message: `I detected a high AWS/Cloud bill of ${formatCurrency(highCloudExpenses[0].amount)} this month. Would you like me to run an anomaly report?`,
+              type: "warning"
+            };
+          } else if (invoices.length === 0 && expenses.length === 0) {
+            selectedWorkflow = {
+              id: 4,
+              message: "Welcome to EliteBooks! I am your Autonomous Agent. Shall I guide you through setting up your first invoice?",
+              type: "info"
+            };
           } else {
-            selectedWorkflow = agentWorkflows[Math.floor(Math.random() * agentWorkflows.length)];
+            selectedWorkflow = {
+              id: 5,
+              message: `All systems normal. You have ${invoices.length} active invoices and ${expenses.length} logged expenses. No urgent actions needed.`,
+              type: "info"
+            };
           }
-        } else {
-          selectedWorkflow = agentWorkflows[Math.floor(Math.random() * agentWorkflows.length)];
         }
         
-        setActiveWorkflow(selectedWorkflow);
-        setIsVisible(true);
+        if (selectedWorkflow) {
+          setActiveWorkflow(selectedWorkflow);
+          setIsVisible(true);
+        }
       } catch (err) {
         console.error('Failed to fetch widget context:', err);
       }
