@@ -4,8 +4,10 @@ import { Package, Plus, Search, AlertTriangle, Box, DollarSign } from 'lucide-re
 import { formatCurrency } from '@/lib/utils';
 import { useState, useEffect, useCallback } from 'react';
 import DateFilter from '@/components/DateFilter';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function InventoryPage() {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('Jun');
   const [selectedYear, setSelectedYear] = useState('2026');
@@ -23,9 +25,13 @@ export default function InventoryPage() {
   });
 
   const fetchProducts = useCallback(async () => {
+    if (!user) return;
     try {
       setIsLoading(true);
-      const res = await fetch('/api/inventory');
+      const token = await user.getIdToken();
+      const res = await fetch('/api/inventory', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (data.success) {
         setProducts(data.data);
@@ -35,7 +41,7 @@ export default function InventoryPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchProducts();
@@ -43,10 +49,15 @@ export default function InventoryPage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/inventory', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({
           name: newProduct.name,
           sku: newProduct.sku,

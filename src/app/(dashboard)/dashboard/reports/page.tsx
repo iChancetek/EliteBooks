@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, Brush } from 'recharts';
 import { formatCurrency, formatPercent } from '@/lib/utils';
@@ -18,23 +18,28 @@ export default function ReportsPage() {
   const [reportData, setReportData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchReport() {
-      try {
-        setIsLoading(true);
-        const res = await fetch('/api/reports');
-        const data = await res.json();
-        if (data.success) {
-          setReportData(data.data);
-        }
-      } catch (e) {
-        console.error('Failed to fetch reports:', e);
-      } finally {
-        setIsLoading(false);
+  const fetchReport = useCallback(async () => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const token = await user.getIdToken();
+      const res = await fetch('/api/reports', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReportData(data.data);
       }
+    } catch (e) {
+      console.error('Failed to fetch reports:', e);
+    } finally {
+      setIsLoading(false);
     }
+  }, [user]);
+
+  useEffect(() => {
     fetchReport();
-  }, []);
+  }, [fetchReport]);
 
   const allExpenses = reportData?.expenses || [];
   const allInvoices = reportData?.invoices || [];

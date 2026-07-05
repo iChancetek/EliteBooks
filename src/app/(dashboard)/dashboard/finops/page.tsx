@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, Cloud, Zap, Target, ArrowUpRight, ArrowDownRight, Info, Cpu, Database, Activity, Calendar, Plus } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function FinOpsPage() {
+  const { user } = useAuth();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,8 +21,12 @@ export default function FinOpsPage() {
   });
 
   const fetchExpenses = useCallback(async () => {
+    if (!user) return;
     try {
-      const res = await fetch('/api/expenses');
+      const token = await user.getIdToken();
+      const res = await fetch('/api/expenses', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (data.success) {
         setExpenses(data.data);
@@ -30,7 +36,7 @@ export default function FinOpsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchExpenses();
@@ -45,10 +51,15 @@ export default function FinOpsPage() {
 
   const handleAddCloudCost = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/expenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({
           date: newCloudCost.date,
           vendor: newCloudCost.provider,
@@ -75,6 +86,8 @@ export default function FinOpsPage() {
           notes: ''
         });
         fetchExpenses();
+      } else {
+        console.error('FinOps save failed:', data.error);
       }
     } catch (error) {
       console.error('Failed to log cloud cost:', error);

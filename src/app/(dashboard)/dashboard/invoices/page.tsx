@@ -32,13 +32,17 @@ export default function InvoicesPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchInvoices = useCallback(async () => {
+    if (!user) return;
     try {
       setIsLoading(true);
+      const token = await user.getIdToken();
       const params = new URLSearchParams();
       if (selectedYear) params.set('year', selectedYear);
       if (selectedMonth) params.set('month', selectedMonth);
 
-      const res = await fetch(`/api/invoices?${params.toString()}`);
+      const res = await fetch(`/api/invoices?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (data.success) {
         setInvoices(data.data);
@@ -48,23 +52,30 @@ export default function InvoicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedYear, selectedMonth]);
+  }, [user, selectedYear, selectedMonth]);
 
   useEffect(() => {
     fetchInvoices();
   }, [fetchInvoices]);
 
   const handleSaveInvoice = async (invoiceData: Partial<Invoice>) => {
+    if (!user) return;
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/invoices', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(invoiceData),
       });
       const data = await res.json();
       if (data.success) {
         setInvoices(prev => [data.data, ...prev]);
         setIsModalOpen(false);
+      } else {
+        console.error('Invoice save failed:', data.error);
       }
     } catch (error) {
       console.error('Failed to create invoice:', error);

@@ -9,6 +9,8 @@ import {
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { useAgent } from '@/hooks/useAgent';
 import { useVoice } from '@/hooks/useVoice';
+import { useAuth } from '@/hooks/useAuth';
+import { useCallback } from 'react';
 
 const quickActions = [
   { label: 'Track my money', icon: DollarSign, color: '#10b981' },
@@ -20,6 +22,7 @@ const quickActions = [
 ];
 
 export default function DashboardHome() {
+  const { user } = useAuth();
   const [command, setCommand] = useState('');
   const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
@@ -31,63 +34,65 @@ export default function DashboardHome() {
   });
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
-  useEffect(() => {
-    async function loadDashboardData() {
-      try {
-        const res = await fetch('/api/reports');
-        const data = await res.json();
-        if (data.success) {
-          const s = data.data;
-          
-          setSnapshot({
-            revenue: { value: s.totalRevenue || 0, change: s.totalRevenue > 0 ? 12.3 : 0 },
-            expenses: { value: s.totalExpenses || 0, change: s.totalExpenses > 0 ? -3.8 : 0 },
-            profit: { value: s.netProfit || 0, change: s.netProfit > 0 ? 28.1 : 0 },
-            cashFlow: { value: (s.totalPaid || 0) - (s.totalExpenses || 0) + 120000, change: 5.2 }, // Base cash of 120k + transactions
+  const loadDashboardData = useCallback(async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/reports', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        const s = data.data;
+        
+        setSnapshot({
+          revenue: { value: s.totalRevenue || 0, change: s.totalRevenue > 0 ? 12.3 : 0 },
+          expenses: { value: s.totalExpenses || 0, change: s.totalExpenses > 0 ? -3.8 : 0 },
+          profit: { value: s.netProfit || 0, change: s.netProfit > 0 ? 28.1 : 0 },
+          cashFlow: { value: (s.totalPaid || 0) - (s.totalExpenses || 0) + 120000, change: 5.2 }, // Base cash of 120k + transactions
+        });
+
+        // Build dynamic recent activity
+        const activities: any[] = [];
+        const invoices = s.invoices || [];
+        const expenses = s.expenses || [];
+
+        invoices.slice(0, 3).forEach((inv: any) => {
+          activities.push({
+            id: `inv-${inv.id}`,
+            agent: 'Invoice Agent',
+            action: `Sent invoice ${inv.number || ''} to ${inv.clientName || 'Client'}`,
+            amount: inv.total,
+            type: 'positive',
+            time: 'Recently',
+            icon: FileText,
+            date: inv.createdAt || inv.dueDate
           });
-
-          // Build dynamic recent activity
-          const activities: any[] = [];
-          const invoices = s.invoices || [];
-          const expenses = s.expenses || [];
-
-          invoices.slice(0, 3).forEach((inv: any) => {
-            activities.push({
-              id: `inv-${inv.id}`,
-              agent: 'Invoice Agent',
-              action: `Sent invoice ${inv.number || ''} to ${inv.clientName || 'Client'}`,
-              amount: inv.total,
-              type: 'positive',
-              time: 'Recently',
-              icon: FileText,
-              date: inv.createdAt || inv.dueDate
-            });
+        });
+        
+        expenses.slice(0, 3).forEach((exp: any) => {
+          activities.push({
+            id: `exp-${exp.id}`,
+            agent: 'Expense Agent',
+            action: `Logged expense for ${exp.vendor || 'Vendor'} (${exp.category})`,
+            amount: exp.amount,
+            type: 'negative',
+            time: 'Recently',
+            icon: Receipt,
+            date: exp.date
           });
+        });
 
-          expenses.slice(0, 3).forEach((exp: any) => {
-            if (exp.status === 'deleted') return;
-            activities.push({
-              id: `exp-${exp.id}`,
-              agent: 'Expense Agent',
-              action: `Categorized transaction from ${exp.vendor}`,
-              amount: -exp.amount,
-              type: 'negative',
-              time: 'Recently',
-              icon: Receipt,
-              date: exp.createdAt || exp.date
-            });
-          });
-
-          // Sort by date descending
-          activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setRecentActivity(activities.slice(0, 5));
-        }
-      } catch (e) {
-        console.error('Failed to load dashboard data:', e);
+        setRecentActivity(activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       }
+    } catch (e) {
+      console.error(e);
     }
+  }, [user]);
+
+  useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [loadDashboardData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

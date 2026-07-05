@@ -25,17 +25,23 @@ export default function PayrollPage() {
   });
 
   const fetchData = useCallback(async () => {
+    if (!user) return;
     try {
       setIsLoading(true);
+      const token = await user.getIdToken();
       // Fetch employees
-      const empRes = await fetch('/api/payroll');
+      const empRes = await fetch('/api/payroll', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const empData = await empRes.json();
       if (empData.success) {
         setEmployees(empData.data);
       }
 
       // Fetch paystubs
-      const stubRes = await fetch(`/api/payroll?type=paystubs&year=${selectedYear}&month=${selectedMonth}`);
+      const stubRes = await fetch(`/api/payroll?type=paystubs&year=${selectedYear}&month=${selectedMonth}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const stubData = await stubRes.json();
       if (stubData.success) {
         setPaystubs(stubData.data);
@@ -45,18 +51,23 @@ export default function PayrollPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedYear, selectedMonth]);
+  }, [user, selectedYear, selectedMonth]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleRunPayroll = async () => {
+    if (!user) return;
     try {
       setIsLoading(true);
+      const token = await user.getIdToken();
       const res = await fetch('/api/payroll', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({ action: 'run_payroll' }),
       });
       const data = await res.json();
@@ -76,10 +87,15 @@ export default function PayrollPage() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/payroll', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...newEmployee,
           salary: parseFloat(newEmployee.salary),

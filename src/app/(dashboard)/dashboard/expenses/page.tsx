@@ -58,12 +58,16 @@ export default function ExpensesPage() {
   const [selectedYear, setSelectedYear] = useState('2026');
 
   const fetchExpenses = useCallback(async () => {
+    if (!user) return;
     try {
       setIsLoading(true);
+      const token = await user.getIdToken();
       const params = new URLSearchParams();
       if (selectedYear) params.set('year', selectedYear);
       if (selectedMonth) params.set('month', selectedMonth);
-      const res = await fetch(`/api/expenses?${params.toString()}`);
+      const res = await fetch(`/api/expenses?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (data.success) {
         setExpenses(data.data);
@@ -73,7 +77,7 @@ export default function ExpensesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedYear, selectedMonth]);
+  }, [user, selectedYear, selectedMonth]);
 
   useEffect(() => {
     fetchExpenses();
@@ -98,9 +102,13 @@ export default function ExpensesPage() {
   };
 
   const handleSoftDelete = async () => {
-    if (!deleteConfirm) return;
+    if (!deleteConfirm || !user) return;
     try {
-      await fetch(`/api/expenses/${deleteConfirm}`, { method: 'DELETE' });
+      const token = await user.getIdToken();
+      await fetch(`/api/expenses/${deleteConfirm}`, { 
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setExpenses(prev => prev.filter(e => e.id !== deleteConfirm));
       setDeleteConfirm(null);
       setSelectedExpense(null);
@@ -122,12 +130,17 @@ export default function ExpensesPage() {
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     const finalCategory = newExpense.category === 'Other' ? newExpense.customCategory : newExpense.category;
     
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/expenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({
           date: newExpense.date,
           vendor: newExpense.vendor,
@@ -161,6 +174,8 @@ export default function ExpensesPage() {
           receiptUrl: ''
         });
         showToast('Expense added successfully');
+      } else {
+        console.error('Expense save failed:', data.error);
       }
     } catch (error) {
       console.error('Failed to create expense:', error);
