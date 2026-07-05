@@ -1,29 +1,85 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, Cloud, Zap, Target, ArrowUpRight, ArrowDownRight, Info, Cpu, Database, Activity, Calendar } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TrendingUp, Cloud, Zap, Target, ArrowUpRight, ArrowDownRight, Info, Cpu, Database, Activity, Calendar, Plus } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 export default function FinOpsPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCloudCost, setNewCloudCost] = useState({
+    provider: 'AWS',
+    amount: '',
+    date: '',
+    resourceType: 'Compute/GPU',
+    usageMetric: '',
+    unitCost: '',
+    notes: ''
+  });
+
+  const fetchExpenses = useCallback(async () => {
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json();
+      if (data.success) {
+        setExpenses(data.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchExpenses() {
-      try {
-        const res = await fetch('/api/expenses');
-        const data = await res.json();
-        if (data.success) {
-          setExpenses(data.data);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     fetchExpenses();
+  }, [fetchExpenses]);
+
+  useEffect(() => {
+    setNewCloudCost(prev => ({ 
+      ...prev, 
+      date: new Date().toISOString().split('T')[0] 
+    }));
   }, []);
+
+  const handleAddCloudCost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: newCloudCost.date,
+          vendor: newCloudCost.provider,
+          amount: parseFloat(newCloudCost.amount),
+          category: 'Software & SaaS',
+          description: `FinOps: ${newCloudCost.resourceType} - ${newCloudCost.notes || 'No description'}`,
+          paymentMethod: 'Credit Card',
+          resourceType: newCloudCost.resourceType,
+          usageMetric: newCloudCost.usageMetric,
+          unitCost: parseFloat(newCloudCost.unitCost || '0'),
+          isFinOps: true
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsModalOpen(false);
+        setNewCloudCost({
+          provider: 'AWS',
+          amount: '',
+          date: new Date().toISOString().split('T')[0],
+          resourceType: 'Compute/GPU',
+          usageMetric: '',
+          unitCost: '',
+          notes: ''
+        });
+        fetchExpenses();
+      }
+    } catch (error) {
+      console.error('Failed to log cloud cost:', error);
+    }
+  };
 
   // Filter Software & SaaS and Cloud expenses
   const cloudExpenses = expenses.filter(e => 
@@ -98,13 +154,18 @@ export default function FinOpsPage() {
           <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Cloud & AI FinOps</h1>
           <p style={{ color: 'var(--color-text-secondary)' }}>Cloud, AI infrastructure, and FinOps — all automated and clearly explained.</p>
         </div>
-        <div className="glass-card" style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--color-positive-bg)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', textTransform: 'uppercase' }}>Agentic Workflow</span>
-            <span style={{ fontSize: '13px', color: 'var(--color-positive)', fontWeight: 'bold' }}>AUTO-OPTIMIZE ON</span>
-          </div>
-          <div style={{ width: '40px', height: '20px', background: 'var(--color-positive)', borderRadius: '20px', position: 'relative', cursor: 'pointer' }}>
-            <div style={{ position: 'absolute', right: '2px', top: '2px', width: '16px', height: '16px', background: 'white', borderRadius: '50%' }} />
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={16} /> Log Cloud Cost
+          </button>
+          <div className="glass-card" style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--color-positive-bg)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', textTransform: 'uppercase' }}>Agentic Workflow</span>
+              <span style={{ fontSize: '13px', color: 'var(--color-positive)', fontWeight: 'bold' }}>AUTO-OPTIMIZE ON</span>
+            </div>
+            <div style={{ width: '40px', height: '20px', background: 'var(--color-positive)', borderRadius: '20px', position: 'relative', cursor: 'pointer' }}>
+              <div style={{ position: 'absolute', right: '2px', top: '2px', width: '16px', height: '16px', background: 'white', borderRadius: '50%' }} />
+            </div>
           </div>
         </div>
       </header>
@@ -208,6 +269,121 @@ export default function FinOpsPage() {
           </div>
         </div>
       </div>
+
+      {/* Log Cloud Cost Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-content glass-card animate-scale-in" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Log Cloud / SaaS Expense</h2>
+              <button className="btn btn-icon btn-ghost" onClick={() => setIsModalOpen(false)}>
+                <Plus size={20} style={{ transform: 'rotate(45deg)' }} />
+              </button>
+            </div>
+            <form onSubmit={handleAddCloudCost} className="modal-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Cloud Provider / Vendor</label>
+                  <select 
+                    className="input" 
+                    value={newCloudCost.provider} 
+                    onChange={e => setNewCloudCost({...newCloudCost, provider: e.target.value})}
+                  >
+                    <option value="AWS">AWS (Amazon Web Services)</option>
+                    <option value="Google Cloud">Google Cloud (GCP)</option>
+                    <option value="Azure">Microsoft Azure</option>
+                    <option value="OpenAI">OpenAI API</option>
+                    <option value="Vercel">Vercel</option>
+                    <option value="Datadog">Datadog</option>
+                    <option value="Pinecone">Pinecone</option>
+                    <option value="SaaS License">Other SaaS Provider</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Resource / Cost Type</label>
+                  <select 
+                    className="input" 
+                    value={newCloudCost.resourceType} 
+                    onChange={e => setNewCloudCost({...newCloudCost, resourceType: e.target.value})}
+                  >
+                    <option value="Compute/GPU">Compute / GPU Instances</option>
+                    <option value="Database">Database / Cache</option>
+                    <option value="Storage">Cloud Storage / S3</option>
+                    <option value="API/LLM">AI API / LLM Tokens</option>
+                    <option value="Network">Networking / CDN</option>
+                    <option value="License Seat">Software Subscription / Seat</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Amount</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    className="input" 
+                    placeholder="0.00" 
+                    value={newCloudCost.amount} 
+                    onChange={e => setNewCloudCost({...newCloudCost, amount: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Billing Date</label>
+                  <input 
+                    type="date" 
+                    className="input" 
+                    value={newCloudCost.date} 
+                    onChange={e => setNewCloudCost({...newCloudCost, date: e.target.value})} 
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Usage Metric (e.g. 50M tokens, 730 hrs)</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    placeholder="e.g. 100M tokens or 5 instances" 
+                    value={newCloudCost.usageMetric} 
+                    onChange={e => setNewCloudCost({...newCloudCost, usageMetric: e.target.value})} 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Unit Cost ($)</label>
+                  <input 
+                    type="number" 
+                    step="0.0001" 
+                    className="input" 
+                    placeholder="0.00" 
+                    value={newCloudCost.unitCost} 
+                    onChange={e => setNewCloudCost({...newCloudCost, unitCost: e.target.value})} 
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Description / Notes</label>
+                <textarea 
+                  className="input" 
+                  rows={2} 
+                  placeholder="e.g. Production Cluster usage, GPT-4o fine-tuning run" 
+                  value={newCloudCost.notes} 
+                  onChange={e => setNewCloudCost({...newCloudCost, notes: e.target.value})} 
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Log Cost</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

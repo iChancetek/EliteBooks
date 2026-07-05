@@ -83,6 +83,9 @@ export interface Invoice {
   clientName: string;
   clientEmail: string;
   clientAddress?: string;
+  shippingAddress?: string;
+  poNumber?: string;
+  paymentTerms?: string;
   items: InvoiceItem[];
   subtotal: number;
   taxAmount: number;

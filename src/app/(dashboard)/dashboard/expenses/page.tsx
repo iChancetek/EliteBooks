@@ -33,7 +33,20 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
-  const [newExpense, setNewExpense] = useState({ vendor: '', amount: '', category: 'Office & Supplies', date: '', customCategory: '' });
+  const [newExpense, setNewExpense] = useState({ 
+    vendor: '', 
+    amount: '', 
+    category: 'Office & Supplies', 
+    date: '', 
+    customCategory: '',
+    description: '',
+    paymentMethod: 'Credit Card',
+    referenceNumber: '',
+    isBillable: false,
+    customerName: '',
+    taxAmount: '0',
+    receiptUrl: ''
+  });
   
   // Interactive States
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -99,7 +112,10 @@ export default function ExpensesPage() {
 
   // Set date on client only to prevent hydration mismatch
   useEffect(() => {
-    setNewExpense(prev => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
+    setNewExpense(prev => ({ 
+      ...prev, 
+      date: new Date().toISOString().split('T')[0] 
+    }));
   }, []);
 
   const totalExpenses = activeExpenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -117,14 +133,33 @@ export default function ExpensesPage() {
           vendor: newExpense.vendor,
           amount: parseFloat(newExpense.amount),
           category: finalCategory,
-          description: 'Manually added expense',
+          description: newExpense.description || 'Manually added expense',
+          paymentMethod: newExpense.paymentMethod,
+          referenceNumber: newExpense.referenceNumber,
+          isBillable: newExpense.isBillable,
+          customerName: newExpense.isBillable ? newExpense.customerName : '',
+          taxAmount: parseFloat(newExpense.taxAmount || '0'),
+          receiptUrl: newExpense.receiptUrl
         }),
       });
       const data = await res.json();
       if (data.success) {
         setExpenses(prev => [data.data, ...prev]);
         setIsModalOpen(false);
-        setNewExpense({ vendor: '', amount: '', category: 'Office & Supplies', date: new Date().toISOString().split('T')[0], customCategory: '' });
+        setNewExpense({ 
+          vendor: '', 
+          amount: '', 
+          category: 'Office & Supplies', 
+          date: new Date().toISOString().split('T')[0], 
+          customCategory: '',
+          description: '',
+          paymentMethod: 'Credit Card',
+          referenceNumber: '',
+          isBillable: false,
+          customerName: '',
+          taxAmount: '0',
+          receiptUrl: ''
+        });
         showToast('Expense added successfully');
       }
     } catch (error) {
@@ -280,37 +315,30 @@ export default function ExpensesPage() {
       {/* Add Expense Modal */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content glass-card animate-scale-in" onClick={e => e.stopPropagation()}>
+          <div className="modal-content glass-card animate-scale-in" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Add New Expense</h2>
               <button className="btn btn-icon btn-ghost" onClick={() => setIsModalOpen(false)}><Plus size={20} style={{ transform: 'rotate(45deg)' }} /></button>
             </div>
             <form onSubmit={handleAddExpense} className="modal-form">
-              <div className="form-group">
-                <label>Vendor</label>
-                <input type="text" className="input" placeholder="e.g. AWS, Uber" value={newExpense.vendor} onChange={e => setNewExpense({...newExpense, vendor: e.target.value})} required />
-              </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Amount</label>
-                  <input type="number" step="0.01" className="input" placeholder="0.00" value={newExpense.amount} onChange={e => setNewExpense({...newExpense, amount: e.target.value})} required />
+                  <label>Vendor</label>
+                  <input type="text" className="input" placeholder="e.g. AWS, Uber" value={newExpense.vendor} onChange={e => setNewExpense({...newExpense, vendor: e.target.value})} required />
                 </div>
                 <div className="form-group">
-                  <label>Date</label>
-                  <input type="date" className="input" value={newExpense.date} onChange={e => setNewExpense({...newExpense, date: e.target.value})} required />
+                  <label>Category</label>
+                  <select 
+                    className="input" 
+                    value={newExpense.category} 
+                    onChange={e => setNewExpense({...newExpense, category: e.target.value})}
+                  >
+                    {categories.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                    <option value="Other">Other...</option>
+                  </select>
                 </div>
               </div>
-              <div className="form-group">
-                <label>Category</label>
-                <select 
-                  className="input" 
-                  value={newExpense.category} 
-                  onChange={e => setNewExpense({...newExpense, category: e.target.value})}
-                >
-                  {categories.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-                  <option value="Other">Other...</option>
-                </select>
-              </div>
+              
               {newExpense.category === 'Other' && (
                 <div className="form-group animate-slide-down">
                   <label>Custom Category Name</label>
@@ -323,6 +351,70 @@ export default function ExpensesPage() {
                   />
                 </div>
               )}
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Amount</label>
+                  <input type="number" step="0.01" className="input" placeholder="0.00" value={newExpense.amount} onChange={e => setNewExpense({...newExpense, amount: e.target.value})} required />
+                </div>
+                <div className="form-group">
+                  <label>Tax Amount</label>
+                  <input type="number" step="0.01" className="input" placeholder="0.00" value={newExpense.taxAmount} onChange={e => setNewExpense({...newExpense, taxAmount: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>Date</label>
+                  <input type="date" className="input" value={newExpense.date} onChange={e => setNewExpense({...newExpense, date: e.target.value})} required />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Payment Method</label>
+                  <select 
+                    className="input" 
+                    value={newExpense.paymentMethod} 
+                    onChange={e => setNewExpense({...newExpense, paymentMethod: e.target.value})}
+                  >
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Check">Check</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Reference / Check #</label>
+                  <input type="text" className="input" placeholder="e.g. #1024" value={newExpense.referenceNumber} onChange={e => setNewExpense({...newExpense, referenceNumber: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '28px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="isBillable" 
+                    checked={newExpense.isBillable} 
+                    onChange={e => setNewExpense({...newExpense, isBillable: e.target.checked})} 
+                  />
+                  <label htmlFor="isBillable" style={{ margin: 0, cursor: 'pointer' }}>Billable to Customer</label>
+                </div>
+                {newExpense.isBillable && (
+                  <div className="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" className="input" placeholder="e.g. Acme Corp" value={newExpense.customerName} onChange={e => setNewExpense({...newExpense, customerName: e.target.value})} required={newExpense.isBillable} />
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Description / Notes</label>
+                <textarea className="input" rows={2} placeholder="Add a memo..." value={newExpense.description} onChange={e => setNewExpense({...newExpense, description: e.target.value})} />
+              </div>
+
+              <div className="form-group">
+                <label>Receipt URL or Reference</label>
+                <input type="text" className="input" placeholder="https://example.com/receipt.pdf" value={newExpense.receiptUrl} onChange={e => setNewExpense({...newExpense, receiptUrl: e.target.value})} />
+              </div>
+
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Add Expense</button>

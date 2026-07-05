@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Wallet, Plus, Search, TrendingUp, TrendingDown, DollarSign,
   Coffee, Home, Car, Smartphone, ShoppingBag, GraduationCap,
@@ -22,25 +22,90 @@ export default function PersonalFinancePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [newTransaction, setNewTransaction] = useState({
+    merchant: '',
+    amount: '',
+    category: 'Groceries',
+    date: '',
+    description: '',
+    paymentMethod: 'Credit Card',
+    customCategory: ''
+  });
+
+  const personalCategories = [
+    'Groceries', 'Rent & Housing', 'Utilities', 'Dining Out', 
+    'Entertainment', 'Health & Fitness', 'Shopping', 'Travel', 
+    'Subscriptions', 'Education', 'Insurance', 'Miscellaneous', 'Other'
+  ];
+
+  const fetchReport = useCallback(async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/reports', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (json.success) setReportData(json.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
-    if (!user) return;
-    const fetchReport = async () => {
-      try {
-        const token = await user.getIdToken();
-        const res = await fetch('/api/reports', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const json = await res.json();
-        if (json.success) setReportData(json.data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchReport();
-  }, [user]);
+  }, [fetchReport]);
+
+  useEffect(() => {
+    setNewTransaction(prev => ({ 
+      ...prev, 
+      date: new Date().toISOString().split('T')[0] 
+    }));
+  }, []);
+
+  const handleAddTransaction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    const finalCategory = newTransaction.category === 'Other' ? newTransaction.customCategory : newTransaction.category;
+    
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          date: newTransaction.date,
+          vendor: newTransaction.merchant,
+          amount: parseFloat(newTransaction.amount),
+          category: finalCategory,
+          description: newTransaction.description || 'Personal Transaction',
+          paymentMethod: newTransaction.paymentMethod,
+          isPersonal: true
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsModalOpen(false);
+        setNewTransaction({ 
+          merchant: '', 
+          amount: '', 
+          category: 'Groceries', 
+          date: new Date().toISOString().split('T')[0], 
+          description: '', 
+          paymentMethod: 'Credit Card',
+          customCategory: '' 
+        });
+        fetchReport();
+      }
+    } catch (error) {
+      console.error('Failed to create transaction:', error);
+    }
+  };
 
   const { forecastData, insights, bills, transactions, goals } = useMemo(() => {
     if (!reportData) return { forecastData: [], insights: [], bills: [], transactions: [], goals: [] };
@@ -332,6 +397,113 @@ export default function PersonalFinancePage() {
           </section>
         </div>
       </div>
+
+      {/* Add Transaction Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-content glass-card animate-scale-in" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add Personal Transaction</h2>
+              <button className="btn btn-icon btn-ghost" onClick={() => setIsModalOpen(false)}>
+                <Plus size={20} style={{ transform: 'rotate(45deg)' }} />
+              </button>
+            </div>
+            <form onSubmit={handleAddTransaction} className="modal-form">
+              <div className="form-group">
+                <label>Merchant / Description</label>
+                <input 
+                  type="text" 
+                  className="input" 
+                  placeholder="e.g. Costco, Whole Foods" 
+                  value={newTransaction.merchant} 
+                  onChange={e => setNewTransaction({...newTransaction, merchant: e.target.value})} 
+                  required 
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Amount</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    className="input" 
+                    placeholder="0.00" 
+                    value={newTransaction.amount} 
+                    onChange={e => setNewTransaction({...newTransaction, amount: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Date</label>
+                  <input 
+                    type="date" 
+                    className="input" 
+                    value={newTransaction.date} 
+                    onChange={e => setNewTransaction({...newTransaction, date: e.target.value})} 
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Category</label>
+                  <select 
+                    className="input" 
+                    value={newTransaction.category} 
+                    onChange={e => setNewTransaction({...newTransaction, category: e.target.value})}
+                  >
+                    {personalCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Payment Method</label>
+                  <select 
+                    className="input" 
+                    value={newTransaction.paymentMethod} 
+                    onChange={e => setNewTransaction({...newTransaction, paymentMethod: e.target.value})}
+                  >
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                </div>
+              </div>
+
+              {newTransaction.category === 'Other' && (
+                <div className="form-group animate-slide-down">
+                  <label>Custom Category Name</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    placeholder="Enter category name" 
+                    onChange={e => setNewTransaction({...newTransaction, customCategory: e.target.value})}
+                    required 
+                  />
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Memo / Notes</label>
+                <textarea 
+                  className="input" 
+                  rows={2} 
+                  placeholder="Additional details..." 
+                  value={newTransaction.description} 
+                  onChange={e => setNewTransaction({...newTransaction, description: e.target.value})} 
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Transaction</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .page-personal { max-width: 1280px; margin: 0 auto; padding-bottom: 4rem; }

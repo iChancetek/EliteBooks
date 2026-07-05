@@ -30,6 +30,10 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
   const [taxRate, setTaxRate] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [shipping, setShipping] = useState(0);
+  const [clientAddress, setClientAddress] = useState(initialData?.clientAddress || '');
+  const [shippingAddress, setShippingAddress] = useState(initialData?.shippingAddress || '');
+  const [poNumber, setPoNumber] = useState(initialData?.poNumber || '');
+  const [paymentTerms, setPaymentTerms] = useState(initialData?.paymentTerms || 'Net 30');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   // Customization State
@@ -84,6 +88,10 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
     const invoiceData: Partial<Invoice> = {
       clientName,
       clientEmail,
+      clientAddress,
+      shippingAddress,
+      poNumber,
+      paymentTerms,
       number: invoiceNumber,
       issueDate,
       dueDate,
@@ -141,7 +149,30 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)' }}>
+                <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                  <div>
+                    <label>Billing Address</label>
+                    <textarea 
+                      className="input" 
+                      rows={2} 
+                      placeholder="Street, City, State, ZIP" 
+                      value={clientAddress} 
+                      onChange={e => setClientAddress(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label>Shipping Address</label>
+                    <textarea 
+                      className="input" 
+                      rows={2} 
+                      placeholder="Same as billing or custom" 
+                      value={shippingAddress} 
+                      onChange={e => setShippingAddress(e.target.value)} 
+                    />
+                  </div>
+                </div>
+ 
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 'var(--space-2)' }}>
                   <div className="form-group">
                     <label>Invoice #</label>
                     <div style={{ position: 'relative' }}>
@@ -156,6 +187,19 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                   <div className="form-group">
                     <label>Due Date</label>
                     <input type="date" className="input" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label>Terms</label>
+                    <select className="input" value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)}>
+                      <option value="Due on Receipt">Due on Receipt</option>
+                      <option value="Net 15">Net 15</option>
+                      <option value="Net 30">Net 30</option>
+                      <option value="Net 60">Net 60</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>P.O. Number</label>
+                    <input className="input" placeholder="PO-12345" value={poNumber} onChange={e => setPoNumber(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -312,9 +356,10 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Preview View */}
-            <div style={{ display: isPreviewMode ? 'block' : 'none' }}>
+          {/* Preview View */}
+          <div style={{ display: isPreviewMode ? 'block' : 'none' }}>
               <div className={styles.previewContainer}>
                 <div className={styles.previewHeader}>
                   {showLogo && logoUrl ? (
@@ -333,7 +378,14 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                     <h4>Billed To:</h4>
                     <p className={styles.previewStrong}>{clientName || 'Client Name'}</p>
                     <p>{clientEmail}</p>
+                    {clientAddress && <p style={{ whiteSpace: 'pre-wrap', marginTop: '4px' }}>{clientAddress}</p>}
                   </div>
+                  {shippingAddress && (
+                    <div className={styles.previewClient}>
+                      <h4>Shipped To:</h4>
+                      <p style={{ whiteSpace: 'pre-wrap' }}>{shippingAddress}</p>
+                    </div>
+                  )}
                   <div className={styles.previewDates}>
                     <div>
                       <h4>Date Issued:</h4>
@@ -343,6 +395,18 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
                       <h4>Due Date:</h4>
                       <p>{dueDate}</p>
                     </div>
+                    {paymentTerms && (
+                      <div>
+                        <h4>Terms:</h4>
+                        <p>{paymentTerms}</p>
+                      </div>
+                    )}
+                    {poNumber && (
+                      <div>
+                        <h4>P.O. Number:</h4>
+                        <p>{poNumber}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
