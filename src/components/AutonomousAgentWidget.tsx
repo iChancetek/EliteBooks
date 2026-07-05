@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bot, CheckCircle2, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const agentWorkflows = [
   {
@@ -21,22 +22,51 @@ const agentWorkflows = [
   }
 ];
 
+const newAccountWorkflow = {
+  id: 4,
+  message: "Welcome to EliteBooks! I am your Autonomous Agent. Shall I guide you through setting up your first invoice?",
+  type: "info"
+};
+
 export default function AutonomousAgentWidget() {
-  const [activeWorkflow, setActiveWorkflow] = useState<typeof agentWorkflows[0] | null>(null);
+  const { user } = useAuth();
+  const [activeWorkflow, setActiveWorkflow] = useState<any | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [autonomyMode, setAutonomyMode] = useState<'autonomous' | 'hitl'>('hitl');
 
   useEffect(() => {
-    // Simulate autonomous detection popping up after 10 seconds of user inactivity
-    const timer = setTimeout(() => {
-      const randomWorkflow = agentWorkflows[Math.floor(Math.random() * agentWorkflows.length)];
-      setActiveWorkflow(randomWorkflow);
-      setIsVisible(true);
+    if (!user) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/reports', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const json = await res.json();
+        
+        let selectedWorkflow = null;
+        if (json.success && json.data) {
+          // Context-aware checking
+          if (json.data.invoiceCount === 0 && json.data.expenseCount === 0) {
+            selectedWorkflow = newAccountWorkflow;
+          } else {
+            selectedWorkflow = agentWorkflows[Math.floor(Math.random() * agentWorkflows.length)];
+          }
+        } else {
+          selectedWorkflow = agentWorkflows[Math.floor(Math.random() * agentWorkflows.length)];
+        }
+        
+        setActiveWorkflow(selectedWorkflow);
+        setIsVisible(true);
+      } catch (err) {
+        console.error('Failed to fetch widget context:', err);
+      }
     }, 10000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [user]);
 
   if (!isVisible || !activeWorkflow) return null;
 

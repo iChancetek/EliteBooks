@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   ShieldCheck, Users, Building2, Activity, Search, Filter, 
   MoreHorizontal, ArrowUpRight, ArrowDownRight, Bot, 
@@ -14,73 +14,88 @@ import {
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
 
-// Mock Admin Data
-const growthDataMap = {
-  '1W': [
-    { name: 'Mon', users: 12 }, { name: 'Tue', users: 15 }, { name: 'Wed', users: 18 },
-    { name: 'Thu', users: 14 }, { name: 'Fri', users: 22 }, { name: 'Sat', users: 10 }, { name: 'Sun', users: 8 }
-  ],
-  '1M': [
-    { name: 'Week 1', users: 85 }, { name: 'Week 2', users: 92 },
-    { name: 'Week 3', users: 78 }, { name: 'Week 4', users: 110 }
-  ],
-  '3M': [
-    { name: 'Feb', users: 320 }, { name: 'Mar', users: 410 }, { name: 'Apr', users: 512 }
-  ],
-  '6M': [
-    { name: 'Nov', users: 840 }, { name: 'Dec', users: 920 }, { name: 'Jan', users: 1050 },
-    { name: 'Feb', users: 1120 }, { name: 'Mar', users: 1210 }, { name: 'Apr', users: 1284 }
-  ],
-  '1Y': [
-    { name: 'May 25', users: 450 }, { name: 'Jun 25', users: 520 }, { name: 'Jul 25', users: 610 },
-    { name: 'Aug 25', users: 680 }, { name: 'Sep 25', users: 750 }, { name: 'Oct 25', users: 820 },
-    { name: 'Nov 25', users: 840 }, { name: 'Dec 25', users: 920 }, { name: 'Jan 26', users: 1050 },
-    { name: 'Feb 26', users: 1120 }, { name: 'Mar 26', users: 1210 }, { name: 'Apr 26', users: 1284 }
-  ]
-};
-
-const userRoleData = [
-  { name: 'Owners', value: 412 },
-  { name: 'Admins', value: 245 },
-  { name: 'Accountants', value: 387 },
-  { name: 'Viewers', value: 240 },
-];
-
 const ROLE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 
-// Mock Admin Data
-const platformStats = [
-  { label: 'Total Users', value: '1,284', change: '+12%', icon: Users, color: '#3b82f6' },
-  { label: 'Organizations', value: '412', change: '+8%', icon: Building2, color: '#8b5cf6' },
-  { label: 'Active Agents', value: '2,448', change: '+24%', icon: Bot, color: '#10b981' },
-  { label: 'Platform Revenue', value: '$42,500', change: '+18%', icon: Activity, color: '#f59e0b' },
-];
-
-const mockUsers = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Owner', org: 'Acme Corp', status: 'Active', joined: '2026-04-01' },
-  { id: '2', name: 'Sarah Smith', email: 'sarah@design.co', role: 'Admin', org: 'DesignCo', status: 'Active', joined: '2026-04-05' },
-  { id: '3', name: 'Mike Johnson', email: 'mike@tech.io', role: 'Accountant', org: 'TechIO', status: 'Inactive', joined: '2026-04-10' },
-  { id: '4', name: 'Elena Rodriguez', email: 'elena@global.com', role: 'Viewer', org: 'Global Logistics', status: 'Active', joined: '2026-04-12' },
-  { id: '5', name: 'David Chen', email: 'david@fintech.com', role: 'Owner', org: 'FinTech Solutions', status: 'Active', joined: '2026-04-15' },
-];
-
-const aiLogs = [
-  { id: 'L1', agent: 'Ledger', user: 'John Doe', action: 'Journal Entry Created', status: 'Success', time: '2 mins ago' },
-  { id: 'L2', agent: 'Expense', user: 'Sarah Smith', action: 'Receipt OCR Match', status: 'Success', time: '5 mins ago' },
-  { id: 'L3', agent: 'Payroll', user: 'David Chen', action: 'Tax Calculation', status: 'Processing', time: '12 mins ago' },
-  { id: 'L4', agent: 'Compliance', user: 'Elena Rodriguez', action: 'Audit Log Export', status: 'Success', time: '45 mins ago' },
-];
-
 export default function AdminDashboard() {
-  const { isSuperAdmin, loading } = useAuth();
+  const { user, isSuperAdmin, loading } = useAuth();
   const [search, setSearch] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState<keyof typeof growthDataMap>('6M');
+  const [selectedPeriod, setSelectedPeriod] = useState<'1W' | '1M' | '3M' | '6M' | '1Y'>('6M');
+  
+  const [stats, setStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
-  if (loading) return null;
+  useEffect(() => {
+    if (!user || !isSuperAdmin) return;
+    const fetchStats = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/admin/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+          setStats(json.data);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, [user, isSuperAdmin]);
+
+  const computedStats = useMemo(() => {
+    if (!stats) return null;
+
+    const platformStats = [
+      { label: 'Total Users', value: stats.totalUsers.toLocaleString(), change: '+0%', icon: Users, color: '#3b82f6' },
+      { label: 'Organizations', value: stats.organizations.toLocaleString(), change: '+0%', icon: Building2, color: '#8b5cf6' },
+      { label: 'Active Agents', value: stats.activeAgents.toLocaleString(), change: '+0%', icon: Bot, color: '#10b981' },
+      { label: 'Platform Revenue', value: formatCurrency(stats.platformRevenue), change: '+0%', icon: Activity, color: '#f59e0b' },
+    ];
+
+    const rolesCount: Record<string, number> = { Owners: 0, Admins: 0, Accountants: 0, Viewers: 0 };
+    stats.users.forEach((u: any) => {
+      if (u.role === 'Super Admin' || u.role === 'Admin') rolesCount.Admins++;
+      else rolesCount.Owners++;
+    });
+
+    const userRoleData = [
+      { name: 'Owners', value: rolesCount.Owners },
+      { name: 'Admins', value: rolesCount.Admins },
+      { name: 'Accountants', value: rolesCount.Accountants },
+      { name: 'Viewers', value: rolesCount.Viewers },
+    ].filter(r => r.value > 0);
+
+    // Group users by month joined for a simple dynamic growth chart
+    const monthlyGrowth: Record<string, number> = {};
+    stats.users.forEach((u: any) => {
+      const d = new Date(u.joined);
+      const month = d.toLocaleString('default', { month: 'short' });
+      monthlyGrowth[month] = (monthlyGrowth[month] || 0) + 1;
+    });
+
+    const growthData = Object.keys(monthlyGrowth).map(k => ({
+      name: k,
+      users: monthlyGrowth[k]
+    }));
+
+    return { platformStats, userRoleData, growthData };
+  }, [stats]);
+
+  if (loading || loadingStats) return null;
   if (!isSuperAdmin) {
     redirect('/dashboard');
     return null;
   }
+
+  const { platformStats, userRoleData, growthData } = computedStats || {};
+  const usersList = stats?.users || [];
+  const filteredUsers = usersList.filter((u: any) => 
+    u.name.toLowerCase().includes(search.toLowerCase()) || 
+    u.email.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="admin-page">
@@ -101,7 +116,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="admin-stats-grid">
-        {platformStats.map((stat) => (
+        {platformStats?.map((stat: any) => (
           <div key={stat.label} className="glass-card admin-stat-card">
             <div className="admin-stat-head">
               <div className="admin-stat-icon" style={{ background: `${stat.color}15`, color: stat.color }}>
@@ -123,22 +138,11 @@ export default function AdminDashboard() {
       <div className="admin-analytics-row">
         <div className="glass-card-static admin-chart-section">
           <div className="admin-section-header">
-            <h3>User Growth</h3>
-            <div className="admin-period-tabs">
-              {(['1W', '1M', '3M', '6M', '1Y'] as const).map(p => (
-                <button 
-                  key={p} 
-                  className={`admin-period-btn ${selectedPeriod === p ? 'active' : ''}`}
-                  onClick={() => setSelectedPeriod(p)}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
+            <h3>User Growth (All Time)</h3>
           </div>
           <div style={{ height: 240, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={growthDataMap[selectedPeriod]}>
+              <BarChart data={growthData}>
                 <XAxis dataKey="name" stroke="var(--color-text-tertiary)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-text-tertiary)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip 
@@ -169,7 +173,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {userRoleData.map((entry, index) => (
+                  {userRoleData?.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={ROLE_COLORS[index % ROLE_COLORS.length]} />
                   ))}
                 </Pie>
@@ -209,7 +213,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {mockUsers.filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())).map(user => (
+                {filteredUsers.map((user: any) => (
                   <tr key={user.id}>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -245,27 +249,13 @@ export default function AdminDashboard() {
               <Activity size={16} style={{ color: 'var(--color-accent-primary)' }} />
             </div>
             <div className="ai-logs">
-              {aiLogs.map(log => (
-                <div key={log.id} className="ai-log-item">
-                  <div className="ai-log-icon">
-                    <Bot size={14} />
-                  </div>
-                  <div className="ai-log-info">
-                    <div className="ai-log-meta">
-                      <span className="ai-log-agent">{log.agent} Agent</span>
-                      <span className="ai-log-time">{log.time}</span>
-                    </div>
-                    <p className="ai-log-action">{log.action}</p>
-                    <div className="ai-log-footer">
-                      <span>User: {log.user}</span>
-                      <span className={`ai-log-status ${log.status.toLowerCase()}`}>{log.status}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {/* No real AI logs available globally yet */}
+              <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
+                No recent agent activity across the platform.
+              </div>
             </div>
             <div className="admin-section-footer">
-              <button className="btn btn-ghost btn-sm">View Full Audit Trail</button>
+              <button className="btn btn-ghost btn-sm" disabled>View Full Audit Trail</button>
             </div>
           </div>
 
@@ -359,7 +349,7 @@ export default function AdminDashboard() {
         .admin-search { display: flex; align-items: center; gap: var(--space-2); padding: 4px 12px; background: var(--color-bg-tertiary); border: 1px solid var(--color-border-secondary); border-radius: var(--radius-md); color: var(--color-text-muted); }
         .admin-search input { background: none; border: none; outline: none; color: var(--color-text-primary); font-size: var(--text-xs); width: 140px; }
         
-        .admin-section-footer { margin-top: var(--space-6); display: flex; justify(content: center; padding-top: var(--space-4); border-top: 1px solid var(--color-border-secondary); }
+        .admin-section-footer { margin-top: var(--space-6); display: flex; justify-content: center; padding-top: var(--space-4); border-top: 1px solid var(--color-border-secondary); }
 
         .ai-logs { display: flex; flex-direction: column; gap: var(--space-4); }
         .ai-log-item { display: flex; gap: var(--space-3); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border-secondary); }

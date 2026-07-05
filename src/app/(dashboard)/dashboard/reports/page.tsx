@@ -6,89 +6,6 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieC
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
-const plData = [
-  { category: 'Service Revenue', amount: 64200, type: 'revenue' },
-  { category: 'Product Sales', amount: 18400, type: 'revenue' },
-  { category: 'Other Income', amount: 1650, type: 'revenue' },
-  { category: 'Payroll', amount: -36916.67, type: 'expense' },
-  { category: 'Rent & Utilities', amount: -5800, type: 'expense' },
-  { category: 'Software & SaaS', amount: -4200, type: 'expense' },
-  { category: 'Professional Services', amount: -3500, type: 'expense' },
-  { category: 'Travel & Transport', amount: -3100, type: 'expense' },
-  { category: 'Marketing', amount: -2900, type: 'expense' },
-  { category: 'Office & Supplies', amount: -2840, type: 'expense' },
-  { category: 'Meals & Entertainment', amount: -1560, type: 'expense' },
-  { category: 'Insurance', amount: -1200, type: 'expense' },
-  { category: 'Training & Education', amount: -850, type: 'expense' },
-  { category: 'Subscriptions', amount: -450, type: 'expense' },
-  { category: 'Miscellaneous', amount: -210, type: 'expense' },
-  { category: 'Bank Fees & Interest', amount: -125, type: 'expense' },
-];
-
-const balanceSheet = {
-  assets: [
-    { name: 'Cash & Bank', amount: 127400 },
-    { name: 'Accounts Receivable', amount: 20946 },
-    { name: 'Inventory', amount: 15200 },
-    { name: 'Equipment', amount: 42000 },
-  ],
-  liabilities: [
-    { name: 'Accounts Payable', amount: 8400 },
-    { name: 'Credit Card', amount: 3200 },
-    { name: 'Loan Payable', amount: 45000 },
-  ],
-};
-
-const generateHistoricalData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthly = [];
-  const yearlyMap: Record<string, { year: string, revenue: number, expenses: number }> = {};
-
-  let baseRev = 25000;
-  let baseExp = 18000;
-
-  for (let year = 2016; year <= 2026; year++) {
-    const isCurrentYear = year === 2026;
-    const maxMonth = isCurrentYear ? 4 : 12; // Stop at April 2026
-
-    yearlyMap[year] = { year: year.toString(), revenue: 0, expenses: 0 };
-
-    for (let m = 0; m < maxMonth; m++) {
-      // Create some seasonality and growth
-      const growthMultiplier = 1 + ((year - 2016) * 0.15) + (m * 0.01);
-      const seasonality = 1 + (Math.sin(m) * 0.1);
-      
-      let rev = Math.round(baseRev * growthMultiplier * seasonality);
-      let exp = Math.round(baseExp * growthMultiplier * seasonality * 0.9);
-
-      // Force the final month (Apr 2026) to match the exact P&L data
-      if (year === 2026 && m === 3) {
-        rev = 84250;
-        exp = 63651.67;
-      }
-
-      monthly.push({
-        label: `${months[m]} ${year}`,
-        month: months[m],
-        year: year.toString(),
-        revenue: rev,
-        expenses: exp
-      });
-
-      yearlyMap[year].revenue += rev;
-      yearlyMap[year].expenses += exp;
-    }
-  }
-
-  return {
-    monthly,
-    yearly: Object.values(yearlyMap)
-  };
-};
-
-const { monthly: historicalMonthlyData, yearly: historicalYearlyData } = generateHistoricalData();
-
-const expenseData = plData.filter(d => d.type === 'expense').map(d => ({ name: d.category, value: Math.abs(d.amount) }));
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#14b8a6', '#6366f1', '#84cc16'];
 
 export default function ReportsPage() {
@@ -219,15 +136,21 @@ export default function ReportsPage() {
     }))
   ];
 
-  // Derive balance sheet relative to revenue growth
-  const assetMultiplier = selectedYear === 'All Years' ? 1 : Math.max(0.1, Math.pow(1.1, parseInt(selectedYear) - 2025));
+  // Derive balance sheet from real data
+  const totalPaid = activeInvoices.filter((i: any) => i.status === 'paid').reduce((s: number, i: any) => s + (i.total || 0), 0);
+  const totalOutstanding = totalRevenue - totalPaid;
   const activeBalanceSheet = {
-    assets: balanceSheet.assets.map(a => ({ ...a, amount: a.amount * assetMultiplier })),
-    liabilities: balanceSheet.liabilities.map(l => ({ ...l, amount: l.amount * assetMultiplier }))
+    assets: [
+      { name: 'Cash & Bank', amount: totalPaid },
+      { name: 'Accounts Receivable', amount: totalOutstanding },
+    ].filter(a => a.amount > 0),
+    liabilities: [
+      { name: 'Outstanding Expenses', amount: totalExpenses },
+    ].filter(l => l.amount > 0)
   };
 
-  const totalAssets = activeBalanceSheet.assets.reduce((s, a) => s + a.amount, 0);
-  const totalLiabilities = activeBalanceSheet.liabilities.reduce((s, l) => s + l.amount, 0);
+  const totalAssets = activeBalanceSheet.assets.reduce((s: number, a: any) => s + a.amount, 0);
+  const totalLiabilities = activeBalanceSheet.liabilities.reduce((s: number, l: any) => s + l.amount, 0);
 
   const handleNlpGenerate = () => {
     if (!nlpQuery.trim()) return;
@@ -345,7 +268,7 @@ export default function ReportsPage() {
                 <Bar dataKey="revenue" name="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
                 <Bar dataKey="expenses" name="Expenses" fill="#f43f5e" radius={[4, 4, 0, 0]} maxBarSize={40} />
                 {chartView === 'monthly' && (
-                  <Brush dataKey="label" height={30} stroke="#3b82f6" fill="var(--color-bg-secondary)" startIndex={Math.max(0, historicalMonthlyData.length - 24)} />
+                  <Brush dataKey="label" height={30} stroke="#3b82f6" fill="var(--color-bg-secondary)" startIndex={Math.max(0, displayHistoricalMonthly.length - 24)} />
                 )}
               </BarChart>
             </ResponsiveContainer>
@@ -358,7 +281,7 @@ export default function ReportsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={expenseData}
+                  data={Object.entries(expenseCategories).map(([name, value]) => ({ name, value }))}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -367,7 +290,7 @@ export default function ReportsPage() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {expenseData.map((entry, index) => (
+                  {Object.keys(expenseCategories).map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

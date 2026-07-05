@@ -7,12 +7,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient } from '@/lib/openai';
 import { generateEmbedding, querySimilar } from '@/lib/pinecone';
 import { storeMemory, retrieveMemory } from '@/lib/rag';
-import { getInvoices, getExpenses, createExpense, getFinancialSummary } from '@/lib/firestore';
+import { getInvoices, getExpenses, createExpense, getFinancialSummary, createInvoice } from '@/lib/firestore';
+import { adminAuth } from '@/lib/firebase/admin';
 
 export async function POST(request: NextRequest) {
   try {
     const { messages, namespace = 'elitebooks-help' } = await request.json();
-    const orgId = 'default'; // In a multi-tenant production app, extract this from auth/session
+    let orgId = 'default'; 
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const decoded = await adminAuth.verifyIdToken(token);
+        orgId = decoded.uid;
+      } catch (e) {
+        console.error('Invalid token', e);
+      }
+    }
     
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
@@ -206,8 +216,15 @@ ${context}`;
             const filter = args.period ? { month: args.period.split(' ')[0], year: args.period.split(' ')[1] } : undefined;
             result = await getExpenses(orgId, filter);
           } else if (name === 'send_invoice') {
-            // Real mock of transmission, update local status
-            result = { success: true, message: `Invoice for ${args.clientName || 'client'} of amount $${args.amount || 0} has been sent successfully.` };
+            result = await createInvoice(orgId, {
+              clientName: args.clientName,
+              amountDue: args.amount,
+              issueDate: new Date().toISOString().split('T')[0],
+              dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+              status: 'sent',
+              items: [{ description: 'Services Rendered', amount: args.amount }]
+            });
+            result = { success: true, message: `Invoice created and marked as sent: ${result}` };
           } else if (name === 'run_payroll') {
             result = { success: true, message: `Payroll execution successful. Gross payroll processed for all active employees.` };
           } else if (name === 'log_expense') {

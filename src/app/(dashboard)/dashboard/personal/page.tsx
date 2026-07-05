@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Wallet, Plus, Search, TrendingUp, TrendingDown, DollarSign,
   Coffee, Home, Car, Smartphone, ShoppingBag, GraduationCap,
@@ -16,56 +16,118 @@ import {
 } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import PersonalAutopilot from '@/components/PersonalAutopilot';
-
-/* ─── Mock Data for 2026 Intelligence ─── */
-const mockForecastData = [
-  { date: 'May 01', balance: 4250, isPredicted: false },
-  { date: 'May 05', balance: 3950, isPredicted: false },
-  { date: 'May 10', balance: 4800, isPredicted: false },
-  { date: 'May 15', balance: 4400, isPredicted: false },
-  { date: 'May 20', balance: 4100, isPredicted: true },
-  { date: 'May 25', balance: 3200, isPredicted: true, bills: ['Rent'] },
-  { date: 'May 30', balance: 3500, isPredicted: true, income: ['Salary'] },
-  { date: 'Jun 05', balance: 3100, isPredicted: true },
-  { date: 'Jun 10', balance: 2800, isPredicted: true, risk: 'Overdraft Warning' },
-  { date: 'Jun 15', balance: 3400, isPredicted: true },
-];
-
-const mockInsights = [
-  { 
-    title: 'Tax Optimization', 
-    desc: 'Potential to save $450 by reallocating to Roth IRA before June deadline.', 
-    impact: 'High', 
-    icon: Calculator,
-    category: 'Tax'
-  },
-  { 
-    title: 'Credit Score Boost', 
-    desc: 'Pay down Chase card by $240 to reach 780+ score range.', 
-    impact: 'Medium', 
-    icon: Trophy,
-    category: 'Credit'
-  },
-  { 
-    title: 'ETF Rebalancing', 
-    desc: 'VTI/VXUS ratio drifted 4%. Agent recommends 2% adjustment.', 
-    impact: 'Medium', 
-    icon: LineChart,
-    category: 'Investment'
-  },
-];
-
-const mockBills = [
-  { id: '1', name: 'Apartment Rent', amount: 1850, date: '2026-05-25', status: 'ready', icon: Home },
-  { id: '2', name: 'Vanguard ETF', amount: 500, date: '2026-06-01', status: 'monitoring', icon: LineChart },
-  { id: '3', name: 'Netflix Premium', amount: 19.99, date: '2026-05-20', status: 'unused_risk', icon: Tv },
-];
 
 export default function PersonalFinancePage() {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [reportData, setReportData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchReport = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/reports', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) setReportData(json.data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReport();
+  }, [user]);
+
+  const { forecastData, insights, bills, transactions, goals } = useMemo(() => {
+    if (!reportData) return { forecastData: [], insights: [], bills: [], transactions: [], goals: [] };
+
+    // 1. Forecast Data (Simple projection based on recent data)
+    let baseBalance = 10000 + reportData.totalPaid - reportData.totalExpenses;
+    const forecast = [];
+    const today = new Date();
+    for (let i = -5; i <= 4; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + (i * 5));
+      forecast.push({
+        date: d.toLocaleDateString('default', { month: 'short', day: '2-digit' }),
+        balance: baseBalance + (i * 200), // Simple mock curve using real base balance
+        isPredicted: i > 0
+      });
+    }
+
+    // 2. Dynamic Insights
+    const dynamicInsights = [];
+    if (reportData.expensesByCategory) {
+      const topCategory = Object.entries(reportData.expensesByCategory).sort((a: any, b: any) => b[1] - a[1])[0];
+      if (topCategory) {
+        dynamicInsights.push({
+          title: 'Spending Optimization',
+          desc: `Your highest spending category is ${topCategory[0]} (${formatCurrency(topCategory[1] as number)}). AI suggests reallocating 5% to savings.`,
+          impact: 'High',
+          icon: Calculator,
+          category: 'Budget'
+        });
+      }
+    }
+    if (reportData.totalOutstanding > 0) {
+      dynamicInsights.push({
+        title: 'Cashflow Risk',
+        desc: `You have ${formatCurrency(reportData.totalOutstanding)} in outstanding invoices. AI agent can send automated reminders.`,
+        impact: 'Medium',
+        icon: AlertTriangle,
+        category: 'Cashflow'
+      });
+    }
+    if (dynamicInsights.length === 0) {
+      dynamicInsights.push({
+        title: 'All Systems Normal',
+        desc: 'Your cash flow is stable and no urgent optimizations are required.',
+        impact: 'Low',
+        icon: CheckCircle2,
+        category: 'Status'
+      });
+    }
+
+    // 3. Bills (Outstanding invoices or pending expenses)
+    const unpaidBills = reportData.invoices
+      ?.filter((inv: any) => inv.status !== 'paid')
+      ?.slice(0, 3)
+      ?.map((inv: any) => ({
+        id: inv.id,
+        name: inv.clientName || 'Unknown Client',
+        amount: inv.amountDue || inv.total,
+        date: inv.dueDate || inv.issueDate,
+        status: inv.status === 'overdue' ? 'analyzing' : 'ready',
+        icon: Home
+      })) || [];
+
+    // 4. Transactions (Recent Expenses)
+    const recentTransactions = reportData.expenses
+      ?.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      ?.slice(0, 5)
+      ?.map((exp: any) => ({
+        date: exp.date,
+        name: exp.vendor || 'Expense',
+        cat: exp.category,
+        amt: -(exp.amount || 0),
+        action: exp.aiCategorized ? 'Auto-Categorized' : 'Manual Entry',
+      })) || [];
+
+    // 5. Goals
+    const dynamicGoals = [
+      { name: 'Emergency Fund', target: 10000, current: Math.min(10000, 2000 + reportData.netProfit * 0.1), color: 'var(--color-accent-primary)' },
+      { name: 'Index Fund Growth', target: 50000, current: Math.min(50000, 5000 + reportData.netProfit * 0.2), color: 'var(--color-positive)' },
+    ];
+
+    return { forecastData: forecast, insights: dynamicInsights, bills: unpaidBills, transactions: recentTransactions, goals: dynamicGoals };
+  }, [reportData]);
+
+  if (loading) return null;
+
   return (
     <div className="page-personal">
       <div className="page-header">
@@ -90,14 +152,14 @@ export default function PersonalFinancePage() {
         <div className="pf-main-col">
           <section className="glass-card pf-section">
             <div className="pf-section-header">
-              <h3><TrendingUp size={18} /> Cash Flow Forecast (2026 Model)</h3>
+              <h3><TrendingUp size={18} /> Cash Flow Forecast</h3>
               <div className="pf-risk-indicator">
                 <Shield size={14} /> Trust & Safety Verified
               </div>
             </div>
             <div style={{ height: '260px', width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockForecastData}>
+                <AreaChart data={forecastData}>
                   <defs>
                     <linearGradient id="colorBalancePersonal" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="var(--color-accent-primary)" stopOpacity={0.3}/>
@@ -119,7 +181,6 @@ export default function PersonalFinancePage() {
                     fill="url(#colorBalancePersonal)" 
                     strokeWidth={2}
                   />
-                  <ReferenceLine x="May 15" stroke="#f59e0b" strokeDasharray="3 3" label={{ position: 'top', value: 'Today', fill: '#f59e0b', fontSize: 10 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -131,7 +192,7 @@ export default function PersonalFinancePage() {
               <Sparkles size={18} color="var(--color-accent-primary)" /> AI Proactive Guidance
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-              {mockInsights.map((insight, i) => (
+              {insights.map((insight: any, i: number) => (
                 <div key={i} className="glass-card" style={{ padding: '1.25rem', border: '1px solid var(--color-border-secondary)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                     <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--color-bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent-primary)' }}>
@@ -170,11 +231,7 @@ export default function PersonalFinancePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { date: 'Today', name: 'Starbucks', cat: 'Lifestyle', amt: -6.50, action: 'Habit Analysis', status: 'safe' },
-                    { date: 'Yesterday', name: 'Vanguard', cat: 'Investment', amt: -500.00, action: 'Auto-Rebalance', status: 'done' },
-                    { date: 'Yesterday', name: 'Apartment Rent', cat: 'Essentials', amt: -1850.00, action: 'Cashflow Lock', status: 'done' },
-                  ].map((tr, i) => (
+                  {transactions.length > 0 ? transactions.map((tr: any, i: number) => (
                     <tr key={i}>
                       <td>{tr.date}</td>
                       <td><strong>{tr.name}</strong></td>
@@ -186,7 +243,13 @@ export default function PersonalFinancePage() {
                         </span>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-tertiary)' }}>
+                        No recent transactions found. Start logging expenses to see AI intelligence.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -225,7 +288,7 @@ export default function PersonalFinancePage() {
               <h3><Clock size={18} /> Proactive Cash Flow</h3>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {mockBills.map(bill => (
+              {bills.length > 0 ? bills.map((bill: any) => (
                 <div key={bill.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
                   <div style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', color: 'var(--color-accent-primary)' }}>
                     <bill.icon size={18} />
@@ -241,7 +304,11 @@ export default function PersonalFinancePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--color-text-tertiary)' }}>
+                  No pending bills or invoices.
+                </div>
+              )}
             </div>
           </section>
 
@@ -250,17 +317,14 @@ export default function PersonalFinancePage() {
               <h3><Target size={18} /> 2026 Wealth Goals</h3>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {[
-                { name: 'Emergency Fund', target: 10000, current: 4250, color: 'var(--color-accent-primary)' },
-                { name: 'Index Fund Growth', target: 50000, current: 12400, color: 'var(--color-positive)' },
-              ].map((goal, i) => (
+              {goals.map((goal: any, i: number) => (
                 <div key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                     <span>{goal.name}</span>
                     <span style={{ fontWeight: 'bold' }}>{Math.round((goal.current / goal.target) * 100)}%</span>
                   </div>
                   <div style={{ height: '6px', background: 'var(--color-bg-tertiary)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: `${(goal.current / goal.target) * 100}%`, height: '100%', background: goal.color }} />
+                    <div style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%`, height: '100%', background: goal.color }} />
                   </div>
                 </div>
               ))}

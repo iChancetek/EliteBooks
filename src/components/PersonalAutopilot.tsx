@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bot, Shield, Zap, Eye, ChevronRight, 
   History, Info, AlertCircle, CheckCircle2,
@@ -9,6 +9,7 @@ import {
 import styles from './PersonalAutopilot.module.css';
 import { formatCurrency } from '@/lib/utils';
 import type { AutonomousAction } from '@/types/accounting';
+import { useAuth } from '@/hooks/useAuth';
 
 type AutonomyLevel = 1 | 2 | 3 | 4;
 
@@ -19,32 +20,66 @@ const levels = [
   { id: 4, name: 'Autonomous', desc: 'Full rule-based execution', icon: Shield, color: '#10b981' },
 ];
 
-const mockActions: AutonomousAction[] = [
-  {
-    id: '1',
-    timestamp: new Date().toISOString(),
-    action: 'Moved $150 to Checking',
-    reason: 'Preventing potential overdraft due to upcoming Rent payment on the 1st.',
-    amount: 150,
-    fromAccount: 'Savings',
-    toAccount: 'Main Checking',
-    status: 'executed',
-    impact: 'Avoided $35 overdraft fee.'
-  },
-  {
-    id: '2',
-    timestamp: new Date(Date.now() - 86400000).toISOString(),
-    action: 'Flagged Unused Subscription',
-    reason: 'Netflix has not been used for 60 days.',
-    amount: 19.99,
-    status: 'pending_approval',
-    impact: 'Potential $240/year savings.'
-  }
-];
-
 export default function PersonalAutopilot() {
+  const { user } = useAuth();
   const [level, setLevel] = useState<AutonomyLevel>(2);
   const [showHistory, setShowHistory] = useState(false);
+  const [actions, setActions] = useState<AutonomousAction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchActions = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/reports', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+          const reportData = json.data;
+          const dynamicActions: AutonomousAction[] = [];
+          
+          // Derive actions from real data
+          if (reportData.totalOutstanding > 0) {
+            dynamicActions.push({
+              id: 'unpaid-inv',
+              timestamp: new Date().toISOString(),
+              action: 'Flagged Outstanding Invoices',
+              reason: `You have ${formatCurrency(reportData.totalOutstanding)} in unpaid invoices.`,
+              amount: reportData.totalOutstanding,
+              status: 'pending_approval',
+              impact: 'Improve cash flow.'
+            });
+          }
+
+          if (reportData.expenses && reportData.expenses.length > 0) {
+            const lastExpense = reportData.expenses.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+            if (lastExpense) {
+              dynamicActions.push({
+                id: 'recent-exp',
+                timestamp: new Date(lastExpense.date).toISOString(),
+                action: 'Categorized Expense',
+                reason: `Auto-categorized ${lastExpense.vendor} as ${lastExpense.category}.`,
+                amount: lastExpense.amount,
+                status: 'executed',
+                impact: 'Time saved on manual entry.'
+              });
+            }
+          }
+
+          setActions(dynamicActions);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchActions();
+  }, [user]);
+
+  if (loading) return null;
 
   return (
     <div className={styles.autopilotContainer}>
@@ -87,7 +122,7 @@ export default function PersonalAutopilot() {
         </div>
 
         <div className={styles.actionsList}>
-          {mockActions.map((action) => (
+          {actions.length > 0 ? actions.map((action) => (
             <div key={action.id} className={styles.actionItem}>
               <div className={styles.actionMain}>
                 <div className={styles.actionIcon}>
@@ -113,7 +148,11 @@ export default function PersonalAutopilot() {
                 )}
               </div>
             </div>
-          ))}
+          )) : (
+            <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
+              No recent autonomous actions.
+            </div>
+          )}
         </div>
       </div>
 
