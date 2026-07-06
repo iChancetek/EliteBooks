@@ -239,8 +239,8 @@ ${context}`;
             result = await getFinancialSummary(orgId);
           } else if (name === 'get_account_balance') {
             const summary = await getFinancialSummary(orgId);
-            // Cash on hand base 120,000 + net cash movements
-            result = { balance: 120000 + (summary.totalPaid - summary.totalExpenses) };
+            // Cash on hand: total paid invoices minus business expenses
+            result = { balance: (summary.totalPaid || 0) - (summary.totalExpenses || 0) };
           }
         } catch (e: any) {
           console.error(`Error running tool ${name}:`, e);

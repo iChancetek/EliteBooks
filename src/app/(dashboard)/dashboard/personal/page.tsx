@@ -118,7 +118,7 @@ export default function PersonalFinancePage() {
     const companyNetProfit = reportData.netProfit || 0;
 
     // 1. Forecast Data (Based on real historical data)
-    let baseBalance = 10000;
+    let baseBalance = 0;
     let currentBalance = baseBalance + companyNetProfit - totalPersonalExpenses;
 
     const now = new Date();

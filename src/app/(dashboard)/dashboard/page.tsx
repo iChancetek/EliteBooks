@@ -45,11 +45,50 @@ export default function DashboardHome() {
       if (data.success) {
         const s = data.data;
         
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+        const getMoMChange = (items: any[], dateField: string, amountField: string) => {
+          const thisMonth = items.filter(i => {
+            const d = new Date(i[dateField] || i.createdAt);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+          }).reduce((sum, i) => sum + (i[amountField] || 0), 0);
+          
+          const prevMonth = items.filter(i => {
+            const d = new Date(i[dateField] || i.createdAt);
+            return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+          }).reduce((sum, i) => sum + (i[amountField] || 0), 0);
+          
+          if (prevMonth === 0) return thisMonth > 0 ? 100 : 0;
+          return ((thisMonth - prevMonth) / prevMonth) * 100;
+        };
+
+        const revChange = getMoMChange(s.invoices || [], 'issueDate', 'total');
+        const expChange = getMoMChange(s.expenses || [], 'date', 'amount');
+        
+        const thisMonthRev = (s.invoices || []).filter((i: any) => new Date(i.issueDate || i.createdAt).getMonth() === currentMonth && new Date(i.issueDate || i.createdAt).getFullYear() === currentYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
+        const prevMonthRev = (s.invoices || []).filter((i: any) => new Date(i.issueDate || i.createdAt).getMonth() === lastMonth && new Date(i.issueDate || i.createdAt).getFullYear() === lastMonthYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
+        const thisMonthExp = (s.expenses || []).filter((e: any) => new Date(e.date || e.createdAt).getMonth() === currentMonth && new Date(e.date || e.createdAt).getFullYear() === currentYear).reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+        const prevMonthExp = (s.expenses || []).filter((e: any) => new Date(e.date || e.createdAt).getMonth() === lastMonth && new Date(e.date || e.createdAt).getFullYear() === lastMonthYear).reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+        
+        const thisMonthProfit = thisMonthRev - thisMonthExp;
+        const prevMonthProfit = prevMonthRev - prevMonthExp;
+        const profitChange = prevMonthProfit === 0 ? (thisMonthProfit > 0 ? 100 : 0) : ((thisMonthProfit - prevMonthProfit) / Math.abs(prevMonthProfit)) * 100;
+
+        const thisMonthPaid = (s.invoices || []).filter((i: any) => i.status === 'paid' && new Date(i.issueDate || i.createdAt).getMonth() === currentMonth && new Date(i.issueDate || i.createdAt).getFullYear() === currentYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
+        const prevMonthPaid = (s.invoices || []).filter((i: any) => i.status === 'paid' && new Date(i.issueDate || i.createdAt).getMonth() === lastMonth && new Date(i.issueDate || i.createdAt).getFullYear() === lastMonthYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
+        const thisMonthCash = thisMonthPaid - thisMonthExp;
+        const prevMonthCash = prevMonthPaid - prevMonthExp;
+        const cashChange = prevMonthCash === 0 ? (thisMonthCash > 0 ? 100 : 0) : ((thisMonthCash - prevMonthCash) / Math.abs(prevMonthCash)) * 100;
+
         setSnapshot({
-          revenue: { value: s.totalRevenue || 0, change: s.totalRevenue > 0 ? 12.3 : 0 },
-          expenses: { value: s.totalExpenses || 0, change: s.totalExpenses > 0 ? -3.8 : 0 },
-          profit: { value: s.netProfit || 0, change: s.netProfit > 0 ? 28.1 : 0 },
-          cashFlow: { value: (s.totalPaid || 0) - (s.totalExpenses || 0) + 120000, change: 5.2 }, // Base cash of 120k + transactions
+          revenue: { value: s.totalRevenue || 0, change: revChange },
+          expenses: { value: s.totalExpenses || 0, change: expChange },
+          profit: { value: s.netProfit || 0, change: profitChange },
+          cashFlow: { value: (s.totalPaid || 0) - (s.totalExpenses || 0), change: cashChange },
         });
 
         // Build dynamic recent activity
