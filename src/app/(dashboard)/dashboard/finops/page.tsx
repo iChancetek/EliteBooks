@@ -108,18 +108,24 @@ export default function FinOpsPage() {
   });
 
   const cloudSpendMTD = currentMonthExpenses.reduce((s, e) => s + e.amount, 0);
-  const aiInfraSpend = currentMonthExpenses.filter(e => 
+  const aiInfraExpenses = currentMonthExpenses.filter(e => 
     ['openai', 'aws', 'gcp', 'gpu'].some(v => e.vendor?.toLowerCase().includes(v))
-  ).reduce((s, e) => s + e.amount, 0) || (cloudSpendMTD * 0.43); // Fallback to 43% unit econ ratio
+  );
+  const aiInfraSpend = aiInfraExpenses.reduce((s, e) => s + e.amount, 0);
 
-  const efficiency = cloudSpendMTD > 0 ? Math.min(95, Math.max(70, 95 - (aiInfraSpend / cloudSpendMTD) * 20)) : 88;
-  const costPerInference = cloudSpendMTD > 0 ? 0.004 : 0;
+  const efficiency = cloudSpendMTD > 0 ? Math.min(95, Math.max(70, 95 - (aiInfraSpend / cloudSpendMTD) * 20)) : 0;
+  
+  // Calculate average unit cost from logged FinOps resource items
+  const finOpsItemsWithUnitCost = currentMonthExpenses.filter(e => e.isFinOps && e.unitCost > 0);
+  const costPerInference = finOpsItemsWithUnitCost.length > 0 
+    ? finOpsItemsWithUnitCost.reduce((sum, e) => sum + e.unitCost, 0) / finOpsItemsWithUnitCost.length 
+    : 0;
 
   const stats = [
     { label: 'Cloud Spend (MTD)', value: formatCurrency(cloudSpendMTD), change: cloudSpendMTD > 0 ? '+6%' : '0%', isPositive: false, icon: Cloud },
     { label: 'AI Infra (Token/GPU)', value: formatCurrency(aiInfraSpend), change: aiInfraSpend > 0 ? '+12%' : '0%', isPositive: false, icon: Cpu },
-    { label: 'Resource Efficiency', value: `${efficiency.toFixed(0)}%`, change: '+3%', isPositive: true, icon: Zap },
-    { label: 'Unit Econ (Cost/Inf)', value: `$${costPerInference.toFixed(3)}`, change: '-12%', isPositive: true, icon: Target },
+    { label: 'Resource Efficiency', value: cloudSpendMTD > 0 ? `${efficiency.toFixed(0)}%` : '0%', change: cloudSpendMTD > 0 ? '+3%' : '0%', isPositive: true, icon: Zap },
+    { label: 'Unit Econ (Cost/Inf)', value: costPerInference > 0 ? `$${costPerInference.toFixed(4)}` : '$0.0000', change: costPerInference > 0 ? '-12%' : '0%', isPositive: true, icon: Target },
   ];
 
   const recommendations = [
