@@ -238,10 +238,10 @@ export default function PersonalFinancePage() {
         action: exp.aiCategorized ? 'Auto-Categorized' : 'Manual Entry',
       }));
 
-    // 5. Goals (Based on Owner's Draw)
+    // 5. Goals (Based on Real Available Cash)
     const dynamicGoals = [
-      { name: 'Emergency Fund', target: 10000, current: Math.min(10000, 2000 + companyNetProfit * 0.1), color: 'var(--color-accent-primary)' },
-      { name: 'Index Fund Growth', target: 50000, current: Math.min(50000, 5000 + companyNetProfit * 0.2), color: 'var(--color-positive)' },
+      { name: 'Emergency Fund', target: 10000, current: Math.max(0, Math.min(10000, currentBalance * 0.3)), color: 'var(--color-accent-primary)' },
+      { name: 'Index Fund Growth', target: 50000, current: Math.max(0, Math.min(50000, currentBalance * 0.7)), color: 'var(--color-positive)' },
     ];
 
     return { forecastData: forecast, insights: dynamicInsights, bills: unpaidBills, transactions: recentTransactions, goals: dynamicGoals };
