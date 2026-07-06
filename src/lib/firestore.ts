@@ -254,19 +254,16 @@ export async function getFinancialSummary(orgId: string, filter?: DateFilter) {
     .filter((inv: any) => inv.status === 'overdue')
     .reduce((sum: number, inv: any) => sum + (inv.amountDue || 0), 0);
 
-  const totalExpenses = expenses
-    .filter((exp: any) => exp.status !== 'deleted')
-    .reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
+  const businessExpenses = expenses.filter((exp: any) => exp.status !== 'deleted' && !exp.isPersonal);
+  const totalExpenses = businessExpenses.reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
 
   const netProfit = totalRevenue - totalExpenses;
   const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-  // Expense breakdown by category
+  // Expense breakdown by category (Business only)
   const expensesByCategory: Record<string, number> = {};
-  expenses.forEach((exp: any) => {
-    if (exp.status !== 'deleted') {
-      expensesByCategory[exp.category] = (expensesByCategory[exp.category] || 0) + (exp.amount || 0);
-    }
+  businessExpenses.forEach((exp: any) => {
+    expensesByCategory[exp.category] = (expensesByCategory[exp.category] || 0) + (exp.amount || 0);
   });
 
   // Invoice breakdown by status

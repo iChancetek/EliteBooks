@@ -110,22 +110,31 @@ export default function PersonalFinancePage() {
   const { forecastData, insights, bills, transactions, goals } = useMemo(() => {
     if (!reportData) return { forecastData: [], insights: [], bills: [], transactions: [], goals: [] };
 
+    // Filter to purely personal expenses
+    const personalExpenses = (reportData.expenses || []).filter((e: any) => e.isPersonal && e.status !== 'deleted');
+    const totalPersonalExpenses = personalExpenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+    
+    // Company Net Profit serves as personal income (Owner's Draw)
+    const companyNetProfit = reportData.netProfit || 0;
+
     // 1. Forecast Data (Based on real historical data)
     let baseBalance = 10000;
-    let currentBalance = baseBalance + (reportData.totalPaid || 0) - (reportData.totalExpenses || 0);
+    let currentBalance = baseBalance + companyNetProfit - totalPersonalExpenses;
 
     const now = new Date();
     let oldestDate = new Date();
     const allDates = [
       ...(reportData.invoices || []).map((i: any) => new Date(i.createdAt || i.issueDate)),
-      ...(reportData.expenses || []).map((e: any) => new Date(e.date || e.createdAt))
+      ...personalExpenses.map((e: any) => new Date(e.date || e.createdAt))
     ].filter(d => !isNaN(d.getTime()));
     
     if (allDates.length > 0) {
       oldestDate = new Date(Math.min(...allDates.map(d => d.getTime())));
     }
     const daysSinceStart = Math.max(1, Math.ceil((now.getTime() - oldestDate.getTime()) / (1000 * 60 * 60 * 24)));
-    const dailyTrend = ((reportData.totalPaid || 0) - (reportData.totalExpenses || 0)) / daysSinceStart;
+    
+    // Daily trend: Owner's Draw - Personal Expenses
+    const dailyTrend = (companyNetProfit - totalPersonalExpenses) / daysSinceStart;
 
     const forecast = [];
     const today = new Date();
@@ -136,18 +145,23 @@ export default function PersonalFinancePage() {
       
       let pointBalance = baseBalance;
       if (i <= 0) {
-        // Calculate exact historical balance up to this past date
+        // Approximate past business net profit by summing paid invoices and business expenses up to date `d`
         const pastPaid = (reportData.invoices || [])
           .filter((inv: any) => inv.status === 'paid' && new Date(inv.createdAt || inv.issueDate) <= d)
           .reduce((sum: number, inv: any) => sum + (inv.total || 0), 0);
-        const pastExp = (reportData.expenses || [])
-          .filter((exp: any) => exp.status !== 'deleted' && new Date(exp.date || exp.createdAt) <= d)
+        
+        const pastBusinessExp = (reportData.expenses || [])
+          .filter((exp: any) => !exp.isPersonal && exp.status !== 'deleted' && new Date(exp.date || exp.createdAt) <= d)
           .reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
-        pointBalance += pastPaid - pastExp;
+          
+        const pastPersExp = personalExpenses
+          .filter((exp: any) => new Date(exp.date || exp.createdAt) <= d)
+          .reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
+          
+        pointBalance += (pastPaid - pastBusinessExp) - pastPersExp;
         
         if (i === 0) currentBalance = pointBalance; 
       } else {
-        // Project future balance using historical daily trend
         pointBalance = currentBalance + (dailyTrend * (i * 5));
       }
 
@@ -158,68 +172,76 @@ export default function PersonalFinancePage() {
       });
     }
 
-    // 2. Dynamic Insights
+    // 2. Dynamic Insights (Only analyze personal expenses!)
     const dynamicInsights = [];
-    if (reportData.expensesByCategory) {
-      const topCategory = Object.entries(reportData.expensesByCategory).sort((a: any, b: any) => b[1] - a[1])[0];
+    const personalExpensesByCategory: Record<string, number> = {};
+    personalExpenses.forEach((exp: any) => {
+      personalExpensesByCategory[exp.category] = (personalExpensesByCategory[exp.category] || 0) + (exp.amount || 0);
+    });
+
+    if (Object.keys(personalExpensesByCategory).length > 0) {
+      const topCategory = Object.entries(personalExpensesByCategory).sort((a: any, b: any) => b[1] - a[1])[0];
       if (topCategory) {
         dynamicInsights.push({
           title: 'Spending Optimization',
-          desc: `Your highest spending category is ${topCategory[0]} (${formatCurrency(topCategory[1] as number)}). AI suggests reallocating 5% to savings.`,
+          desc: `Your highest personal spending category is ${topCategory[0]} (${formatCurrency(topCategory[1] as number)}). AI suggests reallocating 5% to savings.`,
           impact: 'High',
           icon: Calculator,
           category: 'Budget'
         });
       }
     }
+    
+    // Warn if company has outstanding invoices as it affects Owner's Draw
     if (reportData.totalOutstanding > 0) {
       dynamicInsights.push({
-        title: 'Cashflow Risk',
-        desc: `You have ${formatCurrency(reportData.totalOutstanding)} in outstanding invoices. AI agent can send automated reminders.`,
+        title: 'Draw Risk (Outstanding Invoices)',
+        desc: `Your business has ${formatCurrency(reportData.totalOutstanding)} in outstanding invoices. Collecting this will increase your available Owner's Draw.`,
         impact: 'Medium',
         icon: AlertTriangle,
         category: 'Cashflow'
       });
     }
+
     if (dynamicInsights.length === 0) {
       dynamicInsights.push({
         title: 'All Systems Normal',
-        desc: 'Your cash flow is stable and no urgent optimizations are required.',
+        desc: 'Your personal cash flow is stable and no urgent optimizations are required.',
         impact: 'Low',
         icon: CheckCircle2,
         category: 'Status'
       });
     }
 
-    // 3. Bills (Outstanding invoices or pending expenses)
-    const unpaidBills = reportData.invoices
-      ?.filter((inv: any) => inv.status !== 'paid')
-      ?.slice(0, 3)
-      ?.map((inv: any) => ({
-        id: inv.id,
-        name: inv.clientName || 'Unknown Client',
-        amount: inv.amountDue || inv.total,
-        date: inv.dueDate || inv.issueDate,
-        status: inv.status === 'overdue' ? 'analyzing' : 'ready',
+    // 3. Bills (Pending personal expenses)
+    const unpaidBills = personalExpenses
+      .filter((exp: any) => exp.status === 'pending' || exp.status === 'unpaid')
+      .slice(0, 3)
+      .map((exp: any) => ({
+        id: exp.id,
+        name: exp.vendor || 'Personal Bill',
+        amount: exp.amount,
+        date: exp.date,
+        status: exp.status === 'unpaid' ? 'analyzing' : 'ready',
         icon: Home
-      })) || [];
+      }));
 
-    // 4. Transactions (Recent Expenses)
-    const recentTransactions = reportData.expenses
-      ?.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      ?.slice(0, 5)
-      ?.map((exp: any) => ({
+    // 4. Transactions (Recent Personal Expenses only)
+    const recentTransactions = personalExpenses
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5)
+      .map((exp: any) => ({
         date: exp.date,
         name: exp.vendor || 'Expense',
         cat: exp.category,
         amt: -(exp.amount || 0),
         action: exp.aiCategorized ? 'Auto-Categorized' : 'Manual Entry',
-      })) || [];
+      }));
 
-    // 5. Goals
+    // 5. Goals (Based on Owner's Draw)
     const dynamicGoals = [
-      { name: 'Emergency Fund', target: 10000, current: Math.min(10000, 2000 + reportData.netProfit * 0.1), color: 'var(--color-accent-primary)' },
-      { name: 'Index Fund Growth', target: 50000, current: Math.min(50000, 5000 + reportData.netProfit * 0.2), color: 'var(--color-positive)' },
+      { name: 'Emergency Fund', target: 10000, current: Math.min(10000, 2000 + companyNetProfit * 0.1), color: 'var(--color-accent-primary)' },
+      { name: 'Index Fund Growth', target: 50000, current: Math.min(50000, 5000 + companyNetProfit * 0.2), color: 'var(--color-positive)' },
     ];
 
     return { forecastData: forecast, insights: dynamicInsights, bills: unpaidBills, transactions: recentTransactions, goals: dynamicGoals };
