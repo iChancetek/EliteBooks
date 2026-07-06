@@ -145,23 +145,29 @@ export default function FinOpsPage() {
     const monthlyMap: Record<string, number> = {};
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // Seed last 12 months to ensure chart isn't completely blank
+    // Initialize last 12 months to 0
     for (let i = 11; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
       const label = `${months[d.getMonth()]} ${d.getFullYear()}`;
-      monthlyMap[label] = 50; // baseline height %
+      monthlyMap[label] = 0;
     }
 
+    let maxSpend = 0;
     cloudExpenses.forEach(e => {
       const dateObj = new Date(e.date);
       const label = `${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
       if (label in monthlyMap) {
-        monthlyMap[label] = Math.min(100, monthlyMap[label] + (e.amount / 100)); // scaling factor
+        monthlyMap[label] += e.amount;
+        if (monthlyMap[label] > maxSpend) maxSpend = monthlyMap[label];
       }
     });
 
-    return Object.entries(monthlyMap).map(([label, height]) => ({ label, height }));
+    // Scale dynamically based on actual spend
+    return Object.entries(monthlyMap).map(([label, amount]) => ({ 
+      label, 
+      height: maxSpend > 0 ? Math.max(5, (amount / maxSpend) * 100) : 5
+    }));
   };
 
   const chartData = getMonthlySpendTrend();

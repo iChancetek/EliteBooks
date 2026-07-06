@@ -132,8 +132,7 @@ export default function ReportsPage() {
   }, {} as Record<string, number>);
   
   const activePlData = [
-    { category: 'Service Revenue', amount: totalRevenue * 0.75, type: 'revenue' },
-    { category: 'Product Sales', amount: totalRevenue * 0.25, type: 'revenue' },
+    { category: 'Invoiced Revenue', amount: totalRevenue, type: 'revenue' },
     ...Object.entries(expenseCategories).map(([cat, amt]) => ({
       category: cat,
       amount: -(amt as number),

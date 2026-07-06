@@ -110,16 +110,50 @@ export default function PersonalFinancePage() {
   const { forecastData, insights, bills, transactions, goals } = useMemo(() => {
     if (!reportData) return { forecastData: [], insights: [], bills: [], transactions: [], goals: [] };
 
-    // 1. Forecast Data (Simple projection based on recent data)
-    let baseBalance = 10000 + reportData.totalPaid - reportData.totalExpenses;
+    // 1. Forecast Data (Based on real historical data)
+    let baseBalance = 10000;
+    let currentBalance = baseBalance + (reportData.totalPaid || 0) - (reportData.totalExpenses || 0);
+
+    const now = new Date();
+    let oldestDate = new Date();
+    const allDates = [
+      ...(reportData.invoices || []).map((i: any) => new Date(i.createdAt || i.issueDate)),
+      ...(reportData.expenses || []).map((e: any) => new Date(e.date || e.createdAt))
+    ].filter(d => !isNaN(d.getTime()));
+    
+    if (allDates.length > 0) {
+      oldestDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+    }
+    const daysSinceStart = Math.max(1, Math.ceil((now.getTime() - oldestDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const dailyTrend = ((reportData.totalPaid || 0) - (reportData.totalExpenses || 0)) / daysSinceStart;
+
     const forecast = [];
     const today = new Date();
+    
     for (let i = -5; i <= 4; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() + (i * 5));
+      
+      let pointBalance = baseBalance;
+      if (i <= 0) {
+        // Calculate exact historical balance up to this past date
+        const pastPaid = (reportData.invoices || [])
+          .filter((inv: any) => inv.status === 'paid' && new Date(inv.createdAt || inv.issueDate) <= d)
+          .reduce((sum: number, inv: any) => sum + (inv.total || 0), 0);
+        const pastExp = (reportData.expenses || [])
+          .filter((exp: any) => exp.status !== 'deleted' && new Date(exp.date || exp.createdAt) <= d)
+          .reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
+        pointBalance += pastPaid - pastExp;
+        
+        if (i === 0) currentBalance = pointBalance; 
+      } else {
+        // Project future balance using historical daily trend
+        pointBalance = currentBalance + (dailyTrend * (i * 5));
+      }
+
       forecast.push({
         date: d.toLocaleDateString('default', { month: 'short', day: '2-digit' }),
-        balance: baseBalance + (i * 200), // Simple mock curve using real base balance
+        balance: Math.round(pointBalance),
         isPredicted: i > 0
       });
     }
