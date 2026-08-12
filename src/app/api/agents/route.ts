@@ -9,7 +9,7 @@ import { executeAgent } from '@/agents/orchestrator';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, orgId, userId } = body;
+    const { message, orgId, userId, sessionId } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -19,12 +19,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Log the request for audit trail
-    console.log(`[Agent Request] User: ${userId}, Org: ${orgId}, Message: "${message}"`);
+    console.log(`[Agent Request] User: ${userId}, Org: ${orgId}, Session: ${sessionId}, Message: "${message}"`);
 
     const result = await executeAgent(
       message,
       orgId || 'default',
-      userId || 'anonymous'
+      userId || 'anonymous',
+      sessionId || `sess_${Date.now()}`
     );
 
     // Log the result for audit trail
@@ -43,3 +44,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

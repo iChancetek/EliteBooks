@@ -69,27 +69,53 @@ COMMUNICATION STYLE:
 });
 
 /**
- * Execute the orchestrator with a user message
+ * Execute the orchestrator with a user message via LangGraph state graph runner
  */
-export async function executeAgent(userMessage: string, orgId: string, userId: string) {
+export async function executeAgent(
+  userMessage: string,
+  orgId: string = 'default',
+  userId: string = 'anonymous',
+  sessionId?: string
+) {
   try {
-    const contextMessage = `[Context: Organization ID: ${orgId}, User ID: ${userId}, Timestamp: ${new Date().toISOString()}]
+    const { runEliteBooksGraph } = await import('./langgraph/graph');
 
-User request: ${userMessage}`;
-
-    const result = await run(orchestratorAgent, contextMessage);
+    const result = await runEliteBooksGraph(
+      userMessage,
+      orgId,
+      userId,
+      sessionId || `sess_${Date.now()}`
+    );
 
     return {
-      success: true,
-      message: result.finalOutput || 'Task completed successfully.',
-      agentUsed: result.lastAgent?.name || 'Orchestrator',
+      success: result.success,
+      message: result.message,
+      agentUsed: result.agentUsed,
+      sessionId: result.sessionId,
+      graphRagContext: result.graphRagContext,
+      a2aMessages: result.a2aMessages,
+      auditTrail: result.auditTrail,
+      pendingActions: result.pendingActions,
     };
   } catch (error) {
-    console.error('Agent execution error:', error);
-    return {
-      success: false,
-      message: 'I encountered an issue processing your request. Please try again.',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    console.error('LangGraph agent execution error:', error);
+    try {
+      const contextMessage = `[Context: Organization ID: ${orgId}, User ID: ${userId}, Timestamp: ${new Date().toISOString()}]
+
+User request: ${userMessage}`;
+      const result = await run(orchestratorAgent, contextMessage);
+      return {
+        success: true,
+        message: result.finalOutput || 'Task completed successfully.',
+        agentUsed: result.lastAgent?.name || 'Orchestrator',
+      };
+    } catch (fallbackErr) {
+      return {
+        success: false,
+        message: 'I encountered an issue processing your request. Please try again.',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
   }
 }
+

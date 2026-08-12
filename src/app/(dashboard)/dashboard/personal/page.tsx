@@ -192,16 +192,7 @@ export default function PersonalFinancePage() {
       }
     }
     
-    // Warn if company has outstanding invoices as it affects Owner's Draw
-    if (reportData.totalOutstanding > 0) {
-      dynamicInsights.push({
-        title: 'Draw Risk (Outstanding Invoices)',
-        desc: `Your business has ${formatCurrency(reportData.totalOutstanding)} in outstanding invoices. Collecting this will increase your available Owner's Draw.`,
-        impact: 'Medium',
-        icon: AlertTriangle,
-        category: 'Cashflow'
-      });
-    }
+
 
     if (dynamicInsights.length === 0) {
       dynamicInsights.push({
