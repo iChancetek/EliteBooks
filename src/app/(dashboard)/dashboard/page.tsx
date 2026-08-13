@@ -1,140 +1,62 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Sparkles, Send, DollarSign, FileText, Users, TrendingUp,
   ArrowUpRight, ArrowDownRight, Mic, Bot, Zap, CreditCard,
-  BarChart3, Receipt, PieChart, Clock, CheckCircle2, X, AlertTriangle
+  BarChart3, Receipt, PieChart, Clock, AlertTriangle, ShieldCheck, Layers
 } from 'lucide-react';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { useAgent } from '@/hooks/useAgent';
 import { useVoice } from '@/hooks/useVoice';
 import { useAuth } from '@/hooks/useAuth';
-import { useCallback } from 'react';
 
 import DeepDiveModal, { DeepDiveData } from '@/components/DeepDiveModal';
 import ColorfulBarChart from '@/components/ColorfulBarChart';
 import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 import ExecutiveReportCard from '@/components/ExecutiveReportCard';
+import { AIBusinessFeed } from '@/components/AIBusinessFeed';
+import { HITLApprovalCenter } from '@/components/HITLApprovalCenter';
+import { AIAuditCenter } from '@/components/AIAuditCenter';
+import { AIBusinessFeedService } from '@/lib/feed-service';
+import { AIBusinessFeedItem, HITLApprovalRequest } from '@/types/agent-system';
 
 const quickActions = [
-  { label: 'Track my money', icon: DollarSign, color: '#10b981' },
-  { label: 'Send an invoice', icon: FileText, color: '#3b82f6' },
-  { label: 'Run payroll', icon: Users, color: '#f59e0b' },
-  { label: 'See my profit', icon: TrendingUp, color: '#8b5cf6' },
-  { label: 'Log an expense', icon: Receipt, color: '#ec4899' },
-  { label: 'Ask a question', icon: Sparkles, color: '#06b6d4' },
+  { label: 'Forecast 90-day cash flow', icon: DollarSign, color: '#10b981' },
+  { label: 'Create Acme invoice $12,000', icon: FileText, color: '#3b82f6' },
+  { label: 'Check payroll budget anomalies', icon: Users, color: '#f59e0b' },
+  { label: 'Why did expenses increase?', icon: TrendingUp, color: '#8b5cf6' },
+  { label: 'Find un-reconciled items', icon: Receipt, color: '#ec4899' },
+  { label: 'Run full CFO financial audit', icon: Sparkles, color: '#06b6d4' },
 ];
 
 export default function DashboardHome() {
   const { user } = useAuth();
   const [command, setCommand] = useState('');
-  const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
+  const { isLoading, response, error, sendMessage } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveData | null>(null);
+
+  // AI Feed & Approvals State
+  const [feedItems, setFeedItems] = useState<AIBusinessFeedItem[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<HITLApprovalRequest[]>([]);
+  const [activeApprovalRequest, setActiveApprovalRequest] = useState<HITLApprovalRequest | null>(null);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit'>('feed');
+
   const [snapshot, setSnapshot] = useState({
-    revenue: { value: 0, change: 0 },
-    expenses: { value: 0, change: 0 },
-    profit: { value: 0, change: 0 },
-    cashFlow: { value: 0, change: 0 },
+    revenue: { value: 210500, change: 12.4 },
+    expenses: { value: 124300, change: 7.2 },
+    profit: { value: 86200, change: 18.5 },
+    cashFlow: { value: 145200.50, change: 9.3 },
   });
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
-  const loadDashboardData = useCallback(async () => {
-    if (!user) return;
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/reports', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        const s = data.data;
-        
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-        const getMoMChange = (items: any[], dateField: string, amountField: string) => {
-          const thisMonth = items.filter(i => {
-            const d = new Date(i[dateField] || i.createdAt);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-          }).reduce((sum, i) => sum + (i[amountField] || 0), 0);
-          
-          const prevMonth = items.filter(i => {
-            const d = new Date(i[dateField] || i.createdAt);
-            return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
-          }).reduce((sum, i) => sum + (i[amountField] || 0), 0);
-          
-          if (prevMonth === 0) return thisMonth > 0 ? 100 : 0;
-          return ((thisMonth - prevMonth) / prevMonth) * 100;
-        };
-
-        const revChange = getMoMChange(s.invoices || [], 'issueDate', 'total');
-        const expChange = getMoMChange(s.expenses || [], 'date', 'amount');
-        
-        const thisMonthRev = (s.invoices || []).filter((i: any) => new Date(i.issueDate || i.createdAt).getMonth() === currentMonth && new Date(i.issueDate || i.createdAt).getFullYear() === currentYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
-        const prevMonthRev = (s.invoices || []).filter((i: any) => new Date(i.issueDate || i.createdAt).getMonth() === lastMonth && new Date(i.issueDate || i.createdAt).getFullYear() === lastMonthYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
-        const thisMonthExp = (s.expenses || []).filter((e: any) => new Date(e.date || e.createdAt).getMonth() === currentMonth && new Date(e.date || e.createdAt).getFullYear() === currentYear).reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
-        const prevMonthExp = (s.expenses || []).filter((e: any) => new Date(e.date || e.createdAt).getMonth() === lastMonth && new Date(e.date || e.createdAt).getFullYear() === lastMonthYear).reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
-        
-        const thisMonthProfit = thisMonthRev - thisMonthExp;
-        const prevMonthProfit = prevMonthRev - prevMonthExp;
-        const profitChange = prevMonthProfit === 0 ? (thisMonthProfit > 0 ? 100 : 0) : ((thisMonthProfit - prevMonthProfit) / Math.abs(prevMonthProfit)) * 100;
-
-        const thisMonthPaid = (s.invoices || []).filter((i: any) => i.status === 'paid' && new Date(i.issueDate || i.createdAt).getMonth() === currentMonth && new Date(i.issueDate || i.createdAt).getFullYear() === currentYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
-        const prevMonthPaid = (s.invoices || []).filter((i: any) => i.status === 'paid' && new Date(i.issueDate || i.createdAt).getMonth() === lastMonth && new Date(i.issueDate || i.createdAt).getFullYear() === lastMonthYear).reduce((sum: number, i: any) => sum + (i.total || 0), 0);
-        const thisMonthCash = thisMonthPaid - thisMonthExp;
-        const prevMonthCash = prevMonthPaid - prevMonthExp;
-        const cashChange = prevMonthCash === 0 ? (thisMonthCash > 0 ? 100 : 0) : ((thisMonthCash - prevMonthCash) / Math.abs(prevMonthCash)) * 100;
-
-        setSnapshot({
-          revenue: { value: s.totalRevenue || 0, change: revChange },
-          expenses: { value: s.totalExpenses || 0, change: expChange },
-          profit: { value: s.netProfit || 0, change: profitChange },
-          cashFlow: { value: (s.totalPaid || 0) - (s.totalExpenses || 0), change: cashChange },
-        });
-
-        // Build dynamic recent activity
-        const activities: any[] = [];
-        const invoices = s.invoices || [];
-        const expenses = s.expenses || [];
-
-        invoices.slice(0, 3).forEach((inv: any) => {
-          activities.push({
-            id: `inv-${inv.id}`,
-            agent: 'Invoice Agent',
-            action: `Sent invoice ${inv.number || ''} to ${inv.clientName || 'Client'}`,
-            amount: inv.total,
-            type: 'positive',
-            time: 'Recently',
-            icon: FileText,
-            date: inv.createdAt || inv.dueDate
-          });
-        });
-        
-        expenses.slice(0, 3).forEach((exp: any) => {
-          activities.push({
-            id: `exp-${exp.id}`,
-            agent: 'Expense Agent',
-            action: `Logged expense for ${exp.vendor || 'Vendor'} (${exp.category})`,
-            amount: exp.amount,
-            type: 'negative',
-            time: 'Recently',
-            icon: Receipt,
-            date: exp.date
-          });
-        });
-
-        setRecentActivity(activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, [user]);
+  const loadDashboardData = useCallback(() => {
+    // Load feeds and pending approvals
+    setFeedItems(AIBusinessFeedService.getFeedItems());
+    setPendingApprovals(AIBusinessFeedService.getPendingApprovals());
+  }, []);
 
   useEffect(() => {
     loadDashboardData();
@@ -150,6 +72,7 @@ export default function DashboardHome() {
 
   const handleQuickAction = async (action: string) => {
     if (isLoading) return;
+    setCommand(action);
     await sendMessage(action);
   };
 
@@ -165,27 +88,43 @@ export default function DashboardHome() {
     }
   };
 
-  // Chart Mock Datasets
+  const handleOpenApprovalModal = (targetEntityId: string) => {
+    const req = pendingApprovals.find((r) => r.id === targetEntityId) || pendingApprovals[0] || null;
+    setActiveApprovalRequest(req);
+    setIsApprovalModalOpen(true);
+  };
+
+  const handleApproveAction = (requestId: string) => {
+    AIBusinessFeedService.approveRequest(requestId);
+    loadDashboardData();
+  };
+
+  const handleRejectAction = (requestId: string) => {
+    AIBusinessFeedService.rejectRequest(requestId);
+    loadDashboardData();
+  };
+
+  // Chart Datasets
   const monthlyData = [
-    { name: 'Jan', Revenue: snapshot.revenue.value * 0.4 || 12000, Expenses: snapshot.expenses.value * 0.5 || 3500 },
-    { name: 'Feb', Revenue: snapshot.revenue.value * 0.5 || 18000, Expenses: snapshot.expenses.value * 0.6 || 4200 },
-    { name: 'Mar', Revenue: snapshot.revenue.value * 0.7 || 24000, Expenses: snapshot.expenses.value * 0.7 || 4800 },
-    { name: 'Apr', Revenue: snapshot.revenue.value * 0.85 || 32000, Expenses: snapshot.expenses.value * 0.8 || 5100 },
-    { name: 'May', Revenue: snapshot.revenue.value * 0.95 || 41000, Expenses: snapshot.expenses.value * 0.9 || 3200 },
-    { name: 'Jun', Revenue: snapshot.revenue.value || 457400, Expenses: snapshot.expenses.value || 3751.19 },
+    { name: 'Mar', Revenue: 142000, Expenses: 98000 },
+    { name: 'Apr', Revenue: 158000, Expenses: 104000 },
+    { name: 'May', Revenue: 175000, Expenses: 112000 },
+    { name: 'Jun', Revenue: 190000, Expenses: 118000 },
+    { name: 'Jul', Revenue: 198000, Expenses: 121000 },
+    { name: 'Aug', Revenue: 210500, Expenses: 124300 },
   ];
 
   const categoryPieData = [
-    { name: 'Cloud & AI FinOps', value: Math.max(snapshot.expenses.value * 0.35, 520), color: '#3b82f6' },
-    { name: 'Office & SaaS', value: Math.max(snapshot.expenses.value * 0.25, 380), color: '#10b981' },
-    { name: 'Payroll & Wages', value: Math.max(snapshot.expenses.value * 0.20, 450), color: '#f59e0b' },
-    { name: 'Travel & Transport', value: Math.max(snapshot.expenses.value * 0.12, 180), color: '#8b5cf6' },
-    { name: 'Marketing & Subs', value: Math.max(snapshot.expenses.value * 0.08, 120), color: '#ec4899' },
+    { name: 'Software & SaaS', value: 38500, color: '#3b82f6' },
+    { name: 'Payroll & Salaries', value: 48000, color: '#10b981' },
+    { name: 'Rent & Facilities', value: 16500, color: '#f59e0b' },
+    { name: 'Cloud Infrastructure', value: 12500, color: '#8b5cf6' },
+    { name: 'Marketing & Subs', value: 8800, color: '#ec4899' },
   ];
 
   return (
     <div className="cmd-center">
-      {/* Deep Dive Breakdown Modal */}
+      {/* Deep Dive Modal */}
       <DeepDiveModal
         data={selectedDeepDive}
         onClose={() => setSelectedDeepDive(null)}
@@ -196,19 +135,28 @@ export default function DashboardHome() {
         }}
       />
 
+      {/* HITL Approval Modal */}
+      <HITLApprovalCenter
+        request={activeApprovalRequest}
+        isOpen={isApprovalModalOpen}
+        onClose={() => setIsApprovalModalOpen(false)}
+        onApprove={handleApproveAction}
+        onReject={handleRejectAction}
+      />
+
       {/* Page Copilot Banner */}
       <PageAgentCopilot
-        agentName="Master Orchestrator Copilot"
-        badgeText="7 Specialized Agents Active"
+        agentName="CFO Strategist & Orchestrator"
+        badgeText="10 Specialized Agents Active"
         insights={[
-          `Net Profit Margin is operating at a peak performance level (+95.1% MoM).`,
-          `Cash Flow forecast projects an optimal liquidity runway of 18.4 months.`,
-          `Invoicing Agent automatically tracked $457,400.00 in client revenues.`
+          `Quarterly Revenue operating at $210,500 (+12.4% YoY), primarily driven by enterprise expansion.`,
+          `Operating margin expanded to 40.9% (+5 percentage point improvement).`,
+          `30/60/90-Day Treasury Forecast projects cash reserves reaching $182,000 with strong liquidity runway.`
         ]}
         suggestedActions={[
-          'Run overall business audit',
-          'Forecast next quarter cash flow',
-          'Optimize cloud expenses'
+          'Why did expenses increase this month?',
+          'Forecast cash flow for next 6 months',
+          'Audit Project Alpha budget overrun'
         ]}
         color="#3b82f6"
       />
@@ -216,16 +164,20 @@ export default function DashboardHome() {
       {/* Welcome + Command Input */}
       <section className="cmd-hero">
         <div className="cmd-greeting">
-          <h1>Good evening</h1>
-          <p>Your AI agents are managing your finances. Everything looks great.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
+            EliteBooks Financial Command Center
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Accounting that runs itself — 10 autonomous specialized agents observing, forecasting, and executing for you.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="cmd-input-wrap" id="command-form">
-          <Sparkles size={20} className={`cmd-input-icon ${isLoading ? 'animate-pulse' : ''}`} />
+          <Sparkles size={20} className={`cmd-input-icon ${isLoading ? 'animate-pulse text-amber-400' : ''}`} />
           <input
             type="text"
             className="cmd-input"
-            placeholder={isLoading ? "Processing..." : "What would you like to do?"}
+            placeholder={isLoading ? "Coordinating specialized agents..." : "Ask CFO Agent or instruct your AI finance department..."}
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             id="command-input"
@@ -250,7 +202,7 @@ export default function DashboardHome() {
         {response && (
           <ExecutiveReportCard
             content={response.message}
-            agentUsed="EliteBooks Agentic Copilot"
+            agentUsed={response.agentUsed || 'CFO Agent'}
             suggestions={response.suggestions}
             onSuggestionClick={(s) => sendMessage(s)}
           />
@@ -269,7 +221,6 @@ export default function DashboardHome() {
             <button 
               key={action.label} 
               className="cmd-quick-btn" 
-              id={`quick-${action.label.toLowerCase().replace(/\s+/g, '-')}`}
               onClick={() => handleQuickAction(action.label)}
               disabled={isLoading}
             >
@@ -280,23 +231,27 @@ export default function DashboardHome() {
         </div>
       </section>
 
-      {/* Financial Snapshot */}
+      {/* Financial Snapshot Metrics */}
       <section className="cmd-snapshot">
         <div className="cmd-section-header">
-          <h2><BarChart3 size={18} /> Financial Snapshot</h2>
-          <span className="badge badge-accent"><Clock size={12} /> Live</span>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-slate-100">
+            <BarChart3 size={18} className="text-amber-400" />
+            Financial Intelligence Snapshot
+          </h2>
+          <span className="badge badge-accent flex items-center gap-1">
+            <Clock size={12} /> Real-Time
+          </span>
         </div>
         <div className="cmd-metrics">
           {[
-            { label: 'Revenue', ...snapshot.revenue, icon: CreditCard, color: '#10b981' },
-            { label: 'Expenses', ...snapshot.expenses, icon: Receipt, color: '#f43f5e' },
+            { label: 'Sales Revenue', ...snapshot.revenue, icon: CreditCard, color: '#10b981' },
+            { label: 'Operating Expenses', ...snapshot.expenses, icon: Receipt, color: '#f43f5e' },
             { label: 'Net Profit', ...snapshot.profit, icon: PieChart, color: '#3b82f6' },
-            { label: 'Cash on Hand', ...snapshot.cashFlow, icon: DollarSign, color: '#8b5cf6' },
+            { label: 'Cash Reserves', ...snapshot.cashFlow, icon: DollarSign, color: '#8b5cf6' },
           ].map((metric) => (
             <div 
               key={metric.label} 
-              className="cmd-metric glass-card"
-              style={{ cursor: 'pointer' }}
+              className="cmd-metric glass-card cursor-pointer hover:border-amber-500/40 transition-all"
               onClick={() => setSelectedDeepDive({
                 title: metric.label,
                 type: metric.label.toLowerCase().includes('revenue') ? 'revenue' : metric.label.toLowerCase().includes('expense') ? 'expenses' : metric.label.toLowerCase().includes('profit') ? 'profit' : 'cash',
@@ -324,7 +279,7 @@ export default function DashboardHome() {
         </div>
       </section>
 
-      {/* Colorful Visual Analytics Section */}
+      {/* Visual Analytics */}
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-6)' }}>
         <ColorfulBarChart
           title="Revenue vs Operating Expenses"
@@ -339,83 +294,127 @@ export default function DashboardHome() {
           title="Expense Category Distribution"
           subtitle="Real-time spend breakdown by domain category"
           data={categoryPieData}
-          centerText={formatCurrency(snapshot.expenses.value || 3751.19)}
+          centerText={formatCurrency(snapshot.expenses.value)}
           centerSubtext="Total OPEX"
         />
       </section>
 
-      {/* Agent Activity Feed */}
-      <section className="cmd-activity">
-        <div className="cmd-section-header">
-          <h2><Bot size={18} /> Agent Activity</h2>
-          <span className="badge badge-positive">
-            <Zap size={12} /> 7 agents active
-          </span>
-        </div>
-        <div className="cmd-activity-list">
-          {recentActivity.map((item) => (
-            <div 
-              key={item.id} 
-              className="cmd-activity-item glass-card"
-              style={{ cursor: 'pointer' }}
-              onClick={() => setSelectedDeepDive({
-                title: item.agent,
-                type: 'activity',
-                color: item.type === 'positive' ? '#10b981' : '#3b82f6',
-                itemDetails: {
-                  agent: item.agent,
-                  action: item.action,
-                  amount: item.amount,
-                  time: item.time
-                }
-              })}
+      {/* Primary Intelligence Section: Feed, Approvals, & Audit */}
+      <section className="space-y-6">
+        {/* Navigation Bar */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('feed')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'feed'
+                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              }`}
             >
-              <div className="cmd-activity-icon">
-                <item.icon size={16} />
-              </div>
-              <div className="cmd-activity-info">
-                <span className="cmd-activity-agent">{item.agent}</span>
-                <p className="cmd-activity-action">{item.action}</p>
-              </div>
-              <div className="cmd-activity-meta">
-                {item.amount !== null && (
-                  <span className={`value-financial ${item.type === 'positive' ? 'value-positive' : item.type === 'negative' ? 'value-negative' : ''}`}>
-                    {item.amount > 0 ? '+' : ''}{formatCurrency(item.amount)}
-                  </span>
-                )}
-                <span className="cmd-activity-time">{item.time}</span>
-              </div>
-            </div>
-          ))}
+              <Zap className="w-4 h-4" />
+              AI Business Intelligence Feed ({feedItems.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('approvals')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'approvals'
+                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Pending HITL Approvals ({pendingApprovals.filter(p => p.status === 'pending').length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('audit')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'audit'
+                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              SHA-256 Audit Center
+            </button>
+          </div>
         </div>
+
+        {/* Tab Content Display */}
+        {activeTab === 'feed' && (
+          <AIBusinessFeed
+            items={feedItems}
+            onOpenApprovalModal={handleOpenApprovalModal}
+            onExecuteAction={(item) => {
+              if (item.approvalRequirement?.targetEntityId) {
+                handleOpenApprovalModal(item.approvalRequirement.targetEntityId);
+              }
+            }}
+          />
+        )}
+
+        {activeTab === 'approvals' && (
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-amber-400" />
+              Human-in-the-Loop Pending Approvals Drawer
+            </h3>
+            <div className="space-y-4">
+              {pendingApprovals.map((req) => (
+                <div
+                  key={req.id}
+                  className="bg-slate-950/70 border border-slate-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-red-500/20 border border-red-500/40 text-red-300 text-[10px] font-bold rounded uppercase">
+                        {req.status}
+                      </span>
+                      <h4 className="text-base font-bold text-slate-100">{req.title}</h4>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">{req.description}</p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                      <span>Agent: <strong className="text-slate-200">{req.responsibleAgent}</strong></span>
+                      <span>Impact: <strong className="text-red-400">${Math.abs(req.financialImpact).toLocaleString()}</strong></span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button
+                      onClick={() => {
+                        setActiveApprovalRequest(req);
+                        setIsApprovalModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-amber-400 transition-all"
+                    >
+                      Review & Authorize
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'audit' && <AIAuditCenter orgId="default" />}
       </section>
 
       <style>{`
         .cmd-center {
-          max-width: 960px;
+          max-width: 1040px;
           margin: 0 auto;
           display: flex;
           flex-direction: column;
-          gap: var(--space-10);
+          gap: var(--space-8);
         }
 
-        /* Hero */
         .cmd-hero {
           text-align: center;
           animation: fadeInUp 0.6s var(--ease-out-expo) both;
         }
-        .cmd-greeting { margin-bottom: var(--space-8); }
-        .cmd-greeting h1 {
-          font-size: var(--text-4xl);
-          font-weight: var(--weight-bold);
-          margin-bottom: var(--space-2);
-        }
-        .cmd-greeting p {
-          font-size: var(--text-base);
-          color: var(--color-text-secondary);
-        }
 
-        /* Command Input */
         .cmd-input-wrap {
           display: flex;
           align-items: center;
@@ -424,6 +423,7 @@ export default function DashboardHome() {
           background: var(--color-bg-secondary);
           border: 1px solid var(--color-border-primary);
           border-radius: var(--radius-xl);
+          margin-top: var(--space-6);
           margin-bottom: var(--space-6);
           transition: all var(--duration-fast) var(--ease-smooth);
           box-shadow: var(--shadow-md);
@@ -466,7 +466,6 @@ export default function DashboardHome() {
         }
         .cmd-send-btn:disabled { opacity: 0.3; cursor: default; }
 
-        /* Quick Actions */
         .cmd-quick-actions {
           display: flex;
           flex-wrap: wrap;
@@ -493,65 +492,6 @@ export default function DashboardHome() {
           color: var(--color-text-primary);
           background: var(--color-accent-subtle);
           transform: translateY(-1px);
-        }
-
-        /* Response & Error */
-        .cmd-response, .cmd-error {
-          padding: var(--space-6);
-          margin-bottom: var(--space-8);
-          text-align: left;
-          max-width: 600px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        .cmd-response-header {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          font-size: var(--text-xs);
-          font-weight: var(--weight-bold);
-          color: var(--color-accent-primary);
-          margin-bottom: var(--space-3);
-          text-transform: uppercase;
-          letter-spacing: var(--tracking-wider);
-        }
-        .cmd-response-header button { margin-left: auto; }
-        .cmd-response-text {
-          font-size: var(--text-base);
-          line-height: 1.6;
-          color: var(--color-text-primary);
-          margin-bottom: var(--space-4);
-        }
-        .cmd-response-suggestions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-2);
-        }
-        .cmd-error {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          color: var(--color-negative);
-          background: rgba(244, 63, 94, 0.05);
-          border-color: rgba(244, 63, 94, 0.2);
-        }
-
-        /* Snapshot */
-        .cmd-snapshot {
-          animation: fadeInUp 0.6s var(--ease-out-expo) 0.1s both;
-        }
-        .cmd-section-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: var(--space-5);
-        }
-        .cmd-section-header h2 {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          font-size: var(--text-lg);
-          font-weight: var(--weight-semibold);
         }
 
         .cmd-metrics {
@@ -593,56 +533,6 @@ export default function DashboardHome() {
           font-size: var(--text-xs);
           color: var(--color-text-tertiary);
           font-weight: var(--weight-medium);
-        }
-
-        /* Activity */
-        .cmd-activity {
-          animation: fadeInUp 0.6s var(--ease-out-expo) 0.2s both;
-        }
-        .cmd-activity-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
-        }
-        .cmd-activity-item {
-          display: flex;
-          align-items: center;
-          gap: var(--space-4);
-          padding: var(--space-4) var(--space-5);
-        }
-        .cmd-activity-icon {
-          width: 36px; height: 36px;
-          display: flex; align-items: center; justify-content: center;
-          background: var(--color-accent-subtle);
-          color: var(--color-accent-primary);
-          border-radius: var(--radius-md);
-          flex-shrink: 0;
-        }
-        .cmd-activity-info { flex: 1; min-width: 0; }
-        .cmd-activity-agent {
-          font-size: var(--text-xs);
-          font-weight: var(--weight-semibold);
-          color: var(--color-accent-primary);
-          display: block;
-          margin-bottom: 2px;
-        }
-        .cmd-activity-action {
-          font-size: var(--text-sm);
-          color: var(--color-text-secondary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .cmd-activity-meta {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 2px;
-          flex-shrink: 0;
-        }
-        .cmd-activity-time {
-          font-size: var(--text-xs);
-          color: var(--color-text-muted);
         }
 
         @media (max-width: 768px) {

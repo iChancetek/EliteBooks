@@ -51,6 +51,7 @@ export interface AgentContext {
 export interface AgentResponse {
   message: string;
   actions: AgentAction[];
+  agentUsed?: string;
   handoffTo?: AgentType;
   requiresApproval: boolean;
   suggestions?: string[];

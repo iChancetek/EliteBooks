@@ -39,6 +39,7 @@ export function useAgent(): UseAgentReturn {
 
       setResponse({
         message: data.message,
+        agentUsed: data.agentUsed || 'CFO Agent',
         actions: data.actions || [],
         requiresApproval: data.requiresApproval || false,
         suggestions: data.suggestions || [],
