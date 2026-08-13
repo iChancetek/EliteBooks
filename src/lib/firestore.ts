@@ -134,13 +134,11 @@ export async function getExpenses(orgId: string, filter?: DateFilter) {
     }
 
     const snapshot = await query.limit(500).get();
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (docs.length > 0) return docs;
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
-    console.warn('Firestore expenses get fallback:', e);
+    console.warn('Firestore expenses get error:', e);
+    return [];
   }
-
-  return defaultSampleExpenses;
 }
 
 export async function createExpense(orgId: string, data: Record<string, any>) {
@@ -193,12 +191,11 @@ export async function getEmployees(orgId: string) {
       .where('isActive', '==', true)
       .orderBy('lastName', 'asc')
       .get();
-    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (list.length > 0) return list;
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     console.error('Firestore getEmployees error:', e);
+    return [];
   }
-  return defaultSampleEmployees;
 }
 
 export async function createEmployee(orgId: string, data: Record<string, any>) {

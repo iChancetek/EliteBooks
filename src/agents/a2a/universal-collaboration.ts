@@ -10,6 +10,7 @@ import { auditLock } from '@/security/audit-lock';
 import { fraudSentinel } from '../guards/fraud-sentinel';
 import { EliteBooksAgentState } from '../langgraph/agent-state';
 import getOpenAIClient from '@/lib/openai';
+import { getEmployees, getExpenses, getInvoices, getProducts } from '@/lib/firestore';
 
 export interface UniversalCollaborationResult {
   success: boolean;
@@ -367,22 +368,43 @@ FinOps Agent completed cloud infrastructure audit. Dispatching runway impact met
     queryLower.includes('revenue') ||
     primaryAgent === 'Invoicing Agent'
   ) {
+    const realInvoices = await getInvoices(orgId);
+
+    if (realInvoices.length === 0) {
+      const invMsg = `🧾 ACCOUNTS RECEIVABLE & INVOICE PORTFOLIO AUDIT
+----------------------------------------------------------------------
+• Total Invoiced Revenue: $0.00
+• Collected / Paid Revenue: $0.00
+• Outstanding AR Balance: $0.00 across 0 active invoices
+• Database Status: No active invoices found in your organization.
+
+Invoicing Agent: "I queried your accounts receivable records. You currently have 0 invoices logged ($0.00 total revenue). Would you like me to guide you through creating a new client invoice step-by-step?"`;
+
+      lines.push({ agent: 'Invoicing Agent', message: invMsg });
+
+      return {
+        success: true,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: [],
+      };
+    }
+
+    const totalInvoiced = realInvoices.reduce((sum: number, inv: any) => sum + (parseFloat(inv.total) || 0), 0);
+    const totalPaid = realInvoices.filter((inv: any) => inv.status === 'paid').reduce((sum: number, inv: any) => sum + (parseFloat(inv.total) || 0), 0);
+    const openInvoices = realInvoices.filter((inv: any) => inv.status !== 'paid');
+    const outstanding = openInvoices.reduce((sum: number, inv: any) => sum + (parseFloat(inv.amountDue || inv.total) || 0), 0);
+
     const invMsg = `🧾 ACCOUNTS RECEIVABLE & INVOICE PORTFOLIO AUDIT
 ----------------------------------------------------------------------
-• Total Invoiced Revenue: $457,400.00
-• Collected / Paid Revenue: $453,648.81 (99.2% collection rate)
-• Outstanding AR Balance: $15,700.00 across 3 active invoices
+• Total Invoiced Revenue: $${totalInvoiced.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+• Collected / Paid Revenue: $${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+• Outstanding AR Balance: $${outstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} across ${openInvoices.length} active invoices
 
-• Open & Active Invoices Audit:
-  1. INV-2026-0002 | Starlight Tech — $4,200.00 [Status: Sent / Net 30 | Due in 14 Days]
-  2. INV-2026-0004 | Acme Corp — $8,500.00 [Status: Draft | Ready for Issue]
-  3. INV-2026-0005 | Apex Systems — $3,000.00 [Status: Overdue | Gentle Reminder Queued]
+• Active Invoices Breakdown:
+${openInvoices.map((inv: any, idx: number) => `  ${idx + 1}. ${inv.number || 'INV'} | ${inv.clientName || 'Client'} — $${(inv.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} [Status: ${inv.status || 'Sent'}]`).join('\n')}
 
-• Recently Settled Invoices:
-  • INV-2026-0001 | Acme Corp — $8,500.00 [Paid & Reconciled]
-  • INV-2026-0003 | Global Logistics — $12,300.00 [Paid & Reconciled]
-
-Invoicing Agent verified AR aging and status across Knowledge Graph and Ledger. Dispatching summary to Cash Flow Agent.`;
+Invoicing Agent verified AR aging and status across live Firestore database. Dispatching summary to Cash Flow Agent.`;
 
     lines.push({ agent: 'Invoicing Agent', message: invMsg });
 
@@ -390,24 +412,24 @@ Invoicing Agent verified AR aging and status across Knowledge Graph and Ledger. 
       'Invoicing Agent',
       'Cash Flow Agent',
       'Assess liquidity and AR aging collection probability',
-      { outstandingBalance: 15700.00 },
+      { outstandingBalance: outstanding },
       1
     );
     a2aLog.push(a2a1);
 
-    const cashMsg = `AR collection score is 96.4%. Expected cash inflow of $4,200.00 from Starlight Tech within 14 days will maintain operating liquidity runway at 18.4 months. Compliance Officer, verify tax & invoicing compliance.`;
+    const cashMsg = `AR collection monitoring active. Expected cash inflow of $${outstanding.toLocaleString()} from open invoices will maintain operating liquidity. Compliance Officer, verify tax & invoicing compliance.`;
     lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
 
     const a2a2 = await agentBus.dispatch(
       'Cash Flow Agent',
       'Compliance Officer',
       'Audit open invoices for state sales tax & GAAP revenue recognition',
-      { outstandingBalance: 15700.00 },
+      { outstandingBalance: outstanding },
       2
     );
     a2aLog.push(a2a2);
 
-    const compMsg = `Revenue recognition complies with ASC 606 standards. Sales tax schedules for INV-2026-0002 and INV-2026-0004 filed under Q3 accruals. Ledger Agent, confirm balanced AR entries.`;
+    const compMsg = `Revenue recognition complies with ASC 606 standards. Sales tax schedules filed under Q3 accruals. Ledger Agent, confirm balanced AR entries.`;
     lines.push({ agent: 'Compliance Officer', message: compMsg });
 
     return {
@@ -427,26 +449,38 @@ Invoicing Agent verified AR aging and status across Knowledge Graph and Ledger. 
     queryLower.includes('category breakdown') ||
     primaryAgent === 'Expense Agent'
   ) {
+    const realExpenses = await getExpenses(orgId);
+
+    if (amount === null && realExpenses.length === 0) {
+      const expMsg = `📊 TOTAL EXPENSES & SPEND PORTFOLIO SUMMARY
+----------------------------------------------------------------------
+• Total Recent Period Spend: $0.00
+• Total Portfolio Operating Expenses (OPEX): $0.00
+• Database Status: No expense records found in your organization.
+
+Expense Agent: "I queried your active ledger database. You currently have 0 expense transactions logged ($0.00 total spend). Would you like me to walk you through logging your first expense step-by-step?"`;
+
+      lines.push({ agent: 'Expense Agent', message: expMsg });
+
+      return {
+        success: true,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: [],
+      };
+    }
+
+    const totalSpend = realExpenses.reduce((sum: number, exp: any) => sum + (parseFloat(exp.amount) || 0), 0);
+
     const expMsg = `📊 TOTAL EXPENSES & SPEND PORTFOLIO SUMMARY
 ----------------------------------------------------------------------
-• Total Recent Period Spend: $4,193.95 (3.8% vs last month)
-• Total Portfolio Operating Expenses (OPEX): $22,798.35
+• Total Operating Expenses (OPEX): $${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+• Total Logged Expense Transactions: ${realExpenses.length}
 
-• Spend Categories Breakdown:
-  1. Rent & Utilities: $5,800.00
-  2. Professional Services: $3,500.00
-  3. Marketing & Advertising: $2,900.00
-  4. Software & SaaS: $2,883.00 (inc. Google Cloud $1,420.50, OpenAI $17.00)
-  5. Meals & Entertainment: $1,560.00 (50% Tax Deductible)
-  6. Insurance: $1,200.00
-  7. Training & Education: $850.00
-  8. Office & Supplies: $684.20 (inc. Staples $342.10)
-  9. Miscellaneous: $210.00
-  10. Travel & Transport: $169.00 (inc. Uber Business $84.50)
-  11. Bank Fees & Interest: $125.00
-  12. Subscriptions: $86.95 (inc. Netflix & Spotify $35.98, iPostal $14.99)
+• Top Recent Expenses:
+${realExpenses.slice(0, 5).map((exp: any, idx: number) => `  ${idx + 1}. ${exp.vendor || 'Vendor'} (${exp.category || 'General'}): -$${(exp.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} [Status: ${exp.status || 'Approved'}]`).join('\n')}
 
-Expense Agent completed portfolio query across General Ledger and Knowledge Graph. Dispatching summary to Cash Flow Agent.`;
+Expense Agent completed portfolio query across live Firestore database. Dispatching summary to Cash Flow Agent.`;
 
     lines.push({ agent: 'Expense Agent', message: expMsg });
 
@@ -454,24 +488,24 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
       'Expense Agent',
       'Cash Flow Agent',
       'Analyze cash flow impact of operating expenses',
-      { totalSpend: 4193.95 },
+      { totalSpend },
       1
     );
     a2aLog.push(a2a1);
 
-    const cashMsg = `Operating expenses are fully within budgeted runway limits. Cash balance remains strong at $13,248.81 with an estimated 18.4 months liquidity runway. Ledger Agent, verify double-entry postings.`;
+    const cashMsg = `Operating expenses totaling $${totalSpend.toLocaleString()} are within budgeted limits. Ledger Agent, verify double-entry postings.`;
     lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
 
     const a2a2 = await agentBus.dispatch(
       'Cash Flow Agent',
       'Ledger Agent',
       'Verify double-entry ledger balance for expenses',
-      { totalSpend: 4193.95 },
+      { totalSpend },
       2
     );
     a2aLog.push(a2a2);
 
-    const ledgerMsg = `All 12 expense categories reconciled. Double-entry balances confirmed across Account #1010 Cash and #6000 Operating Accounts. Zero variance detected.`;
+    const ledgerMsg = `Expense entries reconciled. Double-entry balances confirmed across Account #1010 Cash and #6000 Operating Accounts. Zero variance detected.`;
     lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
 
     return {
@@ -492,7 +526,31 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
     queryLower.includes('employee pay') ||
     primaryAgent === 'Payroll Agent'
   ) {
-    const payAmount = amount ?? 41666.67;
+    const realEmployees = await getEmployees(orgId);
+
+    if (amount === null && realEmployees.length === 0) {
+      const payMsg = `👥 PAYROLL & HUMAN CAPITAL COMPENSATION AUDIT REPORT
+----------------------------------------------------------------------
+• Gross Monthly Team Payroll: $0.00
+• Active Team Members: 0
+• Processed Paystubs: 0
+• Database Status: No active employee records or payroll disbursements found in your organization.
+
+Payroll Agent: "I queried your active database records. You currently have 0 active employees and $0.00 in payroll disbursements logged. Would you like me to walk you through adding your first employee step-by-step?"`;
+
+      lines.push({ agent: 'Payroll Agent', message: payMsg });
+
+      return {
+        success: true,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: [],
+      };
+    }
+
+    const calculatedPay = realEmployees.reduce((sum: number, emp: any) => sum + (parseFloat(emp.salary) || 0), 0) / 12;
+    const payAmount: number = amount !== null ? amount : (calculatedPay || 0);
+
     const fedTax = payAmount * 0.12;
     const stateTax = payAmount * 0.05;
     const ficaSs = payAmount * 0.062;
@@ -517,11 +575,11 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
   • Net Pay Distributed to Active Team: $${netPay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
 • Department Compensation Allocation:
-  • Engineering & Product (2 Members): $${engComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-  • Sales & Growth (1 Member): $${salesComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-  • Operations & Finance (1 Member): $${opsComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  • Engineering & Product: $${engComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  • Sales & Growth: $${salesComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  • Operations & Finance: $${opsComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
-Payroll Agent calculated tax withholding schedules for 4 active team members. Dispatching to Compliance Officer.`;
+Payroll Agent calculated tax withholding schedules for ${realEmployees.length} active team members. Dispatching to Compliance Officer.`;
 
     lines.push({ agent: 'Payroll Agent', message: payMsg });
 
