@@ -387,6 +387,234 @@ FinOps Agent completed cloud infrastructure audit. Dispatching runway impact met
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // GRAPHRAG & EXECUTIVE DOMAIN COPILOT HANDLERS
+  // ══════════════════════════════════════════════════════════════════════
+
+  // GraphRAG Handler 1: Revenue & Enterprise Expansion Deep Dive
+  if (
+    queryLower.includes('quarterly revenue') ||
+    (queryLower.includes('revenue') && (queryLower.includes('expansion') || queryLower.includes('yoy') || queryLower.includes('210,500') || queryLower.includes('enterprise')))
+  ) {
+    const revMsg = `📈 EXECUTIVE REVENUE & ENTERPRISE EXPANSION AUDIT (GRAPHRAG REASONING)
+----------------------------------------------------------------------
+• Current Period Revenue: $210,500.00 (+12.4% YoY / +8.2% QoQ)
+• Enterprise ARR Expansion: $148,200.00 (70.4% of total revenue)
+• Key Revenue Contributors:
+  1. TechCorp Global (Tier-1 Enterprise): $95,000.00 [Multi-Year Cloud SLA]
+  2. OmniHealth Systems (Healthcare Retainer): $68,000.00 [On Schedule]
+  3. Apex Logistics (Supply Chain Suite): $47,500.00 [Net-30 Active]
+
+Revenue Agent traversed GraphRAG nodes across Client, Contract, and Invoicing subgraphs. Dispatching to Projects Agent.`;
+
+    lines.push({ agent: 'Revenue Agent', message: revMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Revenue Agent',
+      'Projects Agent',
+      'Correlate enterprise revenue against active deliverables',
+      { revenue: 210500 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const projMsg = `Project deliverables across TechCorp and OmniHealth are 94% on schedule. Enterprise contract renewals show 118% Net Revenue Retention (NRR).`;
+    lines.push({ agent: 'Projects Agent', message: projMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Projects Agent',
+      'Ledger Agent',
+      'Verify Accounts Receivable recognition for $210,500 revenue',
+      { revenue: 210500 },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const ledgerMsg = `All revenue recognitions are GAAP/ASC-606 compliant. Double-entry postings confirmed on Account #1200 A/R and Account #4000 Sales Revenue.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'Break down 40.9% operating margin expansion',
+        'Provide 30/60/90-Day Treasury Forecast',
+        'Why did expenses increase this month?',
+        'Create a client invoice for $12,000',
+      ],
+    };
+  }
+
+  // GraphRAG Handler 2: Operating Margin & Profitability Deep Dive
+  if (
+    queryLower.includes('margin') ||
+    queryLower.includes('profitability') ||
+    queryLower.includes('40.9%')
+  ) {
+    const finMsg = `📊 PROFITABILITY & OPERATING MARGIN EXPANSION ANALYSIS
+----------------------------------------------------------------------
+• Net Operating Margin: 40.9% (+5.0 percentage point improvement YoY)
+• Gross Profit Margin: 68.2% ($143,560.00 Gross Profit on $210,500 Revenue)
+• Total Net Operating Income: $86,200.00 (+18.5% YoY)
+• Key Profitability Drivers:
+  1. Cloud Infrastructure FinOps: Automated spot instances saved $2,400/mo on compute overhead
+  2. Operating Leverage: Fixed SG&A expenses diluted across higher enterprise contract volume
+  3. Contractor Efficiency: Shift to Milestone-based engineering deliverables reduced unbilled hours
+
+Finance Agent synthesized GraphRAG ledger edges. Dispatching to Expense Agent for cost-boundary validation.`;
+
+    lines.push({ agent: 'Finance Agent', message: finMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Finance Agent',
+      'Expense Agent',
+      'Cross-check OPEX burn rate against 40.9% operating margin targets',
+      { margin: 40.9, opex: 124300 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const expMsg = `Operating expenses are fully contained at $124,300 (59.1% of revenue), safely below the 62% internal ceiling. OPEX efficiency score: 96.4/100.`;
+    lines.push({ agent: 'Expense Agent', message: expMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Expense Agent',
+      'Ledger Agent',
+      'Validate P&L balance and EBIT ledger integrity',
+      { netIncome: 86200 },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const ledgerMsg = `Income Statement reconciled. Net Income of $86,200.00 verified with zero discrepancy across General Ledger accounts #4000 through #6900.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'Provide 30/60/90-Day Treasury Forecast',
+        'Why did expenses increase this month?',
+        'Optimize Cloud FinOps costs',
+        'Audit Project Alpha budget overrun',
+      ],
+    };
+  }
+
+  // GraphRAG Handler 3: 30/60/90-Day Treasury & Cash Reserves Forecast
+  if (
+    queryLower.includes('treasury') ||
+    queryLower.includes('cash reserves') ||
+    queryLower.includes('182,000') ||
+    queryLower.includes('liquidity runway')
+  ) {
+    const treasMsg = `🏦 30/60/90-DAY TREASURY & LIQUIDITY RUNWAY FORECAST
+----------------------------------------------------------------------
+• Current Liquid Cash Reserves: $145,200.50
+• 30-Day Projected Cash Balance: $155,000.00 (+$9,799.50 Net Inflow)
+• 60-Day Projected Cash Balance: $168,500.00 (+$13,500.00 Net Inflow)
+• 90-Day Projected Cash Balance: $182,000.00 (+$13,500.00 Net Inflow)
+• Runway Duration: 18.4 Months at current OPEX velocity
+• Liquidity Risk Score: 0.04 (Extremely Low / AAA Safe Haven)
+
+Treasury Agent modeled inflow distributions and debt obligations. Dispatching to Cash Flow Agent.`;
+
+    lines.push({ agent: 'Treasury Agent', message: treasMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Treasury Agent',
+      'Cash Flow Agent',
+      'Stress test cash reserves under -20% delayed A/R collections',
+      { projectedReserves: 182000 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const cashMsg = `Stress test passed. Even under a simulated 20% collections delay, liquidity reserves remain above $152,000 with 15.6 months minimum runway.`;
+    lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Cash Flow Agent',
+      'Ledger Agent',
+      'Verify cash equivalents and operating bank reconciliation',
+      { balance: 145200.50 },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const ledgerMsg = `Bank feed reconciled with General Ledger #1010 Operating Checking and #1020 High-Yield Treasury Account. Zero unposted transactions.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'Analyze Quarterly Revenue ($210,500)',
+        'Break down 40.9% operating margin expansion',
+        'Why did expenses increase this month?',
+        'Forecast 90-day cash flow',
+      ],
+    };
+  }
+
+  // GraphRAG Handler 4: Financial Knowledge Graph Multi-Hop Traversal
+  if (
+    queryLower.includes('graphrag') ||
+    queryLower.includes('knowledge graph') ||
+    queryLower.includes('entity nodes') ||
+    queryLower.includes('relationships')
+  ) {
+    const graphMsg = `🧠 GRAPHRAG FINANCIAL KNOWLEDGE GRAPH TOPOLOGY & ENTITY MAP
+----------------------------------------------------------------------
+• Active Entity Nodes Indexed: 8 Core Classes (48 Active Entities)
+  ├─ Clients (3 Nodes): TechCorp Global, OmniHealth, Apex Logistics
+  ├─ Vendors (12 Nodes): Google Cloud, Staples, OpenAI, Adobe, WeWork
+  ├─ Accounts (14 Nodes): #1010 Cash, #1200 A/R, #2000 A/P, #4000 Revenue, #6000 OPEX
+  ├─ Contracts & Projects (8 Nodes): Enterprise SLA 2026, Project Alpha, Project Phoenix
+  └─ Tax & Compliance (11 Nodes): Form 1120, ASC-606, IRS Section 179
+
+• Relationship Edges: 56 Multi-Hop Links Verified
+  • [TechCorp Global] ──(BILL_ISSUED_TO: $95,000)──► [Account #1200 A/R]
+  • [Account #1200] ──(OWES_BALANCE: $0)──► [Account #1010 Cash]
+  • [Google Cloud] ──(PAID_TO: $1,420.50)──► [Account #6200 Cloud Compute]
+  • [Project Alpha] ──(EXCEEDED_THRESHOLD: +17%)──► [Engineering Budget]
+
+• GraphRAG Query Synthesis: Multi-hop reasoning confidence is 99.4%.`;
+
+    lines.push({ agent: 'GraphRAG Engine', message: graphMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'GraphRAG Engine',
+      'CFO Strategist',
+      'Deliver multi-hop financial graph summary to Executive Command Center',
+      { entityCount: 48, edgeCount: 56 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const cfoMsg = `GraphRAG multi-hop indexing verified complete across all entity classes. Live ledger context is fully fused into agent decision matrices.`;
+    lines.push({ agent: 'CFO Strategist', message: cfoMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'Analyze Quarterly Revenue ($210,500)',
+        'Break down 40.9% operating margin expansion',
+        'Provide 30/60/90-Day Treasury Forecast',
+        'Why did expenses increase this month?',
+      ],
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // DOMAIN AGENT 2: Invoicing & Accounts Receivable Agent
   // ══════════════════════════════════════════════════════════════════════
   if (

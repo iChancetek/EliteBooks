@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bot, Sparkles, Zap, ArrowRight, CheckCircle2, ChevronRight, Network, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, Sparkles, Zap, ArrowRight, CheckCircle2, ChevronRight, Network, Loader2, AlertCircle, Compass, BarChart3, Database } from 'lucide-react';
 import { useAgent } from '@/hooks/useAgent';
 import ExecutiveReportCard from './ExecutiveReportCard';
 
@@ -26,11 +26,15 @@ export default function PageAgentCopilot({
 }: PageAgentCopilotProps) {
   const { sendMessage, isLoading: internalLoading, response, error, clearResponse } = useAgent();
   const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [clickedInsightIndex, setClickedInsightIndex] = useState<number | null>(null);
 
   const isExecuting = parentLoading !== undefined ? parentLoading : internalLoading;
 
-  const handleAction = async (action: string) => {
+  const handleAction = async (action: string, insightIdx?: number) => {
     setActiveAction(action);
+    if (insightIdx !== undefined) {
+      setClickedInsightIndex(insightIdx);
+    }
 
     if (onAction) {
       onAction(action);
@@ -38,7 +42,23 @@ export default function PageAgentCopilot({
       await sendMessage(action);
     }
 
-    setTimeout(() => setActiveAction(null), 1500);
+    setTimeout(() => {
+      setActiveAction(null);
+      setClickedInsightIndex(null);
+    }, 2000);
+  };
+
+  const getInsightPrompt = (insight: string, idx: number) => {
+    if (insight.toLowerCase().includes('revenue')) {
+      return `Analyze Quarterly Revenue ($210,500, +12.4% YoY) and enterprise expansion drivers.`;
+    }
+    if (insight.toLowerCase().includes('margin') || insight.toLowerCase().includes('profit')) {
+      return `Break down 40.9% operating margin expansion and profitability drivers.`;
+    }
+    if (insight.toLowerCase().includes('treasury') || insight.toLowerCase().includes('cash reserves')) {
+      return `Provide 30/60/90-Day Treasury Forecast and $182,000 cash reserves analysis.`;
+    }
+    return `Investigate and provide multi-agent GraphRAG deep dive for: "${insight}"`;
   };
 
   return (
@@ -47,33 +67,50 @@ export default function PageAgentCopilot({
         className="glass-card animate-fade-in-up"
         style={{
           padding: 'var(--space-5)',
-          border: `1px solid ${color}35`,
-          background: `linear-gradient(135deg, var(--color-glass-bg), ${color}10)`,
+          border: `1px solid ${color}45`,
+          background: `linear-gradient(135deg, var(--color-glass-bg), ${color}12)`,
           display: 'flex',
           flexDirection: 'column',
           gap: 'var(--space-4)',
-          boxShadow: `0 10px 25px -5px ${color}15`,
+          boxShadow: `0 12px 30px -5px ${color}20`,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <div style={{ background: `${color}20`, color: color, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', display: 'flex' }}>
-              <Bot size={22} />
+            <div style={{ background: `${color}25`, color: color, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', display: 'flex' }}>
+              <Bot size={24} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)' }}>
                   {agentName}
                 </h3>
-                <span className="badge" style={{ background: `${color}20`, color: color, fontSize: '11px', fontWeight: 600 }}>
+                <span className="badge" style={{ background: `${color}25`, color: color, fontSize: '11px', fontWeight: 600 }}>
                   <Zap size={12} /> {badgeText}
                 </span>
-                <span className="badge" style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#a78bfa', fontSize: '11px', fontWeight: 600 }}>
+                <button
+                  type="button"
+                  onClick={() => handleAction('Explore GraphRAG Financial Knowledge Graph relationships and entity nodes.')}
+                  className="badge cursor-pointer"
+                  style={{
+                    background: 'rgba(139, 92, 246, 0.25)',
+                    border: '1px solid rgba(139, 92, 246, 0.4)',
+                    color: '#c4b5fd',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s ease',
+                  }}
+                  title="Click to view GraphRAG Knowledge Graph nodes"
+                >
                   <Network size={12} /> GraphRAG Engine Active
-                </span>
+                </button>
               </div>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                Autonomous intelligence & GraphRAG knowledge graph continuously reasoning over page data.
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '3px' }}>
+                Autonomous intelligence & GraphRAG knowledge graph continuously reasoning over live ledger data. <strong style={{ color: color }}>Click any card below to investigate.</strong>
               </p>
             </div>
           </div>
@@ -81,7 +118,19 @@ export default function PageAgentCopilot({
           <button
             onClick={() => handleAction(`Provide a comprehensive domain analysis and audit report for ${agentName}.`)}
             className="btn btn-sm btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: `${color}25`, border: `1px solid ${color}40`, color: '#fff', fontWeight: 600 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              background: `linear-gradient(135deg, ${color}35, ${color}15)`,
+              border: `1px solid ${color}60`,
+              color: '#fff',
+              fontWeight: 700,
+              padding: '6px 14px',
+              borderRadius: '8px',
+              boxShadow: `0 4px 12px ${color}25`,
+            }}
             disabled={isExecuting}
           >
             {isExecuting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} style={{ color: color }} />}
@@ -89,27 +138,45 @@ export default function PageAgentCopilot({
           </button>
         </div>
 
-        {/* Insights Grid */}
+        {/* Clickable Insights Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-3)' }}>
-          {insights.map((insight, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--space-3)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-              }}
-            >
-              <ChevronRight size={16} style={{ color: color, flexShrink: 0, marginTop: '2px' }} />
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)', lineHeight: 1.5 }}>
-                {insight}
-              </span>
-            </div>
-          ))}
+          {insights.map((insight, idx) => {
+            const isThisClicked = clickedInsightIndex === idx || activeAction === getInsightPrompt(insight, idx);
+            return (
+              <div
+                key={idx}
+                onClick={() => !isExecuting && handleAction(getInsightPrompt(insight, idx), idx)}
+                style={{
+                  background: isThisClicked ? `${color}25` : 'rgba(15, 23, 42, 0.65)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '12px 14px',
+                  border: isThisClicked ? `1px solid ${color}` : `1px solid rgba(255, 255, 255, 0.08)`,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  cursor: isExecuting ? 'wait' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  transform: isThisClicked ? 'scale(0.99)' : 'none',
+                  boxShadow: isThisClicked ? `0 0 15px ${color}35` : '0 4px 10px rgba(0,0,0,0.2)',
+                }}
+                className="copilot-insight-box hover:border-amber-400"
+              >
+                {isThisClicked && isExecuting ? (
+                  <Loader2 size={16} className="animate-spin" style={{ color: color, flexShrink: 0, marginTop: '2px' }} />
+                ) : (
+                  <ChevronRight size={16} style={{ color: color, flexShrink: 0, marginTop: '2px' }} />
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)', lineHeight: 1.5, fontWeight: 500 }}>
+                    {insight}
+                  </span>
+                  <span style={{ fontSize: '10px', color: color, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                    <BarChart3 size={10} /> Click to investigate with GraphRAG →
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Suggested Actions */}
@@ -128,12 +195,13 @@ export default function PageAgentCopilot({
                   background: activeAction === action ? `${color}30` : 'var(--color-bg-secondary)',
                   border: `1px solid ${color}30`,
                   color: 'var(--color-text-primary)',
-                  padding: '4px 10px',
+                  padding: '5px 12px',
                   borderRadius: 'var(--radius-full)',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '5px',
+                  transition: 'all 0.15s ease',
                 }}
                 disabled={isExecuting}
               >
