@@ -76,7 +76,7 @@ export default function ColorfulPieChart({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', height: height, gap: 'var(--space-4)' }}>
-        <div style={{ width: '55%', height: '100%', position: 'relative' }}>
+        <div style={{ width: '55%', height: '100%', minWidth: 0, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

@@ -93,7 +93,7 @@ export default function ColorfulBarChart({
         </div>
       </div>
 
-      <div style={{ width: '100%', height: height }}>
+      <div style={{ width: '100%', height: height, minWidth: 0, minHeight: height }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
