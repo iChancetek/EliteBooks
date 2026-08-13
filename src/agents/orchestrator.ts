@@ -75,6 +75,7 @@ export async function executeAgent(
       a2aMessages: result.a2aMessages,
       auditTrail: result.auditTrail,
       pendingActions: result.pendingActions,
+      suggestions: result.suggestions || [],
     };
   } catch (error) {
     console.error('LangGraph agent execution error:', error);

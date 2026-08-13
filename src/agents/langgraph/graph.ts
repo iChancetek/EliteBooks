@@ -32,6 +32,7 @@ export interface GraphExecutionResult {
   a2aMessages: any[];
   auditTrail: any[];
   pendingActions: any[];
+  suggestions?: string[];
 }
 
 /**
@@ -152,6 +153,7 @@ export async function runEliteBooksGraph(
       a2aMessages: state.a2aMessages,
       auditTrail: state.auditTrail,
       pendingActions: state.pendingActions,
+      suggestions: state.suggestions || [],
     };
   } catch (error) {
     console.error('[LangGraph Master Graph Error]:', error);

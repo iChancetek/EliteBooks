@@ -51,6 +51,7 @@ export interface EliteBooksAgentState {
   requiresApproval: boolean;
   pendingActions: PendingAction[];
   finalOutput?: string;
+  suggestions?: string[];
 
   // Audit & Telemetry Trace
   auditTrail: AuditLogEntry[];

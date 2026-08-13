@@ -223,6 +223,7 @@ export async function specializedAgentNode(
   return {
     currentAgent: agentToRun,
     finalOutput: collabRes.transcript,
+    suggestions: collabRes.suggestions || [],
     a2aMessages: [...state.a2aMessages, ...collabRes.a2aMessages],
     auditTrail: [...state.auditTrail, auditEntry],
   };
