@@ -26,7 +26,7 @@ export default function ExecutiveReportCard({
   onOpenCreationModal,
 }: ExecutiveReportCardProps) {
   const [copied, setCopied] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('GPT-5.4 Mini');
+  const [selectedModel, setSelectedModel] = useState('Claude 3.5 Sonnet');
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -102,10 +102,10 @@ export default function ExecutiveReportCard({
                     cursor: 'pointer',
                   }}
                 >
-                  <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Default Orchestrator)</option>
+                  <option value="Claude 3.5 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.5 Sonnet (Default Strategic Intelligence)</option>
+                  <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Multi-Agent Orchestrator)</option>
                   <option value="Gemini 3.7 Flash" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Flash (High Speed & Reasoning)</option>
                   <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Pro (Deep Financial Strategy)</option>
-                  <option value="Claude 3.5 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.5 Sonnet (Strategic Audit)</option>
                 </select>
               </div>
             </div>
