@@ -507,7 +507,7 @@ export default function DashboardHome() {
         onClose={() => setIsCreationModalOpen(false)}
         type={creationModalType}
         initialData={creationInitialData}
-        onSuccess={() => fetchSnapshot()}
+        onSuccess={() => loadDashboardData()}
       />
 
       <style>{`
