@@ -720,6 +720,32 @@ Inventory Agent completed supply chain audit. Dispatching valuation metrics to L
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // GUIDED CREATION WIZARD: Step-by-Step Interactive Expense Creation
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower === 'help me create an expense' ||
+    queryLower === 'create an expense' ||
+    queryLower === 'create expense' ||
+    queryLower.includes('help me create an expense') ||
+    queryLower.includes('help me log an expense') ||
+    queryLower.includes('walk me through creating an expense') ||
+    queryLower.includes('how do i create an expense')
+  ) {
+    const wizardMsg = `I would be delighted to guide you through creating your new expense entry step by step!
+
+Step 1 of 3: What is the merchant or vendor name for this expense? (e.g., Staples, Google Cloud, Uber, Whole Foods)`;
+
+    lines.push({ agent: 'Expense Agent', message: wizardMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // EXPLICIT SINGLE-RECEIPT LOGGING (Only triggered on explicit request)
   // ══════════════════════════════════════════════════════════════════════
   if (
