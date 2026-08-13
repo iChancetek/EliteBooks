@@ -130,12 +130,31 @@ export async function routerNode(
     targetAgent = 'Personal Agent';
   }
 
-  // Run Autonomous Fraud & Anomaly Sentinel Guardrail check
+  // MANDATORY SECURITY DIRECTIVE: Agents have full read/search access to all data, but CANNOT delete info without HITL approval
   const amountMatch = state.userQuery.match(/\$?\s*([0-9,]+(\.[0-9]{2})?)/);
   let requiresApproval = false;
-  const pendingActions = [];
+  const pendingActions: any[] = [];
 
-  if (amountMatch) {
+  const isDeleteIntent =
+    queryLower.includes('delete') ||
+    queryLower.includes('remove') ||
+    queryLower.includes('purge') ||
+    queryLower.includes('erase') ||
+    queryLower.includes('drop') ||
+    queryLower.includes('void') ||
+    queryLower.includes('destroy') ||
+    queryLower.includes('clear data');
+
+  if (isDeleteIntent) {
+    requiresApproval = true;
+    pendingActions.push({
+      id: `act_delete_${Date.now()}`,
+      actionType: 'DELETION_HITL_REQUIRED',
+      amount: amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 0,
+      description: `Data deletion or removal request detected ("${state.userQuery}"). Per platform security policy, agents have full read access across all financial data, but CANNOT delete data autonomously. Mandatory Human-in-the-Loop (HITL) authorization is required.`,
+      requiresUserApproval: true,
+    });
+  } else if (amountMatch) {
     const rawVal = parseFloat(amountMatch[1].replace(/,/g, ''));
 
     // Execute Fraud Sentinel Scan
