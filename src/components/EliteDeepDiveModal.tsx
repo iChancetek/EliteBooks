@@ -13,8 +13,11 @@ import {
   Layers,
   TrendingUp,
   AlertTriangle,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
+import { useAgent } from '@/hooks/useAgent';
+import ExecutiveReportCard from '@/components/ExecutiveReportCard';
 
 export interface DeepDiveMetric {
   label: string;
@@ -60,6 +63,8 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
   onAskAgent
 }) => {
   const [activeTab, setActiveTab] = useState<'financial' | 'itemized' | 'audit' | 'strategic'>('financial');
+  const { isLoading: isAiLoading, response: aiResponse, sendMessage: sendModalAiMessage } = useAgent();
+  const [hasAsked, setHasAsked] = useState(false);
 
   if (!item) return null;
 
@@ -70,15 +75,16 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
   };
 
-  const handleAskAgent = () => {
-    const prompt = `Deep dive verification inquiry for ${item.module} item "${item.title}" (${item.partyName ? item.partyName + ' - ' : ''}${item.amount ? formatCurrency(item.amount) : ''}). Please explain financial implications and ledger status.`;
+  const handleAskAgent = async () => {
+    const prompt = `Deep dive verification inquiry for ${item.module} item "${item.title}" (${item.partyName ? item.partyName + ' - ' : ''}${item.amount ? formatCurrency(item.amount) : ''}). Please analyze and explain financial implications, double-entry ledger status, and strategic recommendations.`;
+    setHasAsked(true);
+    
     if (onAskAgent) {
       onAskAgent(prompt);
-      onClose();
-    } else {
-      window.dispatchEvent(new CustomEvent('elitebooks:ask-agent', { detail: { query: prompt } }));
-      onClose();
     }
+    
+    window.dispatchEvent(new CustomEvent('elitebooks:ask-agent', { detail: { query: prompt } }));
+    await sendModalAiMessage(prompt);
   };
 
   const defaultAuditTrace: DeepDiveAuditStep[] = item.auditTrace || [
@@ -304,6 +310,26 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
             </div>
           )}
 
+          {/* Inline Multi-Agent Response Panel when user clicks Ask AI Agent */}
+          {hasAsked && (
+            <div className="mb-6 animate-fade-in-up">
+              {isAiLoading ? (
+                <div className="bg-slate-900/80 border border-amber-500/40 rounded-2xl p-6 flex items-center justify-center gap-3 text-amber-400">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    Autonomous Multi-Agent Synthesis in progress...
+                  </span>
+                </div>
+              ) : aiResponse ? (
+                <ExecutiveReportCard
+                  content={aiResponse.message}
+                  agentUsed={agentName}
+                  suggestions={aiResponse.suggestions}
+                />
+              ) : null}
+            </div>
+          )}
+
           {/* Autonomous Initiation Notice Footer */}
           <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 mb-6">
             <p className="text-xs text-slate-400 italic leading-relaxed">
@@ -316,10 +342,20 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
         <div className="border-t border-slate-800 pt-5 mt-2">
           <button
             onClick={handleAskAgent}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/10 transition-all cursor-pointer"
+            disabled={isAiLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/10 transition-all cursor-pointer disabled:opacity-50"
           >
-            <MessageSquare className="w-4 h-4" />
-            Ask AI Agent about this
+            {isAiLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Analyzing Multi-Agent Intelligence...
+              </>
+            ) : (
+              <>
+                <MessageSquare className="w-4 h-4" />
+                Ask AI Agent about this
+              </>
+            )}
           </button>
         </div>
       </aside>
