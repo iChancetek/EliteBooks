@@ -101,10 +101,11 @@ export default function FinOpsPage() {
      ['aws', 'amazon web services', 'google cloud', 'gcp', 'azure', 'openai'].some(v => e.vendor?.toLowerCase().includes(v)))
   );
 
-  // MTD spend (current month, e.g. June 2026)
+  // MTD spend (current month)
   const currentMonthExpenses = cloudExpenses.filter(e => {
     const d = new Date(e.date);
-    return d.getFullYear() === 2026 && d.getMonth() === 5; // June is index 5
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
   const cloudSpendMTD = currentMonthExpenses.reduce((s, e) => s + e.amount, 0);
@@ -128,11 +129,14 @@ export default function FinOpsPage() {
     { label: 'Unit Econ (Cost/Inf)', value: costPerInference > 0 ? `$${costPerInference.toFixed(4)}` : '$0.0000', change: costPerInference > 0 ? '-12%' : '0%', isPositive: true, icon: Target },
   ];
 
-  const recommendations = [
-    { title: 'AI Model Rightsizing', desc: 'Switch gpt-4o calls to gpt-4o-mini for non-reasoning tasks.', impact: 'High', savings: '$620/mo' },
-    { title: 'GPU Instance Hibernation', desc: 'Automate shutdown of dev Trainium instances during off-hours.', impact: 'Medium', savings: '$310/mo' },
-    { title: 'SaaS License Optimization', desc: 'Identify 14 inactive seats in Slack and Figma.', impact: 'Medium', savings: '$280/mo' },
-  ];
+  const recommendations = cloudExpenses.length > 0 ? [
+    { 
+      title: 'Cloud Cost Optimization', 
+      desc: `Review active resources for ${cloudExpenses[0]?.vendor || 'cloud providers'} to identify potential reserved instance savings.`, 
+      impact: 'High', 
+      savings: formatCurrency(cloudExpenses[0]?.amount * 0.15 || 0) + '/mo' 
+    }
+  ] : [];
 
   const upcomingEvents = [
     { name: 'FinOps X 2026', location: 'San Diego', date: 'June 2026' },

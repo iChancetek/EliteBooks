@@ -41,73 +41,11 @@ function orgCollection(orgId: string, collectionName: string) {
   return adminDb.collection('organizations').doc(orgId).collection(collectionName);
 }
 
-// Automatic Seed Helper for New Users
-async function ensureSeeded(orgId: string) {
-  try {
-    const seedMarker = await orgCollection(orgId, 'meta').doc('seeded').get();
-    if (seedMarker.exists) return;
-
-    const now = new Date().toISOString();
-    const dateStr = now.split('T')[0];
-    const batch = adminDb.batch();
-
-    // 1. Seed Expenses
-    const sampleExpenses = [
-      { vendor: 'Google Cloud Platform', amount: 1420.50, category: 'Software & SaaS', date: dateStr, description: 'Cloud Infrastructure & API Hosting', status: 'approved', isPersonal: false, isFinOps: true, resourceType: 'Compute/GPU' },
-      { vendor: 'Staples Office Supplies', amount: 342.10, category: 'Office & Supplies', date: dateStr, description: 'Ergonomic chairs & paper supplies', status: 'approved', isPersonal: false },
-      { vendor: 'Uber Business Travel', amount: 84.50, category: 'Travel & Transport', date: dateStr, description: 'Client meeting transit', status: 'approved', isPersonal: false },
-      { vendor: 'Whole Foods Market', amount: 165.40, category: 'Groceries', date: dateStr, description: 'Weekly groceries', status: 'approved', isPersonal: true },
-      { vendor: 'Netflix & Spotify', amount: 35.98, category: 'Subscriptions', date: dateStr, description: 'Personal media subscriptions', status: 'approved', isPersonal: true }
-    ];
-    sampleExpenses.forEach(exp => {
-      const ref = orgCollection(orgId, 'expenses').doc();
-      batch.set(ref, { ...exp, orgId, aiCategorized: true, aiConfidence: 0.98, createdAt: now, updatedAt: now });
-    });
-
-    // 2. Seed Invoices
-    const sampleInvoices = [
-      { number: 'INV-2026-0001', clientName: 'Acme Corp', clientEmail: 'billing@acme.com', issueDate: dateStr, dueDate: dateStr, status: 'paid', total: 8500.00, amountPaid: 8500.00, amountDue: 0, lineItems: [{ description: 'AI Development', quantity: 1, unitPrice: 8500 }] },
-      { number: 'INV-2026-0002', clientName: 'Starlight Tech', clientEmail: 'ap@starlight.io', issueDate: dateStr, dueDate: dateStr, status: 'sent', total: 4200.00, amountPaid: 0, amountDue: 4200.00, lineItems: [{ description: 'Cloud Consulting', quantity: 1, unitPrice: 4200 }] }
-    ];
-    sampleInvoices.forEach(inv => {
-      const ref = orgCollection(orgId, 'invoices').doc();
-      batch.set(ref, { ...inv, orgId, createdAt: now, updatedAt: now });
-    });
-
-    // 3. Seed Products
-    const sampleProducts = [
-      { name: 'Enterprise License Key', sku: 'LIC-ENT-001', category: 'Software', quantity: 50, reorderPoint: 10, unitPrice: 299.00, costPrice: 50.00, isActive: true },
-      { name: 'Hardware Security Key', sku: 'HW-SEC-002', category: 'Hardware', quantity: 20, reorderPoint: 5, unitPrice: 85.00, costPrice: 30.00, isActive: true }
-    ];
-    sampleProducts.forEach(prod => {
-      const ref = orgCollection(orgId, 'products').doc();
-      batch.set(ref, { ...prod, orgId, createdAt: now, updatedAt: now });
-    });
-
-    // 4. Seed Employees
-    const sampleEmployees = [
-      { firstName: 'Sarah', lastName: 'Connor', email: 'sarah@company.com', role: 'Lead Architect', department: 'Engineering', employmentType: 'full_time', salary: 145000, isActive: true },
-      { firstName: 'Alex', lastName: 'Mercer', email: 'alex@company.com', role: 'Senior Developer', department: 'Engineering', employmentType: 'full_time', salary: 120000, isActive: true }
-    ];
-    sampleEmployees.forEach(emp => {
-      const ref = orgCollection(orgId, 'employees').doc();
-      batch.set(ref, { ...emp, orgId, createdAt: now, updatedAt: now });
-    });
-
-    // Mark Seeded
-    batch.set(orgCollection(orgId, 'meta').doc('seeded'), { seededAt: now });
-    await batch.commit();
-  } catch (e) {
-    console.error('Error seeding default data:', e);
-  }
-}
-
 // ═══════════════════════════════════════════
 // INVOICES
 // ═══════════════════════════════════════════
 
 export async function getInvoices(orgId: string, filter?: DateFilter) {
-  await ensureSeeded(orgId);
   let query: FirebaseFirestore.Query = orgCollection(orgId, 'invoices').orderBy('createdAt', 'desc');
 
   const range = filter ? buildDateRange(filter) : null;
@@ -162,7 +100,6 @@ export async function deleteInvoice(orgId: string, invoiceId: string) {
 // ═══════════════════════════════════════════
 
 export async function getExpenses(orgId: string, filter?: DateFilter) {
-  await ensureSeeded(orgId);
   let query: FirebaseFirestore.Query = orgCollection(orgId, 'expenses').orderBy('date', 'desc');
 
   const range = filter ? buildDateRange(filter) : null;
@@ -212,7 +149,6 @@ export async function deleteExpense(orgId: string, expenseId: string) {
 // ═══════════════════════════════════════════
 
 export async function getEmployees(orgId: string) {
-  await ensureSeeded(orgId);
   const snapshot = await orgCollection(orgId, 'employees')
     .where('isActive', '==', true)
     .orderBy('lastName', 'asc')
@@ -269,7 +205,6 @@ export async function createPayStub(orgId: string, data: Record<string, any>) {
 // ═══════════════════════════════════════════
 
 export async function getProducts(orgId: string) {
-  await ensureSeeded(orgId);
   const snapshot = await orgCollection(orgId, 'products')
     .where('isActive', '==', true)
     .orderBy('name', 'asc')
