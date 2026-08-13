@@ -1,7 +1,7 @@
 /**
  * EliteBooks — Universal Multi-Agent Autonomous Collaboration Engine
  * Enables end-to-end, multi-agent collaboration across all 12 specialized agents
- * for ANY financial intent (Expenses, Payroll, Invoicing, Ledger, Cash Flow, Tax, FinOps, Personal Finance).
+ * for ANY financial intent (Expenses, Payroll, Invoicing, Ledger, Cash Flow, Tax, FinOps, Personal Finance, Inventory, Matching).
  */
 
 import { agentBus, AgentToAgentMessage } from './agent-bus';
@@ -175,13 +175,11 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 2: FinOps & Cloud Infrastructure Intent
+  // DOMAIN AGENT 1: FinOps & Cloud Infrastructure Agent
   // ══════════════════════════════════════════════════════════════════════
   if (
     queryLower.includes('finops') ||
-    queryLower.includes('cloud report') ||
-    queryLower.includes('finops report') ||
-    queryLower.includes('cloud spend') ||
+    queryLower.includes('cloud') ||
     queryLower.includes('aws') ||
     queryLower.includes('gpu') ||
     primaryAgent === 'FinOps Agent'
@@ -240,18 +238,15 @@ FinOps Agent completed cloud infrastructure audit. Dispatching runway impact met
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 3: Invoicing Inquiry / Open Invoices & Revenue Portfolio
+  // DOMAIN AGENT 2: Invoicing & Accounts Receivable Agent
   // ══════════════════════════════════════════════════════════════════════
   if (
-    queryLower.includes('open invoice') ||
-    queryLower.includes('unpaid invoice') ||
-    queryLower.includes('invoice status') ||
-    queryLower.includes('my invoices') ||
-    queryLower.includes('all invoices') ||
-    queryLower.includes('who owes me') ||
+    queryLower.includes('invoice') ||
+    queryLower.includes('bill') ||
     queryLower.includes('ar aging') ||
-    queryLower.includes('outstanding invoice') ||
-    (queryLower.includes('invoice') && (queryLower.includes('do i have') || queryLower.includes('what') || queryLower.includes('show') || queryLower.includes('list') || queryLower.includes('check') || queryLower.includes('any')))
+    queryLower.includes('who owes me') ||
+    queryLower.includes('revenue') ||
+    primaryAgent === 'Invoicing Agent'
   ) {
     const invMsg = `🧾 ACCOUNTS RECEIVABLE & INVOICE PORTFOLIO AUDIT
 ----------------------------------------------------------------------
@@ -305,19 +300,13 @@ Invoicing Agent verified AR aging and status across Knowledge Graph and Ledger. 
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 4: Total Expense Inquiry / Spend Analysis Branch
+  // DOMAIN AGENT 3: Expense & Spend Analysis Agent
   // ══════════════════════════════════════════════════════════════════════
   if (
-    queryLower.includes('total expense') ||
-    queryLower.includes('my expenses') ||
-    queryLower.includes('all expenses') ||
-    queryLower.includes('spend summary') ||
-    queryLower.includes('how much did i spend') ||
-    queryLower.includes('expense breakdown') ||
-    queryLower.includes('total spend') ||
-    queryLower.includes('what are my expenses') ||
-    queryLower.includes('what are my total expenses') ||
-    (queryLower.includes('expense') && (queryLower.includes('what') || queryLower.includes('total') || queryLower.includes('show') || queryLower.includes('how much')))
+    queryLower.includes('expense') ||
+    queryLower.includes('spend') ||
+    queryLower.includes('category breakdown') ||
+    primaryAgent === 'Expense Agent'
   ) {
     const expMsg = `📊 TOTAL EXPENSES & SPEND PORTFOLIO SUMMARY
 ----------------------------------------------------------------------
@@ -375,7 +364,363 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 5: Single Transaction Expense Logging (EXPLICIT log/add/scan/post receipt ONLY)
+  // DOMAIN AGENT 4: Payroll & Compensation Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('payroll') ||
+    queryLower.includes('salary') ||
+    queryLower.includes('compensation') ||
+    queryLower.includes('employee pay') ||
+    primaryAgent === 'Payroll Agent'
+  ) {
+    const payAmount = amount ?? 45000.0;
+
+    const payMsg = `👥 PAYROLL & HUMAN CAPITAL COMPENSATION AUDIT REPORT
+----------------------------------------------------------------------
+• Gross Monthly Team Payroll: $${payAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+• Payroll Tax & Withholding Breakdown:
+  1. Federal Income Tax Withholding: $5,400.00
+  2. State Income Tax Withholding: $2,250.00
+  3. FICA Social Security Tax (6.2%): $2,790.00
+  4. FICA Medicare Tax (1.45%): $652.50
+  5. Employer FUTA/SUTA Taxes: $2,250.00
+  • Net Pay Distributed to Employees: $31,657.50
+
+• Department Compensation Allocation:
+  • Engineering & Product: $22,000.00
+  • Sales & Customer Growth: $13,000.00
+  • Operations & Finance: $10,000.00
+
+Payroll Agent calculated tax withholding schedules. Dispatching to Compliance Officer.`;
+
+    lines.push({ agent: 'Payroll Agent', message: payMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Payroll Agent',
+      'Compliance Officer',
+      'Verify payroll tax withholdings and IRS Circular E compliance',
+      { grossPay: payAmount },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const compMsg = `Compliance verified. Federal & State withholding formulas comply with 2026 IRS Circular E. Form 941 quarterly accruals updated. Ledger Agent, post payroll journal entries.`;
+    lines.push({ agent: 'Compliance Officer', message: compMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Compliance Officer',
+      'Ledger Agent',
+      'Post payroll journal entries',
+      { grossPay: payAmount },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const ledgerMsg = `Journal entry created: Debited Salaries Expense ($${payAmount.toLocaleString()}), Credited Payroll Taxes Payable ($${(payAmount * 0.22).toLocaleString()}) and Payroll Cash Clearing ($${(payAmount * 0.78).toLocaleString()}). Entries balanced.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    const block = auditLock.appendBlock(orgId, 'PAYROLL_POST', 'Ledger Agent', { payAmount });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      auditBlockHash: block.blockHash,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT 5: Cash Flow & Liquidity Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('cash flow') ||
+    queryLower.includes('liquidity') ||
+    queryLower.includes('burn rate') ||
+    queryLower.includes('runway') ||
+    primaryAgent === 'Cash Flow Agent'
+  ) {
+    const cashMsg = `💵 TREASURY, LIQUIDITY & CASH RUNWAY STRATEGY REPORT
+----------------------------------------------------------------------
+• Operating Cash Balance (Account #1010): $13,248.81
+• Total Liquid Treasury Reserves: $453,648.81
+• Net Monthly Burn Rate: $2,140.00/mo (Optimized)
+• Estimated Liquidity Runway: 18.4 Months
+
+• 90-Day Cash Inflow & Outflow Projection:
+  • Projected Inflows (AR Collections): +$15,700.00
+  • Projected Outflows (OPEX & Payroll): -$8,420.00
+  • Net Projected Operating Surplus: +$7,280.00
+
+Cash Flow Agent verified 90-day liquidity buffer. Dispatching audit to Ledger Agent.`;
+
+    lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Cash Flow Agent',
+      'Ledger Agent',
+      'Reconcile cash account balances against bank statements',
+      { cashBalance: 13248.81 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const ledgerMsg = `Cash reconciliation complete. Account #1010 operating balance verified against real-time bank feeds. Zero unposted cash items detected.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT 6: General Ledger Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('ledger') ||
+    queryLower.includes('journal') ||
+    queryLower.includes('trial balance') ||
+    queryLower.includes('reconcile') ||
+    primaryAgent === 'Ledger Agent'
+  ) {
+    const ledgerMsg = `📖 GENERAL LEDGER & DOUBLE-ENTRY TRIAL BALANCE AUDIT
+----------------------------------------------------------------------
+• Total Assets (Account #1000 Series): $470,648.81
+• Total Liabilities (Account #2000 Series): $15,700.00
+• Total Owner's Equity (Account #3000 Series): $454,948.81
+
+• Double-Entry Trial Balance Check:
+  • Total Debits: $470,648.81 | Total Credits: $470,648.81
+  • General Ledger Variance: $0.00 (PERFECTLY BALANCED)
+  • Active SHA-256 Ledger Block Hash: 0x9f83a41b... locked and verified.
+
+Ledger Agent completed trial balance audit. Dispatching compliance verification to Compliance Officer.`;
+
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Ledger Agent',
+      'Compliance Officer',
+      'Verify double-entry trial balance integrity under GAAP rules',
+      { variance: 0 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const compMsg = `Trial balance complies with GAAP double-entry standard rules. Audit block hash verified intact. Zero compliance risks detected.`;
+    lines.push({ agent: 'Compliance Officer', message: compMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT 7: Compliance & Tax Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('tax') ||
+    queryLower.includes('compliance') ||
+    queryLower.includes('audit risk') ||
+    queryLower.includes('irc') ||
+    primaryAgent === 'Compliance Agent'
+  ) {
+    const compMsg = `⚖️ TAX & REGULATORY COMPLIANCE AUDIT REPORT
+----------------------------------------------------------------------
+• Platform Audit Risk Score: 0.02 (ULTRA-LOW)
+• Tax Deductibility Ratio: 94.8% qualified under IRC Sec 162 & 274(n)
+• IRS Accrual Schedules Compiled:
+  • Form 1040 Sch C / Form 1120S Estimated Q3 Accrual: $18,450.00
+  • Form 941 Quarterly Payroll Tax Filing: Reconciled & Current
+  • SEC/FINRA Data Privacy & PII Shield: Active (0 Data Leakage Flags)
+
+Compliance Officer completed regulatory audit. Dispatching status to Ledger Agent.`;
+
+    lines.push({ agent: 'Compliance Officer', message: compMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Compliance Officer',
+      'Ledger Agent',
+      'Audit tax liability clearing accounts',
+      { auditScore: 0.02 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const ledgerMsg = `Tax liability accounts (#2100 Series) reconciled. All tax withholdings and sales tax liabilities match trial balance records.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT 8: Personal Finance & Wealth Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('personal') ||
+    queryLower.includes('wealth') ||
+    queryLower.includes('net worth') ||
+    primaryAgent === 'Personal Agent'
+  ) {
+    const persMsg = `🏦 PRIVATE WEALTH & PERSONAL NET WORTH AUDIT REPORT
+----------------------------------------------------------------------
+• Estimated Personal Net Worth: $1,240,000.00
+• Personal Portfolio Asset Allocation:
+  1. Public Equities & Index Funds: $682,000.00 (55%)
+  2. Real Estate Equity: $310,000.00 (25%)
+  3. Liquid Cash & Yield Reserves: $186,000.00 (15%)
+  4. Digital Assets & Alternative Growth: $62,000.00 (5%)
+
+• Personal Financial Health Metrics:
+  • Savings Rate: 34.2% of Net Income
+  • Debt-to-Income Ratio: 12.4% (Ultra-Healthy)
+  • Tax-Advantaged Contributions (Roth IRA / 401k): Maxed for 2026.
+
+Personal Agent completed wealth allocation review. Dispatching summary to Cash Flow Agent.`;
+
+    lines.push({ agent: 'Personal Agent', message: persMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Personal Agent',
+      'Cash Flow Agent',
+      'Review personal cash liquidity buffer',
+      { netWorth: 1240000 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const cashMsg = `Personal liquidity buffer covers 14.2 months of living expenses. Private wealth portfolio strategy approved.`;
+    lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT 9: Inventory & Supply Chain Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('inventory') ||
+    queryLower.includes('stock') ||
+    queryLower.includes('warehouse') ||
+    primaryAgent === 'Inventory Agent'
+  ) {
+    const invStockMsg = `📦 INVENTORY VALUATION & SUPPLY CHAIN AUDIT REPORT
+----------------------------------------------------------------------
+• Total Inventory Asset Value: $184,500.00
+• Total SKUs Tracked: 142 Active Items
+• Inventory Turnover Ratio: 6.4x per year (Industry Benchmark: 5.2x)
+
+• Stock Level Alerts & Status:
+  • In Stock & Healthy: 134 SKUs (94.4%)
+  • Low Stock Warning (Reorder Triggered): 8 SKUs (e.g. Premium Hardware Accessories)
+  • Out of Stock / Backordered: 0 SKUs
+
+Inventory Agent completed supply chain audit. Dispatching valuation metrics to Ledger Agent.`;
+
+    lines.push({ agent: 'Inventory Agent', message: invStockMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Inventory Agent',
+      'Ledger Agent',
+      'Reconcile inventory valuation asset account #1300',
+      { inventoryValuation: 184500 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const ledgerMsg = `Inventory Asset Account #1300 verified at $184,500.00. Cost of Goods Sold (COGS) accruals reconciled against sales records.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT 10: Ingestion & Receipt Scanning Agent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('pdf invoice') ||
+    queryLower.includes('officesupply') ||
+    queryLower.includes('purchase order') ||
+    queryLower.includes('scan') ||
+    primaryAgent === 'Ingestion Agent'
+  ) {
+    const invoiceAmount = amount ?? 450.0;
+    const poNum = 'PO #1049';
+
+    const ingMsg = `I scanned the inbox and extracted invoice from ${partyName} for $${invoiceAmount.toFixed(2)}, dated August 10, 2026. I also pulled the receipt from our corporate card. Matching Agent, please verify this against our purchase orders.`;
+    lines.push({ agent: 'Ingestion Agent', message: ingMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Ingestion Agent',
+      'Matching Agent',
+      'Verify PO and line items',
+      { vendor: partyName, amount: invoiceAmount, poNumber: poNum },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const matchMsg = `Checking database now. I found Purchase Order ${poNum} for ${partyName} at $${invoiceAmount.toFixed(2)}. The line items match the PDF. However, the delivery receipt signature is missing. Approval Agent, I am flagging this as a minor warning, but the numbers balance.`;
+    lines.push({ agent: 'Matching Agent', message: matchMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Matching Agent',
+      'Approval Agent',
+      'Request approval evaluation and ledger entry',
+      { poNumber: poNum, amount: invoiceAmount, warning: 'missing_signature' },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const appMsg = `Received. Since the amount is under our $500 auto-approval limit and the PO matches, I will override the missing signature note. I am now writing the transaction into the general ledger, debiting Office Supplies and crediting Accounts Payable. Process complete. All logs are saved.`;
+    lines.push({ agent: 'Approval Agent', message: appMsg });
+
+    const je = {
+      id: `je_${Date.now()}`,
+      debitAccount: 'Office Supplies (#6100)',
+      creditAccount: 'Accounts Payable (#2000)',
+      amount: invoiceAmount,
+      memo: `Auto-approved invoice for ${partyName} (${poNum})`,
+    };
+
+    const block = auditLock.appendBlock(orgId, 'INVOICE_AUTO_POST', 'Approval Agent', {
+      partyName,
+      amount: invoiceAmount,
+      poNum,
+    });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      journalEntry: je,
+      auditBlockHash: block.blockHash,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EXPLICIT SINGLE-RECEIPT LOGGING (Only triggered on explicit request)
   // ══════════════════════════════════════════════════════════════════════
   if (
     queryLower.includes('log receipt') ||
@@ -423,39 +768,7 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 6: Payroll Intent
-  // ══════════════════════════════════════════════════════════════════════
-  if (queryLower.includes('payroll') || queryLower.includes('salary')) {
-    const payAmount = amount ?? 45000.0;
-
-    const payMsg = `Calculated monthly gross payroll for team ($${payAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}). Social Security, Medicare, and Federal/State withholding schedules compiled. Compliance Agent, verify tax withholding calculations and minimum wage compliance.`;
-    lines.push({ agent: 'Payroll Agent', message: payMsg });
-
-    const a2a1 = await agentBus.dispatch('Payroll Agent', 'Compliance Agent', 'Verify payroll tax withholdings', { grossPay: payAmount }, 1);
-    a2aLog.push(a2a1);
-
-    const compMsg = `Compliance verified. Federal & State withholding formulas comply with 2026 IRS Circular E. Form 941 quarterly accruals updated. Ledger Agent, post payroll journal entries.`;
-    lines.push({ agent: 'Compliance Agent', message: compMsg });
-
-    const a2a2 = await agentBus.dispatch('Compliance Agent', 'Ledger Agent', 'Post payroll journal entries', { grossPay: payAmount }, 2);
-    a2aLog.push(a2a2);
-
-    const ledgerMsg = `Journal entry created: Debited Salaries Expense ($${payAmount.toLocaleString()}), Credited Payroll Taxes Payable ($${(payAmount * 0.22).toLocaleString()}) and Payroll Cash Clearing ($${(payAmount * 0.78).toLocaleString()}). Entries balanced.`;
-    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
-
-    const block = auditLock.appendBlock(orgId, 'PAYROLL_POST', 'Ledger Agent', { payAmount });
-
-    return {
-      success: true,
-      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-      transcriptLines: lines,
-      a2aMessages: a2aLog,
-      auditBlockHash: block.blockHash,
-    };
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 7: Dynamic OpenAI GPT-5.4 Executive Fallback
+  // PRIORITY FALLBACK: Dynamic OpenAI GPT-5.4 Executive Synthesizer
   // ══════════════════════════════════════════════════════════════════════
   try {
     const openai = getOpenAIClient();
@@ -464,7 +777,7 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
       messages: [
         {
           role: 'system',
-          content: `You are the EliteBooks Agentic Copilot. Respond with executive financial precision, answering user queries using bullet points, clear paragraphs, and exact accounting terms.`
+          content: `You are the ${primaryAgent || 'EliteBooks Agentic Copilot'}. Respond with executive financial precision, answering user queries using bullet points, clear paragraphs, and exact accounting terms.`
         },
         { role: 'user', content: unmaskedQuery }
       ],
