@@ -34,7 +34,7 @@ const quickActions = [
 export default function DashboardHome() {
   const { user } = useAuth();
   const [command, setCommand] = useState('');
-  const { isLoading, response, error, sendMessage } = useAgent();
+  const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveData | null>(null);
 
@@ -205,6 +205,14 @@ export default function DashboardHome() {
             agentUsed={response.agentUsed || 'CFO Agent'}
             suggestions={response.suggestions}
             onSuggestionClick={(s) => sendMessage(s)}
+            onClear={clearResponse}
+            onAskFollowUp={() => {
+              const el = document.getElementById('command-input');
+              if (el) {
+                el.focus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
           />
         )}
 
