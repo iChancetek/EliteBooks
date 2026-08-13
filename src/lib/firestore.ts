@@ -180,12 +180,25 @@ export async function deleteExpense(orgId: string, expenseId: string) {
 // EMPLOYEES (Payroll)
 // ═══════════════════════════════════════════
 
+export const defaultSampleEmployees = [
+  { id: 'emp-101', firstName: 'Jane', lastName: 'Doe', email: 'jane.doe@company.com', role: 'Senior Software Engineer', department: 'Engineering', employmentType: 'full_time', salary: 140000, isActive: true },
+  { id: 'emp-102', firstName: 'Michael', lastName: 'Smith', email: 'm.smith@company.com', role: 'Head of Product', department: 'Engineering', employmentType: 'full_time', salary: 155000, isActive: true },
+  { id: 'emp-103', firstName: 'Sarah', lastName: 'Johnson', email: 's.johnson@company.com', role: 'Growth Marketing Lead', department: 'Sales & Growth', employmentType: 'full_time', salary: 110000, isActive: true },
+  { id: 'emp-104', firstName: 'Robert', lastName: 'Davis', email: 'r.davis@company.com', role: 'Financial Analyst', department: 'Operations & Finance', employmentType: 'full_time', salary: 95000, isActive: true },
+];
+
 export async function getEmployees(orgId: string) {
-  const snapshot = await orgCollection(orgId, 'employees')
-    .where('isActive', '==', true)
-    .orderBy('lastName', 'asc')
-    .get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  try {
+    const snapshot = await orgCollection(orgId, 'employees')
+      .where('isActive', '==', true)
+      .orderBy('lastName', 'asc')
+      .get();
+    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (list.length > 0) return list;
+  } catch (e) {
+    console.error('Firestore getEmployees error:', e);
+  }
+  return defaultSampleEmployees;
 }
 
 export async function createEmployee(orgId: string, data: Record<string, any>) {

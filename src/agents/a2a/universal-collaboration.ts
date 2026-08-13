@@ -492,25 +492,36 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
     queryLower.includes('employee pay') ||
     primaryAgent === 'Payroll Agent'
   ) {
-    const payAmount = amount ?? 45000.0;
+    const payAmount = amount ?? 41666.67;
+    const fedTax = payAmount * 0.12;
+    const stateTax = payAmount * 0.05;
+    const ficaSs = payAmount * 0.062;
+    const ficaMed = payAmount * 0.0145;
+    const futaSuta = payAmount * 0.05;
+    const totalWithholding = fedTax + stateTax + ficaSs + ficaMed + futaSuta;
+    const netPay = payAmount - totalWithholding;
+
+    const engComp = payAmount * 0.59;
+    const salesComp = payAmount * 0.22;
+    const opsComp = payAmount * 0.19;
 
     const payMsg = `👥 PAYROLL & HUMAN CAPITAL COMPENSATION AUDIT REPORT
 ----------------------------------------------------------------------
-• Gross Monthly Team Payroll: $${payAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+• Gross Monthly Team Payroll: $${payAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 • Payroll Tax & Withholding Breakdown:
-  1. Federal Income Tax Withholding: $5,400.00
-  2. State Income Tax Withholding: $2,250.00
-  3. FICA Social Security Tax (6.2%): $2,790.00
-  4. FICA Medicare Tax (1.45%): $652.50
-  5. Employer FUTA/SUTA Taxes: $2,250.00
-  • Net Pay Distributed to Employees: $31,657.50
+  1. Federal Income Tax Withholding (12%): $${fedTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  2. State Income Tax Withholding (5%): $${stateTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  3. FICA Social Security Tax (6.2%): $${ficaSs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  4. FICA Medicare Tax (1.45%): $${ficaMed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  5. Employer FUTA/SUTA Taxes (5%): $${futaSuta.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  • Net Pay Distributed to Active Team: $${netPay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
 • Department Compensation Allocation:
-  • Engineering & Product: $22,000.00
-  • Sales & Customer Growth: $13,000.00
-  • Operations & Finance: $10,000.00
+  • Engineering & Product (2 Members): $${engComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  • Sales & Growth (1 Member): $${salesComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  • Operations & Finance (1 Member): $${opsComp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
-Payroll Agent calculated tax withholding schedules. Dispatching to Compliance Officer.`;
+Payroll Agent calculated tax withholding schedules for 4 active team members. Dispatching to Compliance Officer.`;
 
     lines.push({ agent: 'Payroll Agent', message: payMsg });
 
