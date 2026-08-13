@@ -1,17 +1,19 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles, Network } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, Brush } from 'recharts';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
+import KnowledgeGraphViewer from '@/components/KnowledgeGraphViewer';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#14b8a6', '#6366f1', '#84cc16'];
 
 export default function ReportsPage() {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'financial' | 'graph'>('financial');
   const [chartView, setChartView] = useState<'monthly' | 'yearly'>('yearly');
   const [nlpQuery, setNlpQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,7 +48,6 @@ export default function ReportsPage() {
   const allExpenses = reportData?.expenses || [];
   const allInvoices = reportData?.invoices || [];
 
-  // Filter based on selected date
   const activeExpenses = allExpenses.filter((e: any) => {
     const dateObj = new Date(e.date);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -55,7 +56,7 @@ export default function ReportsPage() {
 
     const matchYear = selectedYear === 'All Years' || expenseYear === selectedYear;
     const matchMonth = selectedMonth === 'All Months' || expenseMonth === selectedMonth;
-    return matchYear && matchMonth;
+    return matchYear && matchMonth && e.status !== 'deleted';
   });
 
   const activeInvoices = allInvoices.filter((i: any) => {
@@ -69,7 +70,6 @@ export default function ReportsPage() {
     return matchYear && matchMonth;
   });
 
-  // Calculate historical monthly & yearly data dynamically
   const getHistoricalData = () => {
     const monthlyMap: Record<string, { label: string, month: string, year: string, revenue: number, expenses: number }> = {};
     const yearlyMap: Record<string, { year: string, revenue: number, expenses: number }> = {};
@@ -126,7 +126,6 @@ export default function ReportsPage() {
   const totalExpenses = activeExpenses.reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
   
-  // Create active PlData for rendering from the categories
   const expenseCategories = activeExpenses.reduce((acc: Record<string, number>, exp: any) => {
     acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
     return acc;
@@ -141,7 +140,6 @@ export default function ReportsPage() {
     }))
   ];
 
-  // Derive balance sheet from real data
   const totalPaid = activeInvoices.filter((i: any) => i.status === 'paid').reduce((s: number, i: any) => s + (i.total || 0), 0);
   const totalOutstanding = totalRevenue - totalPaid;
   const activeBalanceSheet = {
@@ -172,10 +170,24 @@ export default function ReportsPage() {
     <div className="page-reports">
       <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
         <div>
-          <h1>Financial Reports</h1>
-          <p>AI-generated financial statements and insights</p>
+          <h1>Financial Reports & GraphRAG</h1>
+          <p>Real-time P&L, balance sheets, and interactive GraphRAG entity visualizer</p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          <div style={{ display: 'flex', background: 'var(--color-bg-secondary)', padding: '4px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+            <button
+              className={`btn btn-sm ${activeTab === 'financial' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setActiveTab('financial')}
+            >
+              <BarChart3 size={14} /> Financial Statements
+            </button>
+            <button
+              className={`btn btn-sm ${activeTab === 'graph' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setActiveTab('graph')}
+            >
+              <Network size={14} /> GraphRAG Nodes & Edges
+            </button>
+          </div>
           <DateFilter 
             initialMonth={selectedMonth} 
             initialYear={selectedYear} 
@@ -184,6 +196,11 @@ export default function ReportsPage() {
           <button className="btn btn-primary"><BarChart3 size={16} /> Export</button>
         </div>
       </div>
+
+      {activeTab === 'graph' ? (
+        <KnowledgeGraphViewer />
+      ) : (
+        <>
 
       {/* NLP Report Generation Bar */}
       <div className="glass-card" style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', gap: 'var(--space-4)', alignItems: 'center', marginBottom: 'var(--space-8)' }}>
@@ -386,6 +403,8 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
+      </>
+      )}
 
       <style>{`
         .page-reports { max-width: 1100px; }

@@ -117,6 +117,17 @@ export class GraphRAGManager {
   }
 
   /**
+   * Get complete knowledge graph for tenant org
+   */
+  public static async getFullGraph(orgId: string): Promise<{ nodes: GraphNode[]; edges: GraphEdge[] }> {
+    const graph = getOrgGraph(orgId);
+    return {
+      nodes: Array.from(graph.nodes.values()),
+      edges: Array.from(graph.edges.values()),
+    };
+  }
+
+  /**
    * Perform multi-hop graph traversal starting from a set of target entity IDs
    */
   public static async traverseGraph(
