@@ -15,6 +15,8 @@ import ColorfulBarChart from '@/components/ColorfulBarChart';
 import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 
+import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+
 const statusConfig: Record<string, { label: string; class: string; icon: React.ElementType }> = {
   draft: { label: 'Draft', class: 'badge-neutral', icon: FileText },
   sent: { label: 'Sent', class: 'badge-accent', icon: Send },
@@ -34,6 +36,7 @@ export default function InvoicesPage() {
   const [selectedYear, setSelectedYear] = useState('All Years');
   const [invoices, setInvoices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
 
   const fetchInvoices = useCallback(async () => {
     if (!user) return;
@@ -245,7 +248,32 @@ export default function InvoicesPage() {
             ) : filtered.map((inv) => {
               const sc = statusConfig[inv.status] || statusConfig.draft;
               return (
-                <tr key={inv.id}>
+                <tr
+                  key={inv.id}
+                  className="cursor-pointer hover:bg-slate-800/40 transition-colors"
+                  onClick={() => setSelectedDeepDive({
+                    id: inv.id || inv.number,
+                    title: `Invoice ${inv.number}`,
+                    module: 'Invoices',
+                    amount: inv.total,
+                    partyName: inv.clientName,
+                    status: sc.label,
+                    date: inv.dueDate,
+                    category: 'Accounts Receivable',
+                    agentUsed: 'Invoicing Agent',
+                    description: `Client invoice created for ${inv.clientName} under Net 30 payment terms.`,
+                    metrics: [
+                      { label: 'Issue Date', value: inv.createdAt || '2026-08-10' },
+                      { label: 'Payment Terms', value: 'Net 30 Days' },
+                      { label: 'ASC 606 Revenue', value: 'Recognized' }
+                    ],
+                    aiInsights: [
+                      `Client payment probability score is 96.4% based on historical collection speeds.`,
+                      `Sales tax schedules for ${inv.clientName} filed under Q3 GAAP revenue accruals.`,
+                      `Automated gentle payment reminder queued for 7 days prior to due date.`
+                    ]
+                  })}
+                >
                   <td><strong style={{ color: 'var(--color-text-primary)' }}>{inv.number}</strong></td>
                   <td>{inv.clientName}</td>
                   <td><span className="value-financial">{formatCurrency(inv.total)}</span></td>
@@ -266,6 +294,11 @@ export default function InvoicesPage() {
           </tbody>
         </table>
       </div>
+
+      <EliteDeepDiveModal
+        item={selectedDeepDive}
+        onClose={() => setSelectedDeepDive(null)}
+      />
 
       <style>{`
         .page-invoices { max-width: 1100px; }

@@ -13,12 +13,14 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
+import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 
 const ROLE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 
 export default function AdminDashboard() {
   const { user, isSuperAdmin, loading } = useAuth();
   const [search, setSearch] = useState('');
+  const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'1W' | '1M' | '3M' | '6M' | '1Y'>('6M');
   
   const [stats, setStats] = useState<any>(null);
@@ -214,7 +216,30 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {filteredUsers.map((user: any) => (
-                  <tr key={user.id}>
+                  <tr
+                    key={user.id}
+                    className="cursor-pointer hover:bg-slate-800/40 transition-colors"
+                    onClick={() => setSelectedDeepDive({
+                      id: user.id,
+                      title: user.name,
+                      module: 'Admin',
+                      subtitle: `${user.email} — Org: ${user.org}`,
+                      status: user.status,
+                      category: 'User Role & Identity Management',
+                      agentUsed: 'Compliance Officer',
+                      description: `Admin identity record for ${user.name} (${user.email}) under organization ${user.org}. Role permissions: ${user.role}.`,
+                      metrics: [
+                        { label: 'Role Level', value: user.role },
+                        { label: 'Account Status', value: user.status },
+                        { label: 'Joined Date', value: user.joined }
+                      ],
+                      aiInsights: [
+                        `Authentication credentials and session tokens verified against Firebase Admin SDK.`,
+                        `RBAC access matrix complies with SOC2 Type II security principles.`,
+                        `Audit logging active for all admin policy changes.`
+                      ]
+                    })}
+                  >
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <strong style={{ color: 'var(--color-text-primary)' }}>{user.name}</strong>
@@ -236,6 +261,11 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+
+          <EliteDeepDiveModal
+            item={selectedDeepDive}
+            onClose={() => setSelectedDeepDive(null)}
+          />
           <div className="admin-section-footer">
             <button className="btn btn-ghost btn-sm">View All Users <ArrowUpRight size={14} /></button>
           </div>

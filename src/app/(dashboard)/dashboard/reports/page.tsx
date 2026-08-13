@@ -8,15 +8,17 @@ import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 import KnowledgeGraphViewer from '@/components/KnowledgeGraphViewer';
+import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#14b8a6', '#6366f1', '#84cc16'];
 
 export default function ReportsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'financial' | 'graph'>('financial');
-  const [chartView, setChartView] = useState<'monthly' | 'yearly'>('yearly');
+  const [chartView, setChartView] = useState<'monthly' | 'yearly'>('monthly');
   const [nlpQuery, setNlpQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
   const [selectedMonth, setSelectedMonth] = useState('All Months');
   const [selectedYear, setSelectedYear] = useState('All Years');
   const [reportData, setReportData] = useState<any>(null);
@@ -405,6 +407,11 @@ export default function ReportsPage() {
       </div>
       </>
       )}
+
+      <EliteDeepDiveModal
+        item={selectedDeepDive}
+        onClose={() => setSelectedDeepDive(null)}
+      />
 
       <style>{`
         .page-reports { max-width: 1100px; }
