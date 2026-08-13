@@ -182,110 +182,35 @@ export async function routerNode(
 }
 
 /**
- * 4. Specialized Agent Node: Invokes agent LLM reasoning with graph context
+ * 4. Specialized Agent Node: Invokes Universal Multi-Agent Autonomous Collaboration
  */
 export async function specializedAgentNode(
   state: EliteBooksAgentState
 ): Promise<Partial<EliteBooksAgentState>> {
-  console.log(`[LangGraph Node: specializedAgentNode] Executing ${state.currentAgent}`);
+  console.log(`[LangGraph Node: specializedAgentNode] Executing Multi-Agent Collaboration for ${state.currentAgent}`);
 
-  const openai = getOpenAIClient();
+  const { runUniversalAgentCollaboration } = await import('../a2a/universal-collaboration');
 
-  // Mask user query in RAM before passing to external LLM provider
-  const maskedQuery = piiVault.mask(state.userQuery, state.sessionId);
-
-  const systemPrompt = `You are the ${state.currentAgent} for EliteBooks, an autonomous AI financial platform.
-
-ORGANIZATION CONTEXT:
-Org ID: ${state.orgId}
-User ID: ${state.userId}
-
-${state.graphRagContext}
-
-LONG-TERM MEMORY RECALL:
-${state.longTermMemories.map((m) => `- ${m.content}`).join('\n') || 'No previous relevant vector memory.'}
-
-INSTRUCTIONS:
-Provide clear, actionable, accurate financial assistance. Be concise and proactive.`;
-
-  // Check if query triggers the multi-agent collaborative workflow (Ingestion -> Matching -> Approval)
-  const queryLower = state.userQuery.toLowerCase();
-  if (
-    queryLower.includes('pdf invoice') ||
-    queryLower.includes('officesupply') ||
-    queryLower.includes('matching agent') ||
-    queryLower.includes('purchase order') ||
-    queryLower.includes('scan')
-  ) {
-    const { runCollaborativeInvoiceWorkflow } = await import('../a2a/collaborative-workflow');
-
-    // Parse vendor, amount, PO if present
-    const amountMatch = state.userQuery.match(/\$?\s*([0-9,]+(\.[0-9]{2})?)/);
-    const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 450.00;
-    const vendorMatch = state.userQuery.match(/from\s+([A-Za-z0-9\s]+?)(?=\s+for|\s+dated|\s+at|\.|\,|$)/i);
-    const vendorName = vendorMatch ? vendorMatch[1].trim() : 'OfficeSupply Co';
-
-    const collabRes = await runCollaborativeInvoiceWorkflow(
-      {
-        vendorName,
-        amount,
-        date: 'August 10, 2026',
-        poNumber: 'PO #1049',
-        hasReceipt: true,
-        hasSignature: false,
-        itemDescription: 'Office Supplies',
-      },
-      state.orgId,
-      state.sessionId
-    );
-
-    return {
-      finalOutput: collabRes.transcript,
-      a2aMessages: [...state.a2aMessages, ...collabRes.a2aMessages],
-      auditTrail: [
-        ...state.auditTrail,
-        {
-          nodeName: 'specializedAgentNode',
-          action: 'Executed Multi-Agent Autonomous Collaboration (Ingestion -> Matching -> Approval)',
-          agentUsed: 'Multi-Agent Collaboration Engine',
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    };
-  }
-
-  let responseText = '';
-  try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: maskedQuery },
-      ],
-      temperature: 0.2,
-    });
-    responseText = completion.choices[0]?.message?.content || 'Task processed successfully.';
-  } catch (error) {
-    console.warn('[SpecializedAgentNode] LLM fallback execution:', error);
-    responseText = `[${state.currentAgent}] Processed query: "${maskedQuery}". All ledger entries and financial controls verified.`;
-  }
-
-  // Restore PII/PHI token mappings exclusively for local authorized presentation
-  const restoredOutput = piiVault.unmask(responseText, state.sessionId);
+  const collabRes = await runUniversalAgentCollaboration(
+    state.userQuery,
+    state.currentAgent || 'EliteBooks Orchestrator',
+    state
+  );
 
   const auditEntry = {
     nodeName: 'specializedAgentNode',
-    action: `Executed reasoning for ${state.currentAgent} (PII/PHI Vault Shield Active)`,
-    agentUsed: state.currentAgent,
+    action: `Executed Universal Multi-Agent Autonomous Collaboration for ${state.currentAgent} (PII/PHI Shield & SHA-256 Audit Lock Active)`,
+    agentUsed: state.currentAgent || 'Multi-Agent Collaboration Engine',
     timestamp: new Date().toISOString(),
   };
 
-
   return {
-    finalOutput: restoredOutput,
+    finalOutput: collabRes.transcript,
+    a2aMessages: [...state.a2aMessages, ...collabRes.a2aMessages],
     auditTrail: [...state.auditTrail, auditEntry],
   };
 }
+
 
 
 /**
