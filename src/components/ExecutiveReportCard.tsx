@@ -13,6 +13,7 @@ interface ExecutiveReportCardProps {
   onSuggestionClick?: (suggestion: string) => void;
   onClear?: () => void;
   onAskFollowUp?: () => void;
+  onOpenCreationModal?: (type: 'invoice' | 'expense') => void;
 }
 
 export default function ExecutiveReportCard({
@@ -22,9 +23,10 @@ export default function ExecutiveReportCard({
   onSuggestionClick,
   onClear,
   onAskFollowUp,
+  onOpenCreationModal,
 }: ExecutiveReportCardProps) {
   const [copied, setCopied] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('Gemini 3.7 Flash');
+  const [selectedModel, setSelectedModel] = useState('GPT-5.4 Mini');
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -100,10 +102,10 @@ export default function ExecutiveReportCard({
                     cursor: 'pointer',
                   }}
                 >
-                  <option value="Gemini 3.7 Flash" style={{ background: '#0f172a', color: '#f59e0b' }}>Gemini 3.7 Flash (High Speed)</option>
-                  <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>Gemini 3.7 Pro (Deep Reasoning)</option>
-                  <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>GPT-5.4 Mini (Orchestrator)</option>
-                  <option value="Claude 3.5 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>Claude 3.5 Sonnet (Strategic)</option>
+                  <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Default Orchestrator)</option>
+                  <option value="Gemini 3.7 Flash" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Flash (High Speed & Reasoning)</option>
+                  <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Pro (Deep Financial Strategy)</option>
+                  <option value="Claude 3.5 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.5 Sonnet (Strategic Audit)</option>
                 </select>
               </div>
             </div>
@@ -248,6 +250,53 @@ export default function ExecutiveReportCard({
             Click any button to execute prompt →
           </span>
         </div>
+
+        {/* Interactive Guided Action Launchers */}
+        {onOpenCreationModal && (
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
+            <button
+              className="btn btn-sm"
+              onClick={() => onOpenCreationModal('invoice')}
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3))',
+                border: '1px solid rgba(59, 130, 246, 0.5)',
+                color: '#93c5fd',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              <Sparkles size={14} style={{ color: '#60a5fa' }} />
+              <span>⚡ Open AI Invoice Builder (HITL)</span>
+            </button>
+
+            <button
+              className="btn btn-sm"
+              onClick={() => onOpenCreationModal('expense')}
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(236, 72, 153, 0.25))',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                color: '#fcd34d',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              <Sparkles size={14} style={{ color: '#f59e0b' }} />
+              <span>⚡ Open AI Expense Logger (HITL)</span>
+            </button>
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {(suggestions && suggestions.length > 0

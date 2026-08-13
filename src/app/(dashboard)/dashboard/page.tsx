@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Sparkles, Send, DollarSign, FileText, Users, TrendingUp,
   ArrowUpRight, ArrowDownRight, Mic, Bot, Zap, CreditCard,
-  BarChart3, Receipt, PieChart, Clock, AlertTriangle, ShieldCheck, Layers
+  BarChart3, Receipt, PieChart, Clock, AlertTriangle, ShieldCheck, Layers, Cpu
 } from 'lucide-react';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { useAgent } from '@/hooks/useAgent';
@@ -19,6 +19,7 @@ import ExecutiveReportCard from '@/components/ExecutiveReportCard';
 import { AIBusinessFeed } from '@/components/AIBusinessFeed';
 import { HITLApprovalCenter } from '@/components/HITLApprovalCenter';
 import { AIAuditCenter } from '@/components/AIAuditCenter';
+import { AIAssistedCreationModal } from '@/components/AIAssistedCreationModal';
 import { AIBusinessFeedService } from '@/lib/feed-service';
 import { AIBusinessFeedItem, HITLApprovalRequest } from '@/types/agent-system';
 
@@ -37,6 +38,11 @@ export default function DashboardHome() {
   const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveData | null>(null);
+
+  // AI Creation Modal State
+  const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
+  const [creationModalType, setCreationModalType] = useState<'invoice' | 'expense'>('invoice');
+  const [creationInitialData, setCreationInitialData] = useState<any>(null);
 
   // AI Feed & Approvals State
   const [feedItems, setFeedItems] = useState<AIBusinessFeedItem[]>([]);
@@ -172,6 +178,29 @@ export default function DashboardHome() {
           </p>
         </div>
 
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '4px 12px', borderRadius: '20px' }}>
+            <Cpu size={14} style={{ color: '#f59e0b' }} />
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Active Reasoning Model:</span>
+            <select
+              style={{
+                background: 'transparent',
+                color: '#f59e0b',
+                fontSize: '12px',
+                fontWeight: 700,
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Default Multi-Agent Orchestrator)</option>
+              <option value="Gemini 3.7 Flash" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Flash (High Speed & Reasoning)</option>
+              <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Pro (Deep Financial Strategy)</option>
+              <option value="Claude 3.5 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.5 Sonnet (Strategic Audit)</option>
+            </select>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="cmd-input-wrap" id="command-form">
           <Sparkles size={20} className={`cmd-input-icon ${isLoading ? 'animate-pulse text-amber-400' : ''}`} />
           <input
@@ -206,6 +235,10 @@ export default function DashboardHome() {
             suggestions={response.suggestions}
             onSuggestionClick={(s) => sendMessage(s)}
             onClear={clearResponse}
+            onOpenCreationModal={(type) => {
+              setCreationModalType(type);
+              setIsCreationModalOpen(true);
+            }}
             onAskFollowUp={() => {
               const el = document.getElementById('command-input');
               if (el) {
@@ -223,8 +256,58 @@ export default function DashboardHome() {
           </div>
         )}
 
-        {/* Quick Actions */}
+        {/* Quick Actions & AI Guided Launchers */}
         <div className="cmd-quick-actions">
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => {
+              setCreationModalType('invoice');
+              setIsCreationModalOpen(true);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3))',
+              border: '1px solid rgba(59, 130, 246, 0.5)',
+              color: '#93c5fd',
+              borderRadius: 'var(--radius-full)',
+              padding: '6px 14px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            <Sparkles size={14} style={{ color: '#60a5fa' }} />
+            <span>Create Invoice (AI Assisted)</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => {
+              setCreationModalType('expense');
+              setIsCreationModalOpen(true);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(236, 72, 153, 0.25))',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
+              color: '#fcd34d',
+              borderRadius: 'var(--radius-full)',
+              padding: '6px 14px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            <Sparkles size={14} style={{ color: '#f59e0b' }} />
+            <span>Log Expense (AI Assisted)</span>
+          </button>
+
           {quickActions.map((action) => (
             <button 
               key={action.label} 
@@ -408,6 +491,15 @@ export default function DashboardHome() {
 
         {activeTab === 'audit' && <AIAuditCenter orgId="default" />}
       </section>
+
+      {/* AI Guided Creation Modal (Human-in-the-Loop) */}
+      <AIAssistedCreationModal
+        isOpen={isCreationModalOpen}
+        onClose={() => setIsCreationModalOpen(false)}
+        type={creationModalType}
+        initialData={creationInitialData}
+        onSuccess={() => fetchSnapshot()}
+      />
 
       <style>{`
         .cmd-center {
