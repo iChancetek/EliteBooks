@@ -13,8 +13,8 @@ export default function ReportsPage() {
   const [chartView, setChartView] = useState<'monthly' | 'yearly'>('yearly');
   const [nlpQuery, setNlpQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState('Jun');
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedMonth, setSelectedMonth] = useState('All Months');
+  const [selectedYear, setSelectedYear] = useState('All Years');
   const [reportData, setReportData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 

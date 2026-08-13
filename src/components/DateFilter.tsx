@@ -16,7 +16,7 @@ const months = [
 ];
 const years = Array.from({ length: 11 }, (_, i) => (2016 + i).toString());
 
-export default function DateFilter({ initialMonth = 'Apr', initialYear = '2026', onDateChange }: DateFilterProps) {
+export default function DateFilter({ initialMonth = 'All Months', initialYear = 'All Years', onDateChange }: DateFilterProps) {
   const [month, setMonth] = useState(initialMonth);
   const [year, setYear] = useState(initialYear);
 

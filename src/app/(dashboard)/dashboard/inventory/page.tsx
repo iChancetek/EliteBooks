@@ -9,8 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 export default function InventoryPage() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('Jun');
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedMonth, setSelectedMonth] = useState('All Months');
+  const [selectedYear, setSelectedYear] = useState('All Years');
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -203,7 +203,7 @@ export default function InventoryPage() {
               <tr><td colSpan={8} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-tertiary)' }}>Loading inventory...</td></tr>
             ) : products.length === 0 ? (
               <tr><td colSpan={8} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-tertiary)' }}>No products in stock yet.</td></tr>
-            ) : products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map(p => (
+            ) : products.filter(p => (p.name || '').toLowerCase().includes(search.toLowerCase())).map(p => (
               <tr key={p.id}>
                 <td><strong style={{ color: 'var(--color-text-primary)' }}>{p.name}</strong></td>
                 <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{p.sku}</td>

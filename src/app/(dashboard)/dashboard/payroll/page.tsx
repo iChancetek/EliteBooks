@@ -8,8 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function PayrollPage() {
   const { user } = useAuth();
-  const [selectedMonth, setSelectedMonth] = useState('Jun');
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedMonth, setSelectedMonth] = useState('All Months');
+  const [selectedYear, setSelectedYear] = useState('All Years');
   const [employees, setEmployees] = useState<any[]>([]);
   const [paystubs, setPaystubs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

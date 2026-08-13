@@ -93,8 +93,8 @@ export default function AdminDashboard() {
   const { platformStats, userRoleData, growthData } = computedStats || {};
   const usersList = stats?.users || [];
   const filteredUsers = usersList.filter((u: any) => 
-    u.name.toLowerCase().includes(search.toLowerCase()) || 
-    u.email.toLowerCase().includes(search.toLowerCase())
+    (u.name || '').toLowerCase().includes(search.toLowerCase()) || 
+    (u.email || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (

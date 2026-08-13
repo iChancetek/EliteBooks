@@ -54,8 +54,8 @@ export default function ExpensesPage() {
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'info' | 'warning' } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const [selectedMonth, setSelectedMonth] = useState('Jun');
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedMonth, setSelectedMonth] = useState('All Months');
+  const [selectedYear, setSelectedYear] = useState('All Years');
 
   const fetchExpenses = useCallback(async () => {
     if (!user) return;
@@ -239,14 +239,14 @@ export default function ExpensesPage() {
                   <TrendingUp size={14} />
                   <div>
                     <label>Recurrence</label>
-                    <span>{selectedExpense.recurrance}</span>
+                    <span>{selectedExpense.recurrance || selectedExpense.recurrence || 'Monthly'}</span>
                   </div>
                 </div>
               </div>
 
               <div className="exp-detail-desc">
                 <label>Description</label>
-                <p>{selectedExpense.description}</p>
+                <p>{selectedExpense.description || 'No description provided.'}</p>
               </div>
 
               {/* Agentic AI Forecasting Section */}
@@ -259,13 +259,13 @@ export default function ExpensesPage() {
                 <div className="exp-ai-body">
                   <div className="ai-insight">
                     <Zap size={14} />
-                    <p>This is a <strong>{selectedExpense.recurrance.toLowerCase()}</strong> expense. I forecast a total spend of <strong>{formatCurrency(selectedExpense.amount * 12)}</strong> over the next 12 months.</p>
+                    <p>This is a <strong>{(selectedExpense.recurrance || selectedExpense.recurrence || 'Monthly').toLowerCase()}</strong> expense. I forecast a total spend of <strong>{formatCurrency((selectedExpense.amount || 0) * 12)}</strong> over the next 12 months.</p>
                   </div>
                   <div className="ai-insight">
                     <TrendingUp size={14} />
-                    <p>This vendor (<strong>{selectedExpense.vendor}</strong>) costs <strong>12% more</strong> than the market average for similar services. Consider renegotiating.</p>
+                    <p>This vendor (<strong>{selectedExpense.vendor || 'Vendor'}</strong>) costs <strong>12% more</strong> than the market average for similar services. Consider renegotiating.</p>
                   </div>
-                  {selectedExpense.amount > 1000 && (
+                  {(selectedExpense.amount || 0) > 1000 && (
                     <div className="ai-insight warning">
                       <AlertTriangle size={14} />
                       <p>High-value transaction detected. I have flagged this for your quarterly tax deduction strategy.</p>
@@ -512,7 +512,7 @@ export default function ExpensesPage() {
           </thead>
           <tbody>
             {activeExpenses
-              .filter(e => e.vendor.toLowerCase().includes(search.toLowerCase()))
+              .filter(e => (e.vendor || '').toLowerCase().includes(search.toLowerCase()))
               .filter(e => !selectedCategory || e.category === selectedCategory)
               .map(exp => (
               <tr 
