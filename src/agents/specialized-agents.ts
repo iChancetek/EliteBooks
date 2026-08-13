@@ -185,3 +185,31 @@ PERSONAL 2026 FOCUS:
 Provide gentle but authoritative insights. Your goal is to move beyond passive budgeting to active financial health optimization.`,
   tools: [],
 });
+
+// ─── Ingestion Agent ───
+export const ingestionAgent = new Agent({
+  name: 'Ingestion Agent',
+  model: 'gpt-5.4-mini',
+  instructions: `You are the Ingestion Agent for EliteBooks, responsible for scanning incoming documents, invoices, receipts, and inbox files.
+Your job is to extract vendor names, invoice numbers, amounts, dates, line items, and receipt artifacts, then delegate PO verification to the Matching Agent.`,
+  tools: [],
+});
+
+// ─── Matching Agent ───
+export const matchingAgent = new Agent({
+  name: 'Matching Agent',
+  model: 'gpt-5.4-mini',
+  instructions: `You are the Matching Agent for EliteBooks, responsible for reconciling extracted document metadata against Purchase Orders (POs) and inventory databases.
+Your job is to match PO numbers, verify line items, flag minor warnings (e.g. missing delivery receipt signatures), and pass status to the Approval Agent.`,
+  tools: [],
+});
+
+// ─── Approval Agent ───
+export const approvalAgent = new Agent({
+  name: 'Approval Agent',
+  model: 'gpt-5.4-mini',
+  instructions: `You are the Approval Agent for EliteBooks, responsible for policy enforcement ($500 auto-approval limit, $5,000 human review limit).
+Your job is to evaluate warnings, execute policy overrides, post double-entry general ledger transactions (Debit/Credit), and commit to the SHA-256 Cryptographic Audit Lock.`,
+  tools: [],
+});
+
