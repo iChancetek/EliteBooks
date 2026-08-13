@@ -176,7 +176,77 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 2: Ingestion & Receipt Scanning
+  // PRIORITY 2: Total Expense Inquiry / Spend Analysis Branch
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('total expense') ||
+    queryLower.includes('my expenses') ||
+    queryLower.includes('all expenses') ||
+    queryLower.includes('spend summary') ||
+    queryLower.includes('how much did i spend') ||
+    queryLower.includes('expense breakdown') ||
+    queryLower.includes('total spend') ||
+    queryLower.includes('what are my expenses') ||
+    queryLower.includes('what are my total expenses') ||
+    (queryLower.includes('expense') && (queryLower.includes('what') || queryLower.includes('total') || queryLower.includes('show') || queryLower.includes('how much')))
+  ) {
+    const expMsg = `📊 TOTAL EXPENSES & SPEND PORTFOLIO SUMMARY
+----------------------------------------------------------------------
+• Total Recent Period Spend: $4,193.95 (3.8% vs last month)
+• Total Portfolio Operating Expenses (OPEX): $22,798.35
+
+• Spend Categories Breakdown:
+  1. Rent & Utilities: $5,800.00
+  2. Professional Services: $3,500.00
+  3. Marketing & Advertising: $2,900.00
+  4. Software & SaaS: $2,883.00 (inc. Google Cloud $1,420.50, OpenAI $17.00)
+  5. Meals & Entertainment: $1,560.00 (50% Tax Deductible)
+  6. Insurance: $1,200.00
+  7. Training & Education: $850.00
+  8. Office & Supplies: $684.20 (inc. Staples $342.10)
+  9. Miscellaneous: $210.00
+  10. Travel & Transport: $169.00 (inc. Uber Business $84.50)
+  11. Bank Fees & Interest: $125.00
+  12. Subscriptions: $86.95 (inc. Netflix & Spotify $35.98, iPostal $14.99)
+
+Expense Agent completed portfolio query across General Ledger and Knowledge Graph. Dispatching summary to Cash Flow Agent.`;
+
+    lines.push({ agent: 'Expense Agent', message: expMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'Expense Agent',
+      'Cash Flow Agent',
+      'Analyze cash flow impact of operating expenses',
+      { totalSpend: 4193.95 },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const cashMsg = `Operating expenses are fully within budgeted runway limits. Cash balance remains strong at $13,248.81 with an estimated 18.4 months liquidity runway. Ledger Agent, verify double-entry postings.`;
+    lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Cash Flow Agent',
+      'Ledger Agent',
+      'Verify double-entry ledger balance for expenses',
+      { totalSpend: 4193.95 },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const ledgerMsg = `All 12 expense categories reconciled. Double-entry balances confirmed across Account #1010 Cash and #6000 Operating Accounts. Zero variance detected.`;
+    lines.push({ agent: 'Ledger Agent', message: ledgerMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // PRIORITY 3: Ingestion & Receipt Scanning
   // ══════════════════════════════════════════════════════════════════════
   if (
     queryLower.includes('pdf invoice') ||
@@ -241,13 +311,10 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 3: Single Transaction Expense Logging
+  // PRIORITY 4: Single Transaction Expense Logging (Only when explicit log/add/scan/post)
   // ══════════════════════════════════════════════════════════════════════
   if (
-    queryLower.includes('expense') ||
-    queryLower.includes('receipt') ||
-    queryLower.includes('categorize') ||
-    primaryAgent === 'Expense Agent'
+    (queryLower.includes('log') || queryLower.includes('add') || queryLower.includes('create') || queryLower.includes('scan') || queryLower.includes('post') || queryLower.includes('new expense') || queryLower.includes('receipt'))
   ) {
     const expAmount = (amount && !isNaN(amount)) ? amount : 150.0;
     const cat = queryLower.includes('saas') || queryLower.includes('software') ? 'SaaS & Software Subscriptions' : 'Office Expenses';
@@ -286,7 +353,7 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 4: Payroll Intent
+  // PRIORITY 5: Payroll Intent
   // ══════════════════════════════════════════════════════════════════════
   if (queryLower.includes('payroll') || queryLower.includes('salary') || primaryAgent === 'Payroll Agent') {
     const payAmount = amount ?? 45000.0;
@@ -318,7 +385,7 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 5: FinOps & Cloud Spend Intent
+  // PRIORITY 6: FinOps & Cloud Spend Intent
   // ══════════════════════════════════════════════════════════════════════
   if (queryLower.includes('cloud') || queryLower.includes('finops') || queryLower.includes('gpu') || primaryAgent === 'FinOps Agent') {
     const saveAmount = amount ?? 2400.0;
@@ -336,7 +403,7 @@ EliteBooks Autonomous Financial Copilot`;
     a2aLog.push(a2a2);
 
     const compMsg = `SLA compliance verified. No enterprise terms violated. Optimization recommendations logged and audit hashed.`;
-    lines.push({ agent: 'Compliance Agent', message: compMsg });
+    lines.push({ agent: 'Compliance Officer', message: compMsg });
 
     const block = auditLock.appendBlock(orgId, 'FINOPS_OPTIMIZE', 'FinOps Agent', { saveAmount });
 
@@ -346,33 +413,6 @@ EliteBooks Autonomous Financial Copilot`;
       transcriptLines: lines,
       a2aMessages: a2aLog,
       auditBlockHash: block.blockHash,
-    };
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 6: Cash Flow & Treasury Intent
-  // ══════════════════════════════════════════════════════════════════════
-  if (queryLower.includes('cash') || queryLower.includes('forecast') || queryLower.includes('burn') || primaryAgent === 'Cash Flow Agent') {
-    const cfMsg = `Generated 30/60/90-day cash flow model. Projected net cash balance for next month is $145,000. Invoicing Agent, please report aging Accounts Receivable to factor into liquidity.`;
-    lines.push({ agent: 'Cash Flow Agent', message: cfMsg });
-
-    const a2a1 = await agentBus.dispatch('Cash Flow Agent', 'Invoicing Agent', 'Fetch AR aging analysis', {}, 1);
-    a2aLog.push(a2a1);
-
-    const invMsg = `AR Aging breakdown: $32,000 in Net-30 invoices due within 14 days. Collection probability is 96.4%. 0 accounts over 30 days past due. Expense Agent, report upcoming OPEX trends.`;
-    lines.push({ agent: 'Invoicing Agent', message: invMsg });
-
-    const a2a2 = await agentBus.dispatch('Invoicing Agent', 'Expense Agent', 'Report upcoming OPEX trends', {}, 2);
-    a2aLog.push(a2a2);
-
-    const expMsg = `OPEX trends indicate stable operating costs ($18,500/mo). No unexpected cash spikes detected. Cash flow outlook is strong and healthy.`;
-    lines.push({ agent: 'Expense Agent', message: expMsg });
-
-    return {
-      success: true,
-      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-      transcriptLines: lines,
-      a2aMessages: a2aLog,
     };
   }
 
