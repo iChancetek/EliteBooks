@@ -7,6 +7,7 @@ import {
   PieChart, Hash, Layers, Lock, Cpu, Sparkles
 } from 'lucide-react';
 import { formatCurrency, formatPercent } from '@/lib/utils';
+import { useAgent } from '@/hooks/useAgent';
 
 export interface DeepDiveData {
   title: string;
@@ -44,11 +45,32 @@ interface DeepDiveModalProps {
 
 export default function DeepDiveModal({ data, onClose, onAskAgent }: DeepDiveModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'breakdown' | 'audit'>('overview');
+  const { isLoading: isAiLoading, response: aiResponse, sendMessage: sendModalAiMessage } = useAgent();
+  const [hasAsked, setHasAsked] = useState(false);
 
   if (!data) return null;
 
   const color = data.color || '#3b82f6';
   const isPositiveChange = (data.change || 0) >= 0;
+
+  const getAskQuery = () => {
+    if (data.itemDetails) {
+      const amtStr = data.itemDetails.amount !== undefined 
+        ? ` (${data.itemDetails.amount > 0 ? '+' : ''}${formatCurrency(data.itemDetails.amount)})` 
+        : '';
+      return `Explain the audit trail and action: "${data.itemDetails.action}"${amtStr} performed by ${data.itemDetails.agent}.`;
+    }
+    return `Explain the financial breakdown, MoM growth drivers, and double-entry ledger postings for ${data.title} ($${(data.value || 0).toLocaleString()}).`;
+  };
+
+  const handleAskClick = async () => {
+    const query = getAskQuery();
+    setHasAsked(true);
+    if (onAskAgent) {
+      onAskAgent(query);
+    }
+    await sendModalAiMessage(query);
+  };
 
   // Generate synthetic/dynamic ledger data for deep dive
   const auditHash = `0x${Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
@@ -344,18 +366,65 @@ export default function DeepDiveModal({ data, onClose, onAskAgent }: DeepDiveMod
           </div>
         )}
 
+        {/* Inline AI Agent Response Box */}
+        {(isAiLoading || aiResponse || hasAsked) && (
+          <div
+            className="glass-card animate-scale-in"
+            style={{
+              padding: 'var(--space-4)',
+              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(59, 130, 246, 0.15))',
+              border: `1px solid ${color}40`,
+              borderRadius: 'var(--radius-lg)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-2)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-xs)', fontWeight: 700, color: color }}>
+              <Bot size={16} className={isAiLoading ? 'animate-pulse' : ''} />
+              <span>EliteBooks AI Agent Analysis</span>
+            </div>
+
+            {isAiLoading ? (
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', padding: 'var(--space-2) 0' }}>
+                <Sparkles size={16} className="animate-spin" style={{ color: color }} />
+                <span>Autonomous Agent is analyzing knowledge graph & ledger trace...</span>
+              </div>
+            ) : aiResponse ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
+                  {aiResponse.message}
+                </p>
+                {aiResponse.suggestions && aiResponse.suggestions.length > 0 && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                    {aiResponse.suggestions.map((s) => (
+                      <button
+                        key={s}
+                        className="btn btn-xs btn-ghost"
+                        style={{ fontSize: '11px', background: 'rgba(255, 255, 255, 0.05)', padding: '2px 8px', borderRadius: '4px' }}
+                        onClick={() => sendModalAiMessage(s)}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        )}
+
         {/* Modal Footer Controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border-subtle)' }}>
-          {onAskAgent && (
-            <button
-              onClick={() => onAskAgent(`Explain the breakdown of ${data.title} in detail.`)}
-              className="btn btn-sm btn-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-            >
-              <Sparkles size={14} style={{ color: color }} />
-              <span>Ask AI Agent about this</span>
-            </button>
-          )}
+          <button
+            onClick={handleAskClick}
+            className="btn btn-sm btn-secondary"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+            disabled={isAiLoading}
+          >
+            <Sparkles size={14} style={{ color: color }} />
+            <span>{isAiLoading ? 'Analyzing...' : 'Ask AI Agent about this'}</span>
+          </button>
 
           <button onClick={onClose} className="btn btn-sm btn-primary" style={{ cursor: 'pointer' }}>
             Close Breakdown

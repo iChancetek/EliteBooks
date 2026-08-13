@@ -189,8 +189,9 @@ export default function DashboardHome() {
         data={selectedDeepDive}
         onClose={() => setSelectedDeepDive(null)}
         onAskAgent={(q) => {
-          setSelectedDeepDive(null);
+          setCommand(q);
           sendMessage(q);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
 
