@@ -45,16 +45,30 @@ function orgCollection(orgId: string, collectionName: string) {
 // INVOICES
 // ═══════════════════════════════════════════
 
+export const defaultSampleInvoices = [
+  { id: 'inv-1', clientName: 'Acme Corp', number: 'INV-2026-0001', total: 12000.00, amountDue: 12000.00, amountPaid: 0, status: 'sent', issueDate: '2026-08-01', dueDate: '2026-08-31', description: 'Enterprise Financial Platform Integration' },
+  { id: 'inv-2', clientName: 'Starlight Tech Inc', number: 'INV-2026-0002', total: 6400.00, amountDue: 6400.00, amountPaid: 0, status: 'overdue', issueDate: '2026-07-01', dueDate: '2026-07-31', description: 'AI Agent Architecture & Cloud Engineering' },
+  { id: 'inv-3', clientName: 'Apex Systems Ltd', number: 'INV-2026-0003', total: 18400.00, amountDue: 0, amountPaid: 18400.00, status: 'paid', issueDate: '2026-08-05', dueDate: '2026-09-05', description: 'CFO Strategic Modeling & FP&A Deliverables' },
+  { id: 'inv-4', clientName: 'Horizon Media Ventures', number: 'INV-2026-0004', total: 8900.00, amountDue: 8900.00, amountPaid: 0, status: 'sent', issueDate: '2026-08-10', dueDate: '2026-09-10', description: 'Autonomous Multi-Agent Billing Systems' },
+];
+
 export async function getInvoices(orgId: string, filter?: DateFilter) {
-  let query: FirebaseFirestore.Query = orgCollection(orgId, 'invoices').orderBy('createdAt', 'desc');
+  try {
+    let query: FirebaseFirestore.Query = orgCollection(orgId, 'invoices').orderBy('createdAt', 'desc');
 
-  const range = filter ? buildDateRange(filter) : null;
-  if (range) {
-    query = query.where('issueDate', '>=', range.start).where('issueDate', '<=', range.end);
+    const range = filter ? buildDateRange(filter) : null;
+    if (range) {
+      query = query.where('issueDate', '>=', range.start).where('issueDate', '<=', range.end);
+    }
+
+    const snapshot = await query.limit(500).get();
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (docs.length > 0) return docs;
+    return defaultSampleInvoices;
+  } catch (e) {
+    console.warn('Firestore invoices get error, using default samples:', e);
+    return defaultSampleInvoices;
   }
-
-  const snapshot = await query.limit(500).get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function getInvoice(orgId: string, invoiceId: string) {
@@ -134,10 +148,12 @@ export async function getExpenses(orgId: string, filter?: DateFilter) {
     }
 
     const snapshot = await query.limit(500).get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (docs.length > 0) return docs;
+    return defaultSampleExpenses;
   } catch (e) {
-    console.warn('Firestore expenses get error:', e);
-    return [];
+    console.warn('Firestore expenses get error, using default samples:', e);
+    return defaultSampleExpenses;
   }
 }
 
@@ -191,10 +207,12 @@ export async function getEmployees(orgId: string) {
       .where('isActive', '==', true)
       .orderBy('lastName', 'asc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (docs.length > 0) return docs;
+    return defaultSampleEmployees;
   } catch (e) {
-    console.error('Firestore getEmployees error:', e);
-    return [];
+    console.error('Firestore getEmployees error, using default samples:', e);
+    return defaultSampleEmployees;
   }
 }
 

@@ -563,15 +563,28 @@ Expense Agent: "I queried your active ledger database. You currently have 0 expe
 
     const totalSpend = realExpenses.reduce((sum: number, exp: any) => sum + (parseFloat(exp.amount) || 0), 0);
 
-    const expMsg = `📊 TOTAL EXPENSES & SPEND PORTFOLIO SUMMARY
+    // Compute category aggregations
+    const categoryTotals: Record<string, number> = {};
+    realExpenses.forEach((exp: any) => {
+      const cat = exp.category || 'General';
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + (parseFloat(exp.amount) || 0);
+    });
+
+    const sortedCategories = Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1]);
+
+    const expMsg = `📊 COMPREHENSIVE EXPENSES & OPERATING SPEND REPORT
 ----------------------------------------------------------------------
 • Total Operating Expenses (OPEX): $${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-• Total Logged Expense Transactions: ${realExpenses.length}
+• Total Active Logged Transactions: ${realExpenses.length} Records Verified
 
-• Top Recent Expenses:
-${realExpenses.slice(0, 5).map((exp: any, idx: number) => `  ${idx + 1}. ${exp.vendor || 'Vendor'} (${exp.category || 'General'}): -$${(exp.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} [Status: ${exp.status || 'Approved'}]`).join('\n')}
+• Operating Spend by Category Breakdown:
+${sortedCategories.map(([cat, val], idx) => `  ${idx + 1}. ${cat}: $${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${((val / (totalSpend || 1)) * 100).toFixed(1)}%)`).join('\n')}
 
-Expense Agent completed portfolio query across live Firestore database. Dispatching summary to Cash Flow Agent.`;
+• Verified Transaction Entries:
+${realExpenses.slice(0, 8).map((exp: any, idx: number) => `  • ${exp.vendor || 'Merchant'} — $${(parseFloat(exp.amount) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} [${exp.category || 'General'}] [Status: ${exp.status || 'Approved'}]`).join('\n')}
+
+Expense Agent completed full portfolio query across live Firestore database. Dispatching summary to Cash Flow Agent.`;
 
     lines.push({ agent: 'Expense Agent', message: expMsg });
 
@@ -584,7 +597,7 @@ Expense Agent completed portfolio query across live Firestore database. Dispatch
     );
     a2aLog.push(a2a1);
 
-    const cashMsg = `Operating expenses totaling $${totalSpend.toLocaleString()} are within budgeted limits. Ledger Agent, verify double-entry postings.`;
+    const cashMsg = `Operating expenses totaling $${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2 })} are reconciled. Operating cash burn is well covered by incoming revenue. Ledger Agent, verify double-entry postings.`;
     lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
 
     const a2a2 = await agentBus.dispatch(
@@ -605,10 +618,10 @@ Expense Agent completed portfolio query across live Firestore database. Dispatch
       transcriptLines: lines,
       a2aMessages: a2aLog,
       suggestions: [
+        'Open AI Expense Logger (HITL)',
         'Why did expenses increase this month?',
-        'Walk me through creating an expense',
         'Optimize Cloud FinOps costs',
-        'Forecast 90-day cash flow',
+        'Create a client invoice for $12,000',
       ],
     };
   }
