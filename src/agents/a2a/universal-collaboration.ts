@@ -175,6 +175,125 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // GUIDED WIZARDS ACROSS ALL MODULES (Interactive Step-by-Step)
+  // ══════════════════════════════════════════════════════════════════════
+  // 1. Expense Creation Wizard
+  if (
+    queryLower === 'help me create an expense' ||
+    queryLower === 'create an expense' ||
+    queryLower === 'create expense' ||
+    queryLower.includes('help me create an expense') ||
+    queryLower.includes('help me log an expense') ||
+    queryLower.includes('walk me through creating an expense') ||
+    queryLower.includes('how do i create an expense')
+  ) {
+    const wizardMsg = `I would be delighted to guide you through creating your new expense entry step by step!
+
+Step 1 of 3: What is the merchant or vendor name for this expense? (e.g., Staples, Google Cloud, Uber, Whole Foods)`;
+
+    lines.push({ agent: 'Expense Agent', message: wizardMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // 2. Invoice Creation Wizard
+  if (
+    queryLower === 'help me create an invoice' ||
+    queryLower === 'create an invoice' ||
+    queryLower === 'create invoice' ||
+    queryLower.includes('help me create an invoice') ||
+    queryLower.includes('draft an invoice') ||
+    queryLower.includes('walk me through creating an invoice') ||
+    queryLower.includes('how do i create an invoice')
+  ) {
+    const wizardMsg = `I would be delighted to guide you through creating your new client invoice step by step!
+
+Step 1 of 3: What is the client or company name for this invoice? (e.g., Acme Corp, Starlight Tech, Apex Systems)`;
+
+    lines.push({ agent: 'Invoicing Agent', message: wizardMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // 3. Payroll Execution Wizard
+  if (
+    queryLower === 'help me run payroll' ||
+    queryLower === 'run payroll' ||
+    queryLower === 'start payroll' ||
+    queryLower.includes('help me run payroll') ||
+    queryLower.includes('create payroll') ||
+    queryLower.includes('walk me through payroll')
+  ) {
+    const wizardMsg = `I would be delighted to guide you through processing team payroll step by step!
+
+Step 1 of 3: What is the target payroll period? (e.g., August 2026, Q3 Semi-Monthly Schedule)`;
+
+    lines.push({ agent: 'Payroll Agent', message: wizardMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // 4. Inventory SKU Creation Wizard
+  if (
+    queryLower === 'help me add inventory' ||
+    queryLower === 'add inventory' ||
+    queryLower === 'create sku' ||
+    queryLower.includes('help me add inventory') ||
+    queryLower.includes('add new stock') ||
+    queryLower.includes('walk me through inventory')
+  ) {
+    const wizardMsg = `I would be delighted to guide you through adding new inventory stock step by step!
+
+Step 1 of 3: What is the item or SKU name? (e.g., Ergonomic Workstation Mouse, UltraHD Monitor Hub)`;
+
+    lines.push({ agent: 'Inventory Agent', message: wizardMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // 5. Journal Entry Creation Wizard
+  if (
+    queryLower === 'help me create a journal entry' ||
+    queryLower === 'create journal entry' ||
+    queryLower === 'post journal entry' ||
+    queryLower.includes('help me create a journal entry') ||
+    queryLower.includes('walk me through journal entry')
+  ) {
+    const wizardMsg = `I would be delighted to guide you through creating a double-entry general ledger record step by step!
+
+Step 1 of 3: What is the Debit account and amount? (e.g., Office Supplies #6100 - $150.00)`;
+
+    lines.push({ agent: 'Ledger Agent', message: wizardMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // DOMAIN AGENT 1: FinOps & Cloud Infrastructure Agent
   // ══════════════════════════════════════════════════════════════════════
   if (
@@ -716,32 +835,6 @@ Inventory Agent completed supply chain audit. Dispatching valuation metrics to L
       a2aMessages: a2aLog,
       journalEntry: je,
       auditBlockHash: block.blockHash,
-    };
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // GUIDED CREATION WIZARD: Step-by-Step Interactive Expense Creation
-  // ══════════════════════════════════════════════════════════════════════
-  if (
-    queryLower === 'help me create an expense' ||
-    queryLower === 'create an expense' ||
-    queryLower === 'create expense' ||
-    queryLower.includes('help me create an expense') ||
-    queryLower.includes('help me log an expense') ||
-    queryLower.includes('walk me through creating an expense') ||
-    queryLower.includes('how do i create an expense')
-  ) {
-    const wizardMsg = `I would be delighted to guide you through creating your new expense entry step by step!
-
-Step 1 of 3: What is the merchant or vendor name for this expense? (e.g., Staples, Google Cloud, Uber, Whole Foods)`;
-
-    lines.push({ agent: 'Expense Agent', message: wizardMsg });
-
-    return {
-      success: true,
-      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-      transcriptLines: lines,
-      a2aMessages: a2aLog,
     };
   }
 
