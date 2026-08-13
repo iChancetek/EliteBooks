@@ -16,6 +16,7 @@ import DeepDiveModal, { DeepDiveData } from '@/components/DeepDiveModal';
 import ColorfulBarChart from '@/components/ColorfulBarChart';
 import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
+import ExecutiveReportCard from '@/components/ExecutiveReportCard';
 
 const quickActions = [
   { label: 'Track my money', icon: DollarSign, color: '#10b981' },
@@ -247,21 +248,12 @@ export default function DashboardHome() {
 
         {/* Agent Response */}
         {response && (
-          <div className="cmd-response glass-card animate-scale-in">
-            <div className="cmd-response-header">
-              <Bot size={16} />
-              <span>EliteBooks AI</span>
-              <button className="btn btn-icon btn-ghost btn-sm" onClick={clearResponse}><X size={14} /></button>
-            </div>
-            <p className="cmd-response-text">{response.message}</p>
-            {response.suggestions && response.suggestions.length > 0 && (
-              <div className="cmd-response-suggestions">
-                {response.suggestions.map(s => (
-                  <button key={s} className="btn btn-secondary btn-sm" onClick={() => sendMessage(s)}>{s}</button>
-                ))}
-              </div>
-            )}
-          </div>
+          <ExecutiveReportCard
+            content={response.message}
+            agentUsed="EliteBooks Agentic Copilot"
+            suggestions={response.suggestions}
+            onSuggestionClick={(s) => sendMessage(s)}
+          />
         )}
 
         {error && (
