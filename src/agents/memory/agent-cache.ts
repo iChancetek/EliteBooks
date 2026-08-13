@@ -1,7 +1,9 @@
 /**
  * EliteBooks — Multi-Tier Agent Caching Engine
- * L1 High-Speed In-Memory Cache + L2 Persistent Cache Store
+ * L1 High-Speed In-Memory Cache + L2 Distributed Upstash Redis Cache Store
  */
+
+import { Redis } from '@upstash/redis';
 
 export interface CacheEntry<T = unknown> {
   key: string;
@@ -14,10 +16,25 @@ export interface CacheEntry<T = unknown> {
 export class AgentCacheManager {
   private static instance: AgentCacheManager;
   private l1Cache: Map<string, CacheEntry> = new Map();
+  private redis: Redis | null = null;
   private hits = 0;
   private misses = 0;
 
-  private constructor() {}
+  private constructor() {
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (url && token && url !== 'undefined') {
+      try {
+        this.redis = new Redis({ url, token });
+        console.log('[AgentCacheManager] Upstash Redis L2 Cache initialized.');
+      } catch (err) {
+        console.warn('[AgentCacheManager] Failed to initialize Redis L2 client, using L1 fallback:', err);
+      }
+    } else {
+      console.log('[AgentCacheManager] Upstash Redis credentials not detected. Running in L1 In-Memory mode.');
+    }
+  }
 
   public static getInstance(): AgentCacheManager {
     if (!AgentCacheManager.instance) {
@@ -35,34 +52,53 @@ export class AgentCacheManager {
     for (let i = 0; i < jsonStr.length; i++) {
       const char = jsonStr.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash |= 0; // Convert to 32bit integer
+      hash |= 0;
     }
     return `${prefix}:${Math.abs(hash)}`;
   }
 
   /**
-   * Retrieve cached value if unexpired
+   * Retrieve cached value if unexpired (L1 -> L2 fallback)
    */
   public async get<T>(key: string): Promise<T | null> {
+    // 1. Check L1 In-Memory Cache
     const entry = this.l1Cache.get(key);
-    if (!entry) {
-      this.misses++;
-      return null;
-    }
-
-    const now = Date.now();
-    if (now - entry.createdAt > entry.ttlMs) {
+    if (entry) {
+      const now = Date.now();
+      if (now - entry.createdAt <= entry.ttlMs) {
+        this.hits++;
+        return entry.value as T;
+      }
       this.l1Cache.delete(key);
-      this.misses++;
-      return null;
     }
 
-    this.hits++;
-    return entry.value as T;
+    // 2. Check L2 Upstash Redis Cache if available
+    if (this.redis) {
+      try {
+        const redisValue = await this.redis.get<T>(key);
+        if (redisValue !== null && redisValue !== undefined) {
+          this.hits++;
+          // Populate L1 cache for local fast read
+          this.l1Cache.set(key, {
+            key,
+            value: redisValue,
+            createdAt: Date.now(),
+            ttlMs: 300000,
+            tags: [],
+          });
+          return redisValue;
+        }
+      } catch (err) {
+        console.warn('[AgentCacheManager] Redis L2 get error:', err);
+      }
+    }
+
+    this.misses++;
+    return null;
   }
 
   /**
-   * Set value in cache with TTL and tags
+   * Set value in cache with TTL and tags across L1 & L2 Redis
    */
   public async set<T>(
     key: string,
@@ -70,6 +106,7 @@ export class AgentCacheManager {
     ttlMs: number = 300000, // Default 5 minutes
     tags: string[] = []
   ): Promise<void> {
+    // Set L1 Cache
     this.l1Cache.set(key, {
       key,
       value,
@@ -77,10 +114,20 @@ export class AgentCacheManager {
       ttlMs,
       tags,
     });
+
+    // Set L2 Upstash Redis Cache
+    if (this.redis) {
+      try {
+        const ttlSeconds = Math.ceil(ttlMs / 1000);
+        await this.redis.set(key, value, { ex: ttlSeconds });
+      } catch (err) {
+        console.warn('[AgentCacheManager] Redis L2 set error:', err);
+      }
+    }
   }
 
   /**
-   * Invalidate all cache entries matching given tags
+   * Invalidate cache entries matching given tags
    */
   public async invalidateByTags(tags: string[]): Promise<number> {
     let count = 0;
@@ -111,6 +158,7 @@ export class AgentCacheManager {
       misses: this.misses,
       hitRate: `${hitRate.toFixed(2)}%`,
       size: this.l1Cache.size,
+      l2Connected: !!this.redis,
     };
   }
 }
