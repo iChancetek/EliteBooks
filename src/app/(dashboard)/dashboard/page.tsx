@@ -165,6 +165,14 @@ export default function DashboardHome() {
           'Audit Project Alpha budget overrun'
         ]}
         color="#3b82f6"
+        isLoading={isLoading}
+        onAction={(cmd) => {
+          sendMessage(cmd);
+          const form = document.getElementById('command-form');
+          if (form) {
+            form.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
       />
 
       {/* Welcome + Command Input */}
@@ -193,9 +201,10 @@ export default function DashboardHome() {
                 cursor: 'pointer',
               }}
             >
-              <option value="Claude 3.5 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.5 Sonnet (Default Strategic Intelligence)</option>
+              <option value="Claude 3.7 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.7 Sonnet (Hybrid Reasoning Flagship)</option>
+              <option value="Claude 3.7 Sonnet (Thinking)" style={{ background: '#0f172a', color: '#f59e0b' }}>🧠 Claude 3.7 Sonnet (Extended Thinking Mode)</option>
+              <option value="Claude 3.5 Haiku" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ Claude 3.5 Haiku (Ultra-Low Latency)</option>
               <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Multi-Agent Orchestrator)</option>
-              <option value="Gemini 3.7 Flash" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Flash (High Speed & Reasoning)</option>
               <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Pro (Deep Financial Strategy)</option>
             </select>
           </div>
