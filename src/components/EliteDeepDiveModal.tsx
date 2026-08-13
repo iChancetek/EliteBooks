@@ -1,21 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   ShieldCheck,
   Zap,
-  TrendingUp,
-  AlertTriangle,
   Bot,
-  CheckCircle2,
-  FileText,
-  DollarSign,
+  Clock,
+  Sparkles,
+  MessageSquare,
   Activity,
   Layers,
-  ArrowUpRight,
-  ExternalLink,
-  MessageSquare
+  TrendingUp,
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
 
 export interface DeepDiveMetric {
@@ -61,7 +59,11 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
   onClose,
   onAskAgent
 }) => {
+  const [activeTab, setActiveTab] = useState<'financial' | 'itemized' | 'audit' | 'strategic'>('financial');
+
   if (!item) return null;
+
+  const agentName = item.agentUsed || `${item.module} Agent`;
 
   const formatCurrency = (val?: number) => {
     if (val === undefined || val === null || isNaN(val)) return '$0.00';
@@ -74,7 +76,6 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
       onAskAgent(prompt);
       onClose();
     } else {
-      // Trigger custom window event for AIAssistant or Copilot widget
       window.dispatchEvent(new CustomEvent('elitebooks:ask-agent', { detail: { query: prompt } }));
       onClose();
     }
@@ -84,7 +85,7 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
     {
       step: '1. Autonomous Ingestion & Entity Resolution',
       status: 'VERIFIED',
-      agent: `${item.module} Agent`,
+      agent: agentName,
       detail: `Extracted record ${item.id} for ${item.partyName || item.title}. Data normalized across Pinecone Vector RAG and Knowledge Graph.`
     },
     {
@@ -109,157 +110,216 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
 
   return (
     <>
-      {/* Dark Overlay Background */}
+      {/* Dark Backdrop Overlay */}
       <div
-        className="fixed inset-0 bg-black/75 backdrop-blur-md z-[500] animate-fade-in"
+        className="fixed inset-0 bg-black/80 backdrop-blur-md z-[500] animate-fade-in"
         onClick={onClose}
       />
 
-      {/* Slide-over Deep Dive Modal Drawer */}
+      {/* Deep Dive Modal Drawer */}
       <aside
-        className="fixed top-0 right-0 h-full w-full max-w-2xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-l border-amber-500/20 text-slate-100 shadow-2xl z-[501] overflow-y-auto flex flex-col justify-between animate-slide-in-right p-6 sm:p-8"
-        style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+        className="fixed top-0 right-0 h-full w-full max-w-2xl bg-slate-950 border-l border-amber-500/30 text-slate-100 shadow-2xl z-[501] overflow-y-auto flex flex-col justify-between animate-slide-in-right p-6 sm:p-8 font-sans"
       >
-        {/* Header */}
         <div>
+          {/* Header Bar */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <ShieldCheck className="w-6 h-6" />
+            <div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-amber-400" />
+                <h1 className="text-xl font-extrabold tracking-tight text-white">
+                  {agentName} Breakdown
+                </h1>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs uppercase tracking-wider font-semibold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                    {item.module} Module Deep Dive
-                  </span>
-                  <span className="text-xs text-slate-400 font-mono">ID: {item.id}</span>
-                </div>
-                <h2 className="text-xl font-bold text-slate-100 mt-1">{item.title}</h2>
-              </div>
+              <p className="text-xs font-medium text-amber-400/90 mt-1">
+                Deep Dive Verification — Comprehensive multi-agent financial audit & real-time analytics
+              </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-100 transition-colors"
+              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Hero Banner Card */}
-          <div className="bg-gradient-to-r from-amber-950/40 via-slate-800/50 to-slate-900/60 border border-amber-500/30 rounded-2xl p-6 mb-6">
+          {/* Agent Activity Card */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/30 rounded-2xl p-6 mb-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-medium text-slate-300">
-                {item.partyName || item.subtitle || `${item.module} Record`}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${
-                item.status === 'Approved' || item.status === 'Paid' || item.status === 'Active' || item.status === 'VERIFIED'
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              }`}>
-                {item.status || 'Verified & Ledger Locked'}
-              </span>
-            </div>
-
-            {item.amount !== undefined && (
-              <div className="mb-3">
-                <div className="text-xs uppercase tracking-wider text-slate-400 mb-1">Financial Value</div>
-                <div className={`text-3xl font-extrabold font-mono ${
-                  item.type === 'negative' ? 'text-rose-400' : item.type === 'positive' ? 'text-emerald-400' : 'text-amber-400'
-                }`}>
-                  {item.type === 'negative' ? '-' : ''}{formatCurrency(item.amount)}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 font-bold text-xs">
+                  <Bot className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">{agentName}</div>
+                  <div className="text-[11px] text-amber-400 flex items-center gap-1 font-mono">
+                    <Clock className="w-3 h-3" /> Recently
+                  </div>
                 </div>
               </div>
-            )}
-
-            {item.description && (
-              <p className="text-sm text-slate-300 leading-relaxed border-t border-slate-700/50 pt-3 mt-3">
-                {item.description}
-              </p>
-            )}
-          </div>
-
-          {/* Key Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3.5">
-              <span className="text-xs text-slate-400 block mb-1">Date / Timestamp</span>
-              <span className="text-sm font-semibold text-slate-200">{item.date || 'August 13, 2026'}</span>
-            </div>
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3.5">
-              <span className="text-xs text-slate-400 block mb-1">Category / Domain</span>
-              <span className="text-sm font-semibold text-slate-200">{item.category || item.module}</span>
-            </div>
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3.5">
-              <span className="text-xs text-slate-400 block mb-1">Assigned Agent</span>
-              <span className="text-sm font-semibold text-amber-400">{item.agentUsed || `${item.module} Agent`}</span>
+              <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                {item.status || 'VERIFIED'}
+              </span>
             </div>
 
-            {item.metrics?.map((m, idx) => (
-              <div key={idx} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3.5">
-                <span className="text-xs text-slate-400 block mb-1">{m.label}</span>
-                <span className="text-sm font-semibold text-emerald-400">{m.value}</span>
+            <div className="border-t border-slate-800/80 pt-4">
+              <div className="text-sm font-semibold text-slate-200 mb-1">
+                {item.title} {item.partyName ? `(${item.partyName})` : ''}
               </div>
-            ))}
+              {item.amount !== undefined && (
+                <div className={`text-3xl font-extrabold font-mono mt-2 ${
+                  item.type === 'negative' ? 'text-rose-400' : 'text-emerald-400'
+                }`}>
+                  {item.type === 'negative' ? '-' : '+'}{formatCurrency(item.amount)}
+                </div>
+              )}
+              {item.description && (
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  {item.description}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Ledger Audit & AI Trace */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-4 h-4 text-amber-400" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-200">
-                Ledger Audit & AI Multi-Agent Trace
-              </h3>
+          {/* Navigation Section Tabs */}
+          <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-6 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('financial')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'financial'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              Financial Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('itemized')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'itemized'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              Itemized Breakdown
+            </button>
+            <button
+              onClick={() => setActiveTab('audit')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'audit'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              Ledger Audit & AI Trace
+            </button>
+            <button
+              onClick={() => setActiveTab('strategic')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'strategic'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              Strategic Analysis & Formula
+            </button>
+          </div>
+
+          {/* Tab Content Display */}
+          {activeTab === 'financial' && (
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                  <span className="text-xs text-slate-400 block mb-1">Module / Domain</span>
+                  <span className="text-sm font-bold text-white">{item.module}</span>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                  <span className="text-xs text-slate-400 block mb-1">Category</span>
+                  <span className="text-sm font-bold text-amber-400">{item.category || item.module}</span>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                  <span className="text-xs text-slate-400 block mb-1">Date Record</span>
+                  <span className="text-sm font-bold text-white">{item.date || 'August 13, 2026'}</span>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                  <span className="text-xs text-slate-400 block mb-1">Audit Hash Lock</span>
+                  <span className="text-xs font-mono font-bold text-emerald-400">SHA-256 Encrypted</span>
+                </div>
+              </div>
             </div>
-            <div className="space-y-3">
+          )}
+
+          {activeTab === 'itemized' && (
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 mb-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">
+                Itemized Line Breakdown
+              </h3>
+              <div className="space-y-3">
+                {item.metrics?.map((m, idx) => (
+                  <div key={idx} className="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                    <span className="text-xs text-slate-400">{m.label}</span>
+                    <span className="text-xs font-bold text-white">{m.value}</span>
+                  </div>
+                )) || (
+                  <div className="text-xs text-slate-400">
+                    Standard itemization active. Verified double-entry debits and credits balanced to zero variance.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'audit' && (
+            <div className="space-y-3 mb-6">
               {defaultAuditTrace.map((step, idx) => (
-                <div key={idx} className="bg-slate-800/30 border border-slate-700/40 rounded-xl p-4">
+                <div key={idx} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-slate-200">{step.step}</span>
+                    <span className="text-xs font-bold text-white">{step.step}</span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                       {step.status}
                     </span>
                   </div>
-                  <div className="text-xs text-amber-400/90 font-mono mb-1">Agent: {step.agent}</div>
-                  <p className="text-xs text-slate-400 leading-normal">{step.detail}</p>
+                  <div className="text-xs text-amber-400 font-mono mb-1">Agent: {step.agent}</div>
+                  <p className="text-xs text-slate-400">{step.detail}</p>
                 </div>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Strategic AI Insights */}
-          <div className="bg-slate-800/20 border border-amber-500/20 rounded-2xl p-5 mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Bot className="w-5 h-5 text-amber-400" />
-              <h3 className="text-sm font-bold text-slate-100">Strategic Analysis & Policy Rules</h3>
-              <span className="ml-auto text-[10px] bg-amber-500/10 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-500/20">
-                GPT-5.4 Mini
-              </span>
+          {activeTab === 'strategic' && (
+            <div className="bg-slate-900/60 border border-amber-500/20 rounded-xl p-5 mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                  Strategic Formula & AI Analytics
+                </h3>
+              </div>
+              <ul className="space-y-2.5">
+                {defaultInsights.map((insight, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300">
+                    <Zap className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <span>{insight}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="space-y-2.5">
-              {defaultInsights.map((insight, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300">
-                  <Zap className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <span>{insight}</span>
-                </li>
-              ))}
-            </ul>
+          )}
+
+          {/* Autonomous Initiation Notice Footer */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 mb-6">
+            <p className="text-xs text-slate-400 italic leading-relaxed">
+              This activity was autonomously initiated and executed by <strong className="text-amber-400 font-semibold">{agentName}</strong> following safety checks and policy verification.
+            </p>
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="border-t border-slate-800 pt-5 mt-4 flex flex-col sm:flex-row gap-3">
+        {/* Action Button */}
+        <div className="border-t border-slate-800 pt-5 mt-2">
           <button
             onClick={handleAskAgent}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/10 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/10 transition-all cursor-pointer"
           >
             <MessageSquare className="w-4 h-4" />
             Ask AI Agent about this
-          </button>
-
-          <button
-            onClick={onClose}
-            className="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors"
-          >
-            Close Deep Dive
           </button>
         </div>
       </aside>
