@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bot, Sparkles, Zap, ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Bot, Sparkles, Zap, ArrowRight, CheckCircle2, ChevronRight, Network } from 'lucide-react';
 import { useAgent } from '@/hooks/useAgent';
 
 interface PageAgentCopilotProps {
@@ -47,16 +47,19 @@ export default function PageAgentCopilot({
             <Bot size={22} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)' }}>
                 {agentName}
               </h3>
               <span className="badge" style={{ background: `${color}20`, color: color, fontSize: '11px', fontWeight: 600 }}>
                 <Zap size={12} /> {badgeText}
               </span>
+              <span className="badge" style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#a78bfa', fontSize: '11px', fontWeight: 600 }}>
+                <Network size={12} /> GraphRAG Engine Active
+              </span>
             </div>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-              Autonomous intelligence engine continuously monitoring and managing page workflows.
+              Autonomous intelligence & GraphRAG knowledge graph continuously reasoning over page data.
             </p>
           </div>
         </div>
