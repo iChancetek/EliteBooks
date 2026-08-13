@@ -12,6 +12,8 @@ import { useVoice } from '@/hooks/useVoice';
 import { useAuth } from '@/hooks/useAuth';
 import { useCallback } from 'react';
 
+import DeepDiveModal, { DeepDiveData } from '@/components/DeepDiveModal';
+
 const quickActions = [
   { label: 'Track my money', icon: DollarSign, color: '#10b981' },
   { label: 'Send an invoice', icon: FileText, color: '#3b82f6' },
@@ -26,6 +28,7 @@ export default function DashboardHome() {
   const [command, setCommand] = useState('');
   const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
+  const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveData | null>(null);
   const [snapshot, setSnapshot] = useState({
     revenue: { value: 0, change: 0 },
     expenses: { value: 0, change: 0 },
@@ -160,6 +163,16 @@ export default function DashboardHome() {
 
   return (
     <div className="cmd-center">
+      {/* Deep Dive Breakdown Modal */}
+      <DeepDiveModal
+        data={selectedDeepDive}
+        onClose={() => setSelectedDeepDive(null)}
+        onAskAgent={(q) => {
+          setSelectedDeepDive(null);
+          sendMessage(q);
+        }}
+      />
+
       {/* Welcome + Command Input */}
       <section className="cmd-hero">
         <div className="cmd-greeting">
@@ -249,7 +262,19 @@ export default function DashboardHome() {
             { label: 'Net Profit', ...snapshot.profit, icon: PieChart, color: '#3b82f6' },
             { label: 'Cash on Hand', ...snapshot.cashFlow, icon: DollarSign, color: '#8b5cf6' },
           ].map((metric) => (
-            <div key={metric.label} className="cmd-metric glass-card">
+            <div 
+              key={metric.label} 
+              className="cmd-metric glass-card"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setSelectedDeepDive({
+                title: metric.label,
+                type: metric.label.toLowerCase().includes('revenue') ? 'revenue' : metric.label.toLowerCase().includes('expense') ? 'expenses' : metric.label.toLowerCase().includes('profit') ? 'profit' : 'cash',
+                value: metric.value,
+                change: metric.change,
+                icon: metric.icon,
+                color: metric.color
+              })}
+            >
               <div className="cmd-metric-header">
                 <div className="cmd-metric-icon" style={{ background: `${metric.color}15`, color: metric.color }}>
                   <metric.icon size={18} />
@@ -278,7 +303,22 @@ export default function DashboardHome() {
         </div>
         <div className="cmd-activity-list">
           {recentActivity.map((item) => (
-            <div key={item.id} className="cmd-activity-item glass-card">
+            <div 
+              key={item.id} 
+              className="cmd-activity-item glass-card"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setSelectedDeepDive({
+                title: item.agent,
+                type: 'activity',
+                color: item.type === 'positive' ? '#10b981' : '#3b82f6',
+                itemDetails: {
+                  agent: item.agent,
+                  action: item.action,
+                  amount: item.amount,
+                  time: item.time
+                }
+              })}
+            >
               <div className="cmd-activity-icon">
                 <item.icon size={16} />
               </div>
