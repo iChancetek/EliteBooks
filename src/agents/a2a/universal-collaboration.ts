@@ -265,6 +265,19 @@ export async function runUniversalAgentCollaboration(
 
   const block = auditLock.appendBlock(orgId, 'UNIVERSAL_COLLAB_EXECUTE', execAgent, { unmaskedQuery });
 
+  // Store entire collaboration transcript in Long-Term Memory
+  try {
+    const { LongTermMemoryManager } = await import('../memory/long-term-memory');
+    await LongTermMemoryManager.storeMemory(
+      orgId,
+      `Multi-Agent Collab [${primaryAgent}]: User query "${userQuery}". Transcript: ${lines.map((l) => `${l.agent}: ${l.message}`).join(' | ')}`,
+      'transaction',
+      { primaryAgent, sessionId }
+    );
+  } catch (memErr) {
+    console.warn('[UniversalCollab Memory Error]', memErr);
+  }
+
   return {
     success: true,
     transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),

@@ -335,14 +335,14 @@ export async function memoryPersistenceNode(
     const cacheKey = agentCache.generateKey(`query:${state.orgId}`, state.userQuery);
     await agentCache.set(cacheKey, state.finalOutput, 300000, ['agent_queries']);
 
-    // 3. Store long term memory entry if query contains financial rule/transaction
-    if (state.userQuery.length > 15) {
+    // 3. Store long-term memory entry unconditionally for every interaction
+    if (state.userQuery) {
       await LongTermMemoryManager.storeMemory(
         state.orgId,
-        `Interaction [${state.currentAgent}]: User asked "${state.userQuery}". Outcome: ${state.finalOutput.substring(0, 120)}...`,
+        `Interaction [${state.currentAgent}]: User asked "${state.userQuery}". Outcome: ${state.finalOutput ? state.finalOutput.substring(0, 300) : ''}`,
         'transaction',
-        { agent: state.currentAgent }
-      );
+        { agent: state.currentAgent, sessionId: state.sessionId }
+      ).catch((err) => console.warn('[Memory Storage Error]', err));
     }
   }
 
