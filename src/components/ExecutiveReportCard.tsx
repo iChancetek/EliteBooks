@@ -1,9 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-  Bot, Mail, Copy, Check, FileText, Sparkles,
-  Download, MessageSquarePlus, X, Cpu, ChevronRight, Bookmark
+  Download,
+  Copy,
+  Check,
+  Sparkles,
+  Bot,
+  ChevronRight,
+  TrendingUp,
+  Cpu,
+  RefreshCw,
+  Send,
+  Loader2,
+  X,
 } from 'lucide-react';
 
 interface ExecutiveReportCardProps {
@@ -27,6 +37,9 @@ export default function ExecutiveReportCard({
 }: ExecutiveReportCardProps) {
   const [copied, setCopied] = useState(false);
   const [selectedModel, setSelectedModel] = useState('Claude 3.7 Sonnet');
+  const [followUpText, setFollowUpText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -38,56 +51,97 @@ export default function ExecutiveReportCard({
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
+    link.setAttribute('href', url);
     link.setAttribute('download', `EliteBooks_Executive_Report_${Date.now()}.md`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Helper to split transcript if multi-agent output
-  const lines = content.split('\n\n');
+  const handleFocusFollowUp = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (onAskFollowUp) {
+      onAskFollowUp();
+    }
+  };
+
+  const handleFollowUpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!followUpText.trim() || isSubmitting) return;
+
+    const query = followUpText.trim();
+    setIsSubmitting(true);
+    setFollowUpText('');
+
+    if (onSuggestionClick) {
+      await onSuggestionClick(query);
+    }
+
+    setTimeout(() => setIsSubmitting(false), 1500);
+  };
+
+  const handleItemClick = (item: string) => {
+    const lower = item.toLowerCase();
+    if (onOpenCreationModal && (lower.includes('invoice builder') || lower.includes('create invoice') || lower.includes('invoice (ai assisted)'))) {
+      onOpenCreationModal('invoice');
+      return;
+    }
+    if (onOpenCreationModal && (lower.includes('expense logger') || lower.includes('log expense') || lower.includes('create expense') || lower.includes('expense (ai assisted)'))) {
+      onOpenCreationModal('expense');
+      return;
+    }
+    if (onSuggestionClick) {
+      onSuggestionClick(item);
+    }
+  };
+
+  // Split response by Agent if formatted with multi-agent synthesis
+  const agentChunks = content.split('\n\n').filter(Boolean);
 
   return (
     <div
-      className="glass-card animate-scale-in relative"
+      className="glass-card animate-fade-in-up"
       style={{
         padding: 'var(--space-6)',
+        border: '1px solid rgba(59, 130, 246, 0.4)',
+        background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 138, 0.25))',
+        boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 25px -5px rgba(59, 130, 246, 0.2)',
         display: 'flex',
         flexDirection: 'column',
         gap: 'var(--space-5)',
-        background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85))',
-        border: '1px solid rgba(99, 131, 196, 0.35)',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-        borderRadius: 'var(--radius-xl)',
+        position: 'relative',
       }}
     >
-      {/* Header Bar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: 'var(--space-4)' }}>
+      {/* Header with Title & Model Selection */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: 'var(--space-4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <div
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              color: '#ffffff',
-              padding: 'var(--space-2)',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)',
-            }}
-          >
-            <Bot size={22} />
+          <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', display: 'flex', color: '#fff' }}>
+            <TrendingUp size={22} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)' }}>
                 {agentUsed}
               </h3>
-              <span className="badge badge-accent" style={{ fontSize: '11px' }}>
-                <Sparkles size={12} /> Executive Analysis
+              <span className="badge badge-primary" style={{ fontSize: '11px', fontWeight: 600 }}>
+                Executive Analysis
               </span>
 
-              {/* Model Selector Dropdown */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 8px', borderRadius: '8px' }}>
+              {/* Model Selector Dropdown inside Report Card */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  padding: '2px 8px',
+                  borderRadius: '16px',
+                  marginLeft: '4px',
+                }}
+              >
                 <Cpu size={12} style={{ color: '#f59e0b' }} />
                 <select
                   value={selectedModel}
@@ -124,34 +178,27 @@ export default function ExecutiveReportCard({
             title="Download report as Markdown file (.md)"
             style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}
           >
-            <Download size={14} style={{ color: '#60a5fa' }} />
+            <Download size={14} />
             <span>Download</span>
           </button>
 
           <button
             className="btn btn-sm btn-ghost"
             onClick={handleCopy}
-            title="Copy report text to clipboard"
+            title="Copy report to clipboard"
             style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}
           >
-            {copied ? <Check size={14} style={{ color: 'var(--color-positive)' }} /> : <Copy size={14} />}
+            {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
 
           <button
             className="btn btn-sm btn-secondary"
-            onClick={() => {
-              if (onAskFollowUp) onAskFollowUp();
-              const el = document.getElementById('command-input');
-              if (el) {
-                el.focus();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-            title="Ask follow-up question or issue a new task"
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.4)' }}
+            onClick={handleFocusFollowUp}
+            title="Ask a follow-up question or request an additional analysis"
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.4)', color: '#93c5fd' }}
           >
-            <MessageSquarePlus size={14} />
+            <RefreshCw size={13} />
             <span>Ask Follow-Up / New Task</span>
           </button>
 
@@ -159,8 +206,8 @@ export default function ExecutiveReportCard({
             <button
               className="btn btn-sm btn-ghost"
               onClick={onClear}
-              title="Dismiss / Clear active report"
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#f43f5e' }}
+              title="Dismiss report card"
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-text-tertiary)' }}
             >
               <X size={14} />
               <span>Dismiss</span>
@@ -169,34 +216,33 @@ export default function ExecutiveReportCard({
         </div>
       </div>
 
-      {/* Main Content Body */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        {lines.map((chunk, idx) => {
-          const agentMatch = chunk.match(/^([A-Za-z0-9\s&]+Agent|Compliance Officer|Ledger Agent):\s*([\s\S]+)/);
+      {/* Main Report Body */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        {agentChunks.map((chunk, idx) => {
+          const isAgentLine = chunk.includes('Agent') || chunk.includes('Officer') || chunk.includes('Engine');
+          const firstColon = chunk.indexOf(':');
 
-          if (agentMatch) {
-            const agentName = agentMatch[1].trim();
-            const messageBody = agentMatch[2].trim();
-            const isEmailBlock = messageBody.includes('EXECUTIVE EMAIL DRAFT') || messageBody.includes('Subject:');
+          if (isAgentLine && firstColon !== -1 && firstColon < 40) {
+            const agentName = chunk.substring(0, firstColon).trim();
+            const messageBody = chunk.substring(firstColon + 1).trim();
 
             return (
               <div
                 key={idx}
                 style={{
-                  background: isEmailBlock ? 'rgba(15, 23, 42, 0.95)' : 'rgba(30, 41, 59, 0.5)',
-                  border: isEmailBlock ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid var(--color-border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: 'var(--radius-md)',
                   padding: 'var(--space-4)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 'var(--space-3)',
-                  boxShadow: isEmailBlock ? '0 10px 25px rgba(139, 92, 246, 0.15)' : 'none',
+                  gap: 'var(--space-2)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {isEmailBlock ? <Mail size={16} style={{ color: '#a78bfa' }} /> : <FileText size={16} style={{ color: '#60a5fa' }} />}
-                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: isEmailBlock ? '#a78bfa' : '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6' }} />
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       {agentName}
                     </span>
                   </div>
@@ -247,7 +293,7 @@ export default function ExecutiveReportCard({
           <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Recommended Actionable Next Steps:
           </span>
-          <span style={{ fontSize: '11px', color: '#60a5fa', cursor: 'pointer' }} onClick={onAskFollowUp}>
+          <span style={{ fontSize: '11px', color: '#60a5fa', cursor: 'pointer' }} onClick={handleFocusFollowUp}>
             Click any button to execute prompt →
           </span>
         </div>
@@ -299,6 +345,7 @@ export default function ExecutiveReportCard({
           </div>
         )}
 
+        {/* Quick Action Suggestion Pills */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {(suggestions && suggestions.length > 0
             ? suggestions
@@ -312,14 +359,68 @@ export default function ExecutiveReportCard({
             <button
               key={s}
               className="btn btn-sm btn-secondary"
-              style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#f8fafc' }}
-              onClick={() => onSuggestionClick && onSuggestionClick(s)}
+              style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#f8fafc', cursor: 'pointer' }}
+              onClick={() => handleItemClick(s)}
             >
               <span>{s}</span>
               <ChevronRight size={12} style={{ color: '#60a5fa' }} />
             </button>
           ))}
         </div>
+
+        {/* Interactive Inline Follow-up & Chat Input Form */}
+        <form
+          onSubmit={handleFollowUpSubmit}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(59, 130, 246, 0.5)',
+            borderRadius: '10px',
+            padding: '4px 8px',
+            marginTop: '8px',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          <Bot size={18} style={{ color: '#60a5fa', marginLeft: '6px', flexShrink: 0 }} />
+          <input
+            ref={inputRef}
+            type="text"
+            value={followUpText}
+            onChange={(e) => setFollowUpText(e.target.value)}
+            placeholder={`Ask a follow-up question or instruct ${agentUsed}...`}
+            disabled={isSubmitting}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#fff',
+              fontSize: '13px',
+              padding: '8px 6px',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={!followUpText.trim() || isSubmitting}
+            className="btn btn-sm btn-primary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: (!followUpText.trim() || isSubmitting) ? 'not-allowed' : 'pointer',
+              opacity: (!followUpText.trim() || isSubmitting) ? 0.6 : 1,
+            }}
+          >
+            {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+            <span>Send</span>
+          </button>
+        </form>
       </div>
     </div>
   );
