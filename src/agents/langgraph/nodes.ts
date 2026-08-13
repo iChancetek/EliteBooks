@@ -37,10 +37,6 @@ export async function memoryRetrievalNode(
     3
   );
 
-  // Check cache for previous matching query
-  const cacheKey = agentCache.generateKey(`query:${state.orgId}`, maskedQuery);
-  const cachedResponse = await agentCache.get<string>(cacheKey);
-
   const auditEntry = {
     nodeName: 'memoryRetrievalNode',
     action: 'Loaded Short & Long-Term Memory (PII/PHI Masked)',
@@ -51,7 +47,7 @@ export async function memoryRetrievalNode(
   return {
     shortTermMemory: shortTermState,
     longTermMemories: longTermMems,
-    cachedOutputs: cachedResponse ? { response: cachedResponse } : {},
+    cachedOutputs: {},
     auditTrail: [...state.auditTrail, auditEntry],
   };
 }
