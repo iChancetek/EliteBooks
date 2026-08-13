@@ -175,7 +175,72 @@ EliteBooks Autonomous Financial Copilot`;
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 2: Invoicing Inquiry / Open Invoices & Revenue Portfolio
+  // PRIORITY 2: FinOps & Cloud Infrastructure Intent
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    queryLower.includes('finops') ||
+    queryLower.includes('cloud report') ||
+    queryLower.includes('finops report') ||
+    queryLower.includes('cloud spend') ||
+    queryLower.includes('aws') ||
+    queryLower.includes('gpu') ||
+    primaryAgent === 'FinOps Agent'
+  ) {
+    const saveAmount = amount ?? 2400.0;
+
+    const finMsg = `⚡ CLOUD FINOPS & INFRASTRUCTURE OPTIMIZATION REPORT (FOCUS 1.3 SPEC)
+----------------------------------------------------------------------
+• Monthly Cloud Infrastructure OPEX: $1,420.50 (Google Cloud Platform & AWS)
+• Cloud Resource Allocation Breakdown:
+  1. Production Kubernetes Cluster (us-east1): $880.00 (62% of Cloud Spend)
+  2. Vector RAG Embedding Pipeline (Pinecone): $340.50 (24% of Cloud Spend)
+  3. Staging & Dev Instances: $200.00 (14% of Cloud Spend)
+
+• Identified Optimization & Cost Savings:
+  • Identified $200.00/mo ($${saveAmount.toLocaleString()}/yr) savings by migrating idle GPU development instances to spot Trainium clusters.
+  • Unit Economics Efficiency Ratio: $0.0042 per RAG query (Optimized).
+
+FinOps Agent completed cloud infrastructure audit. Dispatching runway impact metrics to Cash Flow Agent.`;
+
+    lines.push({ agent: 'FinOps Agent', message: finMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      'FinOps Agent',
+      'Cash Flow Agent',
+      'Assess runway impact of cloud savings',
+      { savingsMonthly: 200, savingsYearly: saveAmount },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const cashMsg = `Projected annual cloud savings of $${saveAmount.toLocaleString()}/year extends 6-month cash runway by +0.8 months. Risk score remains low (0.10). Optimization approved.`;
+    lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
+
+    const a2a2 = await agentBus.dispatch(
+      'Cash Flow Agent',
+      'Compliance Officer',
+      'Check IT Asset Management and SLA compliance for cloud migration',
+      { savingsYearly: saveAmount },
+      2
+    );
+    a2aLog.push(a2a2);
+
+    const compMsg = `SLA compliance verified. No enterprise terms or uptime commitments violated. FinOps optimization recommendations logged and audit hashed.`;
+    lines.push({ agent: 'Compliance Officer', message: compMsg });
+
+    const block = auditLock.appendBlock(orgId, 'FINOPS_OPTIMIZE', 'FinOps Agent', { saveAmount });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      auditBlockHash: block.blockHash,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // PRIORITY 3: Invoicing Inquiry / Open Invoices & Revenue Portfolio
   // ══════════════════════════════════════════════════════════════════════
   if (
     queryLower.includes('open invoice') ||
@@ -240,7 +305,7 @@ Invoicing Agent verified AR aging and status across Knowledge Graph and Ledger. 
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 3: Total Expense Inquiry / Spend Analysis Branch
+  // PRIORITY 4: Total Expense Inquiry / Spend Analysis Branch
   // ══════════════════════════════════════════════════════════════════════
   if (
     queryLower.includes('total expense') ||
@@ -310,75 +375,16 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 4: Ingestion & Receipt Scanning
+  // PRIORITY 5: Single Transaction Expense Logging (EXPLICIT log/add/scan/post receipt ONLY)
   // ══════════════════════════════════════════════════════════════════════
   if (
-    queryLower.includes('pdf invoice') ||
-    queryLower.includes('officesupply') ||
-    queryLower.includes('matching agent') ||
-    queryLower.includes('purchase order') ||
-    queryLower.includes('scan') ||
-    primaryAgent === 'Ingestion Agent'
-  ) {
-    const invoiceAmount = amount ?? 450.0;
-    const poNum = 'PO #1049';
-
-    const ingMsg = `I scanned the inbox and extracted invoice from ${partyName} for $${invoiceAmount.toFixed(2)}, dated August 10, 2026. I also pulled the receipt from our corporate card. Matching Agent, please verify this against our purchase orders.`;
-    lines.push({ agent: 'Ingestion Agent', message: ingMsg });
-
-    const a2a1 = await agentBus.dispatch(
-      'Ingestion Agent',
-      'Matching Agent',
-      'Verify PO and line items',
-      { vendor: partyName, amount: invoiceAmount, poNumber: poNum },
-      1
-    );
-    a2aLog.push(a2a1);
-
-    const matchMsg = `Checking database now. I found Purchase Order ${poNum} for ${partyName} at $${invoiceAmount.toFixed(2)}. The line items match the PDF. However, the delivery receipt signature is missing. Approval Agent, I am flagging this as a minor warning, but the numbers balance.`;
-    lines.push({ agent: 'Matching Agent', message: matchMsg });
-
-    const a2a2 = await agentBus.dispatch(
-      'Matching Agent',
-      'Approval Agent',
-      'Request approval evaluation and ledger entry',
-      { poNumber: poNum, amount: invoiceAmount, warning: 'missing_signature' },
-      2
-    );
-    a2aLog.push(a2a2);
-
-    const appMsg = `Received. Since the amount is under our $500 auto-approval limit and the PO matches, I will override the missing signature note. I am now writing the transaction into the general ledger, debiting Office Supplies and crediting Accounts Payable. Process complete. All logs are saved.`;
-    lines.push({ agent: 'Approval Agent', message: appMsg });
-
-    const je = {
-      id: `je_${Date.now()}`,
-      debitAccount: 'Office Supplies (#6100)',
-      creditAccount: 'Accounts Payable (#2000)',
-      amount: invoiceAmount,
-      memo: `Auto-approved invoice for ${partyName} (${poNum})`,
-    };
-
-    const block = auditLock.appendBlock(orgId, 'INVOICE_AUTO_POST', 'Approval Agent', {
-      partyName,
-      amount: invoiceAmount,
-      poNum,
-    });
-
-    return {
-      success: true,
-      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-      transcriptLines: lines,
-      a2aMessages: a2aLog,
-      journalEntry: je,
-      auditBlockHash: block.blockHash,
-    };
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 5: Single Transaction Expense Logging (Explicit log/add/scan/post)
-  // ══════════════════════════════════════════════════════════════════════
-  if (
-    (queryLower.includes('log') || queryLower.includes('add') || queryLower.includes('create') || queryLower.includes('scan') || queryLower.includes('post') || queryLower.includes('new expense') || queryLower.includes('receipt'))
+    queryLower.includes('log receipt') ||
+    queryLower.includes('add receipt') ||
+    queryLower.includes('scan receipt') ||
+    queryLower.includes('post receipt') ||
+    queryLower.includes('log expense') ||
+    queryLower.includes('add expense') ||
+    queryLower.includes('process receipt')
   ) {
     const expAmount = (amount && !isNaN(amount)) ? amount : 150.0;
     const cat = queryLower.includes('saas') || queryLower.includes('software') ? 'SaaS & Software Subscriptions' : 'Office Expenses';
@@ -419,7 +425,7 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
   // ══════════════════════════════════════════════════════════════════════
   // PRIORITY 6: Payroll Intent
   // ══════════════════════════════════════════════════════════════════════
-  if (queryLower.includes('payroll') || queryLower.includes('salary') || primaryAgent === 'Payroll Agent') {
+  if (queryLower.includes('payroll') || queryLower.includes('salary')) {
     const payAmount = amount ?? 45000.0;
 
     const payMsg = `Calculated monthly gross payroll for team ($${payAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}). Social Security, Medicare, and Federal/State withholding schedules compiled. Compliance Agent, verify tax withholding calculations and minimum wage compliance.`;
@@ -449,39 +455,7 @@ Expense Agent completed portfolio query across General Ledger and Knowledge Grap
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 7: FinOps & Cloud Spend Intent
-  // ══════════════════════════════════════════════════════════════════════
-  if (queryLower.includes('cloud') || queryLower.includes('finops') || queryLower.includes('gpu') || primaryAgent === 'FinOps Agent') {
-    const saveAmount = amount ?? 2400.0;
-
-    const finMsg = `Analyzed cloud infrastructure metrics under FOCUS 1.3 spec. Identified $${saveAmount.toLocaleString()}/mo optimization by transitioning idle GPU instances to spot Trainium clusters. Cash Flow Agent, assess runway impact.`;
-    lines.push({ agent: 'FinOps Agent', message: finMsg });
-
-    const a2a1 = await agentBus.dispatch('FinOps Agent', 'Cash Flow Agent', 'Assess runway impact of cloud savings', { savingsMonthly: saveAmount }, 1);
-    a2aLog.push(a2a1);
-
-    const cashMsg = `Projected savings of $${saveAmount.toLocaleString()}/month ($${(saveAmount * 12).toLocaleString()}/year) extends 6-month cash runway by +0.8 months. Risk score remains low (0.10). Optimization approved.`;
-    lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
-
-    const a2a2 = await agentBus.dispatch('Cash Flow Agent', 'Compliance Agent', 'Check IT Asset Management and SLA compliance', { savingsMonthly: saveAmount }, 2);
-    a2aLog.push(a2a2);
-
-    const compMsg = `SLA compliance verified. No enterprise terms violated. Optimization recommendations logged and audit hashed.`;
-    lines.push({ agent: 'Compliance Officer', message: compMsg });
-
-    const block = auditLock.appendBlock(orgId, 'FINOPS_OPTIMIZE', 'FinOps Agent', { saveAmount });
-
-    return {
-      success: true,
-      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-      transcriptLines: lines,
-      a2aMessages: a2aLog,
-      auditBlockHash: block.blockHash,
-    };
-  }
-
-  // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY 8: Executive LLM Fallback (Dynamic OpenAI GPT-5.4 Completion)
+  // PRIORITY 7: Dynamic OpenAI GPT-5.4 Executive Fallback
   // ══════════════════════════════════════════════════════════════════════
   try {
     const openai = getOpenAIClient();

@@ -183,24 +183,26 @@ export async function routerNode(
 export async function specializedAgentNode(
   state: EliteBooksAgentState
 ): Promise<Partial<EliteBooksAgentState>> {
-  console.log(`[LangGraph Node: specializedAgentNode] Executing Multi-Agent Collaboration for ${state.currentAgent}`);
+  const agentToRun = state.targetAgent || state.currentAgent || 'EliteBooks Orchestrator';
+  console.log(`[LangGraph Node: specializedAgentNode] Executing Multi-Agent Collaboration for ${agentToRun}`);
 
   const { runUniversalAgentCollaboration } = await import('../a2a/universal-collaboration');
 
   const collabRes = await runUniversalAgentCollaboration(
     state.userQuery,
-    state.currentAgent || 'EliteBooks Orchestrator',
+    agentToRun,
     state
   );
 
   const auditEntry = {
     nodeName: 'specializedAgentNode',
-    action: `Executed Universal Multi-Agent Autonomous Collaboration for ${state.currentAgent} (PII/PHI Shield & SHA-256 Audit Lock Active)`,
-    agentUsed: state.currentAgent || 'Multi-Agent Collaboration Engine',
+    action: `Executed Universal Multi-Agent Autonomous Collaboration for ${agentToRun} (PII/PHI Shield & SHA-256 Audit Lock Active)`,
+    agentUsed: agentToRun,
     timestamp: new Date().toISOString(),
   };
 
   return {
+    currentAgent: agentToRun,
     finalOutput: collabRes.transcript,
     a2aMessages: [...state.a2aMessages, ...collabRes.a2aMessages],
     auditTrail: [...state.auditTrail, auditEntry],
