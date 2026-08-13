@@ -6,6 +6,8 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieC
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
+import PageAgentCopilot from '@/components/PageAgentCopilot';
+
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#14b8a6', '#6366f1', '#84cc16'];
 
 export default function ReportsPage() {
@@ -46,7 +48,6 @@ export default function ReportsPage() {
 
   // Filter based on selected date
   const activeExpenses = allExpenses.filter((e: any) => {
-    // Expense date format: "YYYY-MM-DD"
     const dateObj = new Date(e.date);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const expenseMonth = months[dateObj.getMonth()];

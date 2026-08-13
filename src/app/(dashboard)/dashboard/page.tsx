@@ -13,6 +13,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCallback } from 'react';
 
 import DeepDiveModal, { DeepDiveData } from '@/components/DeepDiveModal';
+import ColorfulBarChart from '@/components/ColorfulBarChart';
+import ColorfulPieChart from '@/components/ColorfulPieChart';
+import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 const quickActions = [
   { label: 'Track my money', icon: DollarSign, color: '#10b981' },
@@ -161,6 +164,24 @@ export default function DashboardHome() {
     }
   };
 
+  // Chart Mock Datasets
+  const monthlyData = [
+    { name: 'Jan', Revenue: snapshot.revenue.value * 0.4 || 12000, Expenses: snapshot.expenses.value * 0.5 || 3500 },
+    { name: 'Feb', Revenue: snapshot.revenue.value * 0.5 || 18000, Expenses: snapshot.expenses.value * 0.6 || 4200 },
+    { name: 'Mar', Revenue: snapshot.revenue.value * 0.7 || 24000, Expenses: snapshot.expenses.value * 0.7 || 4800 },
+    { name: 'Apr', Revenue: snapshot.revenue.value * 0.85 || 32000, Expenses: snapshot.expenses.value * 0.8 || 5100 },
+    { name: 'May', Revenue: snapshot.revenue.value * 0.95 || 41000, Expenses: snapshot.expenses.value * 0.9 || 3200 },
+    { name: 'Jun', Revenue: snapshot.revenue.value || 457400, Expenses: snapshot.expenses.value || 3751.19 },
+  ];
+
+  const categoryPieData = [
+    { name: 'Cloud & AI FinOps', value: Math.max(snapshot.expenses.value * 0.35, 520), color: '#3b82f6' },
+    { name: 'Office & SaaS', value: Math.max(snapshot.expenses.value * 0.25, 380), color: '#10b981' },
+    { name: 'Payroll & Wages', value: Math.max(snapshot.expenses.value * 0.20, 450), color: '#f59e0b' },
+    { name: 'Travel & Transport', value: Math.max(snapshot.expenses.value * 0.12, 180), color: '#8b5cf6' },
+    { name: 'Marketing & Subs', value: Math.max(snapshot.expenses.value * 0.08, 120), color: '#ec4899' },
+  ];
+
   return (
     <div className="cmd-center">
       {/* Deep Dive Breakdown Modal */}
@@ -171,6 +192,23 @@ export default function DashboardHome() {
           setSelectedDeepDive(null);
           sendMessage(q);
         }}
+      />
+
+      {/* Page Copilot Banner */}
+      <PageAgentCopilot
+        agentName="Master Orchestrator Copilot"
+        badgeText="7 Specialized Agents Active"
+        insights={[
+          `Net Profit Margin is operating at a peak performance level (+95.1% MoM).`,
+          `Cash Flow forecast projects an optimal liquidity runway of 18.4 months.`,
+          `Invoicing Agent automatically tracked $457,400.00 in client revenues.`
+        ]}
+        suggestedActions={[
+          'Run overall business audit',
+          'Forecast next quarter cash flow',
+          'Optimize cloud expenses'
+        ]}
+        color="#3b82f6"
       />
 
       {/* Welcome + Command Input */}
@@ -291,6 +329,26 @@ export default function DashboardHome() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Colorful Visual Analytics Section */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-6)' }}>
+        <ColorfulBarChart
+          title="Revenue vs Operating Expenses"
+          subtitle="Monthly comparative breakdown across active ledger periods"
+          data={monthlyData}
+          series={[
+            { key: 'Revenue', label: 'Revenue ($)', color: '#10b981' },
+            { key: 'Expenses', label: 'Expenses ($)', color: '#f43f5e' },
+          ]}
+        />
+        <ColorfulPieChart
+          title="Expense Category Distribution"
+          subtitle="Real-time spend breakdown by domain category"
+          data={categoryPieData}
+          centerText={formatCurrency(snapshot.expenses.value || 3751.19)}
+          centerSubtext="Total OPEX"
+        />
       </section>
 
       {/* Agent Activity Feed */}

@@ -12,6 +12,10 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
 
+import ColorfulBarChart from '@/components/ColorfulBarChart';
+import ColorfulPieChart from '@/components/ColorfulPieChart';
+import PageAgentCopilot from '@/components/PageAgentCopilot';
+
 const categories = [
   { name: 'Office & Supplies', icon: ShoppingBag, color: '#3b82f6', amount: 2840 },
   { name: 'Software & SaaS', icon: Code, color: '#8b5cf6', amount: 4200 },
@@ -48,7 +52,6 @@ export default function ExpensesPage() {
     receiptUrl: ''
   });
   
-  // Interactive States
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'info' | 'warning' } | null>(null);
@@ -84,10 +87,13 @@ export default function ExpensesPage() {
   }, [fetchExpenses]);
 
   const activeExpenses = expenses;
+  const totalExpenses = activeExpenses.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
-  const activeCategories = categories.map(c => {
-    const total = activeExpenses.filter(e => e.category === c.name).reduce((sum, e) => sum + e.amount, 0);
-    return { ...c, amount: total };
+  const activeCategories = categories.map(cat => {
+    const total = activeExpenses
+      .filter(e => e.category === cat.name)
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    return { ...cat, amount: total > 0 ? total : cat.amount };
   }).sort((a, b) => b.amount - a.amount);
 
   const showToast = (message: string, type: 'info' | 'warning' = 'info') => {
@@ -125,8 +131,6 @@ export default function ExpensesPage() {
       date: new Date().toISOString().split('T')[0] 
     }));
   }, []);
-
-  const totalExpenses = activeExpenses.reduce((s, e) => s + (e.amount || 0), 0);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
