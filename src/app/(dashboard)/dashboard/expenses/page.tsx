@@ -6,7 +6,7 @@ import {
   CreditCard, Coffee, Home, Car, Wifi, ShoppingBag, ArrowDownRight,
   Users, Lock, Sparkles, X, Edit2, Trash2, Share2, Eye, Bot, Zap,
   TrendingUp, Calendar, AlertTriangle, CheckCircle2, Code, Plane, 
-  Briefcase, Shield, BookOpen, Activity, MoreHorizontal
+  Briefcase, Shield, BookOpen, Activity, MoreHorizontal, Cloud
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
@@ -18,18 +18,19 @@ import PageAgentCopilot from '@/components/PageAgentCopilot';
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 
 const categories = [
-  { name: 'Office & Supplies', icon: ShoppingBag, color: '#3b82f6', amount: 2840 },
-  { name: 'Software & SaaS', icon: Code, color: '#8b5cf6', amount: 4200 },
-  { name: 'Meals & Entertainment', icon: Coffee, color: '#ec4899', amount: 1560 },
-  { name: 'Travel & Transport', icon: Plane, color: '#f59e0b', amount: 3100 },
-  { name: 'Rent & Utilities', icon: Home, color: '#10b981', amount: 5800 },
-  { name: 'Marketing', icon: Zap, color: '#f43f5e', amount: 2900 },
-  { name: 'Professional Services', icon: Briefcase, color: '#06b6d4', amount: 3500 },
-  { name: 'Insurance', icon: Shield, color: '#14b8a6', amount: 1200 },
-  { name: 'Training & Education', icon: BookOpen, color: '#6366f1', amount: 850 },
-  { name: 'Bank Fees & Interest', icon: CreditCard, color: '#84cc16', amount: 125 },
-  { name: 'Subscriptions', icon: Activity, color: '#d946ef', amount: 450 },
-  { name: 'Miscellaneous', icon: MoreHorizontal, color: '#64748b', amount: 210 },
+  { name: 'Cloud Services', icon: Cloud, color: '#0ea5e9', amount: 0 },
+  { name: 'Software & SaaS', icon: Code, color: '#8b5cf6', amount: 0 },
+  { name: 'Office & Supplies', icon: ShoppingBag, color: '#3b82f6', amount: 0 },
+  { name: 'Meals & Entertainment', icon: Coffee, color: '#ec4899', amount: 0 },
+  { name: 'Travel & Transport', icon: Plane, color: '#f59e0b', amount: 0 },
+  { name: 'Rent & Utilities', icon: Home, color: '#10b981', amount: 0 },
+  { name: 'Marketing', icon: Zap, color: '#f43f5e', amount: 0 },
+  { name: 'Professional Services', icon: Briefcase, color: '#06b6d4', amount: 0 },
+  { name: 'Insurance', icon: Shield, color: '#14b8a6', amount: 0 },
+  { name: 'Training & Education', icon: BookOpen, color: '#6366f1', amount: 0 },
+  { name: 'Bank Fees & Interest', icon: CreditCard, color: '#84cc16', amount: 0 },
+  { name: 'Subscriptions', icon: Activity, color: '#d946ef', amount: 0 },
+  { name: 'Miscellaneous', icon: MoreHorizontal, color: '#64748b', amount: 0 },
 ];
 
 export default function ExpensesPage() {
@@ -344,7 +345,7 @@ export default function ExpensesPage() {
               <div className="form-row">
                 <div className="form-group">
                   <label>Vendor</label>
-                  <input type="text" className="input" placeholder="e.g. AWS, Uber" value={newExpense.vendor} onChange={e => setNewExpense({...newExpense, vendor: e.target.value})} required />
+                  <input type="text" className="input" placeholder="e.g. AWS, Azure, Google Cloud, Uber" value={newExpense.vendor} onChange={e => setNewExpense({...newExpense, vendor: e.target.value})} required />
                 </div>
                 <div className="form-group">
                   <label>Category</label>

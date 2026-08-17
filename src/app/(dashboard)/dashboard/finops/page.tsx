@@ -70,7 +70,7 @@ export default function FinOpsPage() {
         body: JSON.stringify({
           vendor: newCloudCost.provider,
           amount: parseFloat(newCloudCost.amount),
-          category: 'Software & SaaS',
+          category: 'Cloud Services',
           date: newCloudCost.date,
           description: `FinOps: ${newCloudCost.resourceType} - ${newCloudCost.notes}`,
           isBillable: false
@@ -96,8 +96,9 @@ export default function FinOpsPage() {
   };
 
   const cloudExpenses = expenses.filter(e => 
-    ['aws', 'amazon', 'cloud', 'hosting', 'google cloud', 'gcp', 'azure', 'openai', 'anthropic', 'gpu'].some(v => 
-      e.vendor?.toLowerCase().includes(v)
+    e.category === 'Cloud Services' ||
+    ['aws', 'amazon', 'cloud', 'hosting', 'google cloud', 'gcp', 'azure', 'openai', 'anthropic', 'gpu', 'oracle cloud'].some(v => 
+      (e.vendor || '').toLowerCase().includes(v) || (e.description || '').toLowerCase().includes(v)
     )
   );
 
