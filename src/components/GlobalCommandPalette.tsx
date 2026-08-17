@@ -95,11 +95,12 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({ isOp
     if (user) {
       try {
         const token = await user.getIdToken();
-        const [invRes, expRes, prodRes, custRes] = await Promise.all([
+        const [invRes, expRes, prodRes, custRes, empRes] = await Promise.all([
           fetch('/api/invoices', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
           fetch('/api/expenses', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
           fetch('/api/inventory', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
           fetch('/api/customers', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
+          fetch('/api/payroll', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
         ]);
 
         if (invRes && invRes.ok) {
@@ -143,6 +144,29 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({ isOp
                   category: 'Page',
                   icon: Users,
                   url: '/dashboard/invoices'
+                });
+              });
+          }
+        }
+
+        if (empRes && empRes.ok) {
+          const empData = await empRes.json();
+          if (empData.success && Array.isArray(empData.data)) {
+            empData.data
+              .filter((e: any) => 
+                (`${e.firstName} ${e.lastName}`).toLowerCase().includes(q) || 
+                (e.role || '').toLowerCase().includes(q) ||
+                (e.department || '').toLowerCase().includes(q)
+              )
+              .slice(0, 4)
+              .forEach((e: any) => {
+                matched.push({
+                  id: `emp-${e.id}`,
+                  title: `${e.firstName} ${e.lastName} • ${e.role || 'Staff'}`,
+                  subtitle: `${e.department} • Salary: ${formatCurrency(e.salary || 0)}/yr`,
+                  category: 'Page',
+                  icon: Users,
+                  url: '/dashboard/payroll'
                 });
               });
           }

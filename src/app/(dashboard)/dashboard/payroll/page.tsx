@@ -128,23 +128,37 @@ export default function PayrollPage() {
   };
 
   const totalPayroll = paystubs.reduce((s, stub) => s + (stub.grossPay || 0), 0);
+  const totalTaxes = paystubs.reduce((s, stub) => s + ((stub.federalTax || 0) + (stub.stateTax || 0) + (stub.socialSecurity || 0) + (stub.medicare || 0)), 0);
+  const monthlySalaryEstimate = employees.reduce((s, emp) => s + ((emp.salary || 0) / 12), 0);
 
-  // Payroll Chart Data
+  // Dynamic Payroll Chart Data
   const monthlyPayrollData = [
-    { name: 'Jan', GrossPay: (totalPayroll || 18500) * 0.85, TaxWithholdings: (totalPayroll || 18500) * 0.18 },
-    { name: 'Feb', GrossPay: (totalPayroll || 18500) * 0.9, TaxWithholdings: (totalPayroll || 18500) * 0.19 },
-    { name: 'Mar', GrossPay: (totalPayroll || 18500) * 0.95, TaxWithholdings: (totalPayroll || 18500) * 0.20 },
-    { name: 'Apr', GrossPay: (totalPayroll || 18500) * 0.98, TaxWithholdings: (totalPayroll || 18500) * 0.21 },
-    { name: 'May', GrossPay: (totalPayroll || 18500) * 1.0, TaxWithholdings: (totalPayroll || 18500) * 0.21 },
-    { name: 'Jun', GrossPay: totalPayroll || 18500, TaxWithholdings: (totalPayroll || 18500) * 0.22 },
+    { name: 'Current Period', GrossPay: totalPayroll > 0 ? totalPayroll : monthlySalaryEstimate, TaxWithholdings: totalTaxes > 0 ? totalTaxes : monthlySalaryEstimate * 0.2 },
   ];
 
-  const departmentPieData = [
-    { name: 'Engineering & Dev', value: Math.max((totalPayroll || 18500) * 0.55, 9500), color: '#3b82f6' },
-    { name: 'Product & Design', value: Math.max((totalPayroll || 18500) * 0.25, 4200), color: '#10b981' },
-    { name: 'Operations & Admin', value: Math.max((totalPayroll || 18500) * 0.12, 2800), color: '#f59e0b' },
-    { name: 'Sales & Marketing', value: Math.max((totalPayroll || 18500) * 0.08, 2000), color: '#8b5cf6' },
-  ];
+  // Dynamic Department Breakdown from real employees
+  const deptTotals: Record<string, number> = {};
+  employees.forEach(emp => {
+    const dept = emp.department || 'General';
+    const monthly = (emp.salary || 0) / 12;
+    deptTotals[dept] = (deptTotals[dept] || 0) + monthly;
+  });
+
+  const deptColors: Record<string, string> = {
+    'Engineering': '#3b82f6',
+    'Design': '#10b981',
+    'Marketing': '#f59e0b',
+    'Finance': '#8b5cf6',
+    'Operations': '#06b6d4',
+  };
+
+  const departmentPieData = Object.entries(deptTotals).map(([name, value]) => ({
+    name,
+    value,
+    color: deptColors[name] || '#3b82f6'
+  }));
+
+  const displayPayrollAmount = totalPayroll > 0 ? totalPayroll : monthlySalaryEstimate;
 
   return (
     <div className="payroll-page animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -153,9 +167,9 @@ export default function PayrollPage() {
         agentName="Payroll Agent Copilot"
         badgeText="Compensation & Tax Active"
         insights={[
-          `Zero-touch payroll execution configured with automatic FICA and tax withholdings.`,
-          `Minimum wage and W-2/1099 compliance verified across active employee rosters.`,
-          `Automatic double-entry general ledger journal entries generated for payroll liabilities.`
+          `Active workforce: ${employees.length} employee${employees.length !== 1 ? 's' : ''} registered across ${Object.keys(deptTotals).length} department(s).`,
+          paystubs.length > 0 ? `Latest payroll run processed: ${formatCurrency(totalPayroll)} gross disbursements.` : `No payroll runs executed yet. Add employees and click "Run Payroll" to process disbursements.`,
+          `Automated FICA, federal/state withholdings, and Form 941 compliance tracking active.`
         ]}
         suggestedActions={[
           'Run current period payroll',
@@ -198,8 +212,8 @@ export default function PayrollPage() {
           title="Department Compensation Allocation"
           subtitle="Payroll expense breakdown by department"
           data={departmentPieData}
-          centerText={formatCurrency(totalPayroll || 18500)}
-          centerSubtext="Total Payroll"
+          centerText={formatCurrency(displayPayrollAmount)}
+          centerSubtext="Monthly Payroll"
         />
       </div>
 
