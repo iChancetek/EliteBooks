@@ -145,6 +145,35 @@ export async function routerNode(
     queryLower.includes('destroy') ||
     queryLower.includes('clear data');
 
+  const isQuestionOrExplanation =
+    queryLower.includes('explain') ||
+    queryLower.includes('why') ||
+    queryLower.includes('how') ||
+    queryLower.includes('what') ||
+    queryLower.includes('break down') ||
+    queryLower.includes('breakdown') ||
+    queryLower.includes('tell me') ||
+    queryLower.includes('show me') ||
+    queryLower.includes('detail') ||
+    queryLower.includes('summarize') ||
+    queryLower.includes('audit') ||
+    queryLower.includes('report') ||
+    queryLower.includes('check') ||
+    queryLower.includes('status') ||
+    queryLower.includes('inquire') ||
+    queryLower.includes('analyze') ||
+    queryLower.includes('analysis');
+
+  const isExecutionOrDisbursement =
+    (queryLower.includes('send payment') ||
+     queryLower.includes('wire transfer') ||
+     queryLower.includes('pay vendor') ||
+     queryLower.includes('disburse') ||
+     queryLower.includes('execute payment') ||
+     queryLower.includes('transfer funds') ||
+     queryLower.includes('payout')) &&
+    !isQuestionOrExplanation;
+
   if (isDeleteIntent) {
     requiresApproval = true;
     pendingActions.push({
@@ -154,7 +183,7 @@ export async function routerNode(
       description: `Data deletion or removal request detected ("${state.userQuery}"). Per platform security policy, agents have full read access across all financial data, but CANNOT delete data autonomously. Mandatory Human-in-the-Loop (HITL) authorization is required.`,
       requiresUserApproval: true,
     });
-  } else if (amountMatch) {
+  } else if (isExecutionOrDisbursement && amountMatch) {
     const rawVal = parseFloat(amountMatch[1].replace(/,/g, ''));
 
     // Execute Fraud Sentinel Scan
@@ -173,7 +202,7 @@ export async function routerNode(
         id: `act_${Date.now()}`,
         actionType: sentinelResult.flags[0]?.ruleTriggered || 'high_value_transaction',
         amount: rawVal,
-        description: sentinelResult.flags[0]?.description || `Financial action involving $${rawVal.toLocaleString()} requires user approval.`,
+        description: sentinelResult.flags[0]?.description || `Financial execution involving $${rawVal.toLocaleString()} requires user approval.`,
         requiresUserApproval: true,
       });
     }
