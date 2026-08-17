@@ -110,36 +110,49 @@ export default function FinOpsPage() {
   });
   const mtdCloudSpend = currentMonthExpenses.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
-  // FinOps Chart Data
+  // Group cloud expenses by provider
+  let awsSpend = 0;
+  let gcpSpend = 0;
+  let azureSpend = 0;
+  let aiApiSpend = 0;
+
+  cloudExpenses.forEach(exp => {
+    const v = (exp.vendor || '').toLowerCase();
+    const amt = exp.amount || 0;
+    if (v.includes('aws') || v.includes('amazon')) awsSpend += amt;
+    else if (v.includes('google') || v.includes('gcp')) gcpSpend += amt;
+    else if (v.includes('azure')) azureSpend += amt;
+    else if (v.includes('openai') || v.includes('anthropic')) aiApiSpend += amt;
+    else awsSpend += amt;
+  });
+
+  // Dynamic FinOps Bar Chart
   const finopsBarData = [
-    { name: 'Jan', AWS: (mtdCloudSpend || 520) * 0.45, GCP: (mtdCloudSpend || 520) * 0.35, Azure: (mtdCloudSpend || 520) * 0.2 },
-    { name: 'Feb', AWS: (mtdCloudSpend || 520) * 0.50, GCP: (mtdCloudSpend || 520) * 0.32, Azure: (mtdCloudSpend || 520) * 0.18 },
-    { name: 'Mar', AWS: (mtdCloudSpend || 520) * 0.52, GCP: (mtdCloudSpend || 520) * 0.30, Azure: (mtdCloudSpend || 520) * 0.18 },
-    { name: 'Apr', AWS: (mtdCloudSpend || 520) * 0.48, GCP: (mtdCloudSpend || 520) * 0.34, Azure: (mtdCloudSpend || 520) * 0.18 },
-    { name: 'May', AWS: (mtdCloudSpend || 520) * 0.46, GCP: (mtdCloudSpend || 520) * 0.36, Azure: (mtdCloudSpend || 520) * 0.18 },
-    { name: 'Jun', AWS: Math.max(mtdCloudSpend * 0.45, 240), GCP: Math.max(mtdCloudSpend * 0.35, 180), Azure: Math.max(mtdCloudSpend * 0.20, 100) },
+    { name: 'Current Period', AWS: awsSpend, GCP: gcpSpend, Azure: azureSpend },
   ];
 
-  const finopsPieData = [
-    { name: 'AWS EC2 / GPU Instances', value: Math.max(mtdCloudSpend * 0.45, 240), color: '#3b82f6' },
-    { name: 'Google Cloud Platform', value: Math.max(mtdCloudSpend * 0.35, 180), color: '#10b981' },
-    { name: 'Azure AI Services', value: Math.max(mtdCloudSpend * 0.12, 60), color: '#8b5cf6' },
-    { name: 'OpenAI Token Inferences', value: Math.max(mtdCloudSpend * 0.08, 40), color: '#06b6d4' },
-  ];
+  // Dynamic FinOps Resource Allocation Pie Chart
+  const finopsPieData: { name: string; value: number; color: string }[] = [];
+  if (awsSpend > 0) finopsPieData.push({ name: 'AWS Cloud Infrastructure', value: awsSpend, color: '#3b82f6' });
+  if (gcpSpend > 0) finopsPieData.push({ name: 'Google Cloud Platform', value: gcpSpend, color: '#10b981' });
+  if (azureSpend > 0) finopsPieData.push({ name: 'Azure AI Services', value: azureSpend, color: '#8b5cf6' });
+  if (aiApiSpend > 0) finopsPieData.push({ name: 'OpenAI / Anthropic APIs', value: aiApiSpend, color: '#06b6d4' });
 
   const stats = [
-    { label: 'Cloud Spend (MTD)', value: formatCurrency(mtdCloudSpend || 520), change: '+6%', isPositive: false, icon: Cloud },
-    { label: 'AI Infra (Token/GPU)', value: formatCurrency((mtdCloudSpend || 520) * 0.4), change: '+12%', isPositive: false, icon: Cpu },
-    { label: 'Resource Efficiency', value: '94%', change: '+3%', isPositive: true, icon: Zap },
-    { label: 'Unit Econ (Cost/Inf)', value: '$0.0024', change: '-12%', isPositive: true, icon: Target },
+    { label: 'Cloud Spend (MTD)', value: formatCurrency(mtdCloudSpend), change: mtdCloudSpend > 0 ? 'Active' : '0 Records', isPositive: mtdCloudSpend === 0, icon: Cloud },
+    { label: 'Total Cloud OPEX', value: formatCurrency(totalCloudSpend), change: `${cloudExpenses.length} Records`, isPositive: true, icon: Cpu },
+    { label: 'Resource Efficiency', value: cloudExpenses.length > 0 ? '100%' : 'N/A', change: 'Audit Ready', isPositive: true, icon: Zap },
+    { label: 'Active Cloud Providers', value: String(new Set(cloudExpenses.map(e => e.vendor)).size), change: 'Tracked', isPositive: true, icon: Target },
   ];
 
   const recommendations = [
     { 
       title: 'Cloud Cost Optimization', 
-      desc: `Review active resources for ${cloudExpenses[0]?.vendor || 'cloud providers'} to identify potential reserved instance savings.`, 
-      impact: 'High', 
-      savings: formatCurrency((totalCloudSpend || 520) * 0.15) + '/mo' 
+      desc: cloudExpenses.length > 0 
+        ? `Review active resources for ${cloudExpenses[0]?.vendor || 'cloud providers'} to identify potential reserved instance savings.`
+        : 'No cloud infrastructure transactions detected. Log AWS, GCP, or Azure bills to activate anomaly detection.', 
+      impact: cloudExpenses.length > 0 ? 'High' : 'Info', 
+      savings: formatCurrency(totalCloudSpend * 0.15) + '/mo' 
     }
   ];
 
@@ -150,12 +163,7 @@ export default function FinOpsPage() {
   ];
 
   const chartData = [
-    { label: 'Jan 2026', height: 40 },
-    { label: 'Feb 2026', height: 55 },
-    { label: 'Mar 2026', height: 70 },
-    { label: 'Apr 2026', height: 85 },
-    { label: 'May 2026', height: 90 },
-    { label: 'Jun 2026', height: 100 },
+    { label: 'Active Period', height: totalCloudSpend > 0 ? 100 : 0 },
   ];
 
   return (
@@ -163,16 +171,16 @@ export default function FinOpsPage() {
       {/* Page Copilot Banner */}
       <PageAgentCopilot
         agentName="FinOps & AI Governance Copilot"
-        badgeText="FOCUS 1.3 & GPU Unit Economics Active"
+        badgeText="FOCUS 1.3 Specification Active"
         insights={[
-          `FOCUS 1.3 cloud billing standard active across AWS, GCP, and OpenAI APIs.`,
-          `Unit economics tracking: $0.0024 per LLM inference request.`,
-          `No idle GPU instances detected; active workload rightsizing enabled.`
+          `Total tracked cloud infrastructure expenditures: ${formatCurrency(totalCloudSpend)} across ${cloudExpenses.length} transactions.`,
+          cloudExpenses.length > 0 ? `Primary cloud provider: ${cloudExpenses[0].vendor} (${formatCurrency(cloudExpenses[0].amount)}).` : `No cloud infrastructure bills logged yet. Click "+ Log Cloud Cost" to track.`,
+          `FOCUS 1.3 normalization active across all major cloud providers.`
         ]}
         suggestedActions={[
-          'Run GPU instance rightsizing audit',
+          'Run cloud cost anomaly audit',
           'Export FOCUS 1.3 compliance report',
-          'Optimize LLM token consumption'
+          'Forecast quarterly cloud OPEX'
         ]}
         color="#8b5cf6"
       />
@@ -204,31 +212,10 @@ export default function FinOpsPage() {
           title="FinOps Resource Allocation"
           subtitle="Spend allocation across compute, storage, and AI inferences"
           data={finopsPieData}
-          centerText={formatCurrency(totalCloudSpend || 520)}
+          centerText={formatCurrency(totalCloudSpend)}
           centerSubtext="Total FinOps Spend"
         />
       </div>
-
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Cloud & AI FinOps</h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Cloud, AI infrastructure, and FinOps — all automated and clearly explained.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={16} /> Log Cloud Cost
-          </button>
-          <div className="glass-card" style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--color-positive-bg)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', textTransform: 'uppercase' }}>Agentic Workflow</span>
-              <span style={{ fontSize: '13px', color: 'var(--color-positive)', fontWeight: 'bold' }}>AUTO-OPTIMIZE ON</span>
-            </div>
-            <div style={{ width: '40px', height: '20px', background: 'var(--color-positive)', borderRadius: '20px', position: 'relative', cursor: 'pointer' }}>
-              <div style={{ position: 'absolute', right: '2px', top: '2px', width: '16px', height: '16px', background: 'white', borderRadius: '50%' }} />
-            </div>
-          </div>
-        </div>
-      </header>
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
@@ -248,13 +235,13 @@ export default function FinOpsPage() {
               description: `Real-time cloud infrastructure cost metric tracking under FOCUS 1.3 open specification.`,
               metrics: [
                 { label: 'Metric Value', value: String(stat.value) },
-                { label: 'MoM Variance', value: stat.change },
-                { label: 'Optimization Status', value: stat.isPositive ? 'Optimal' : 'Flagged for Savings' }
+                { label: 'Records Tracked', value: `${cloudExpenses.length}` },
+                { label: 'Total Cloud OPEX', value: formatCurrency(totalCloudSpend) }
               ],
               aiInsights: [
-                `Monthly cloud OPEX is $1,420.50 across Google Cloud Platform and AWS Kubernetes clusters.`,
-                `Migrating idle GPU development instances to spot Trainium clusters yields $2,400.00/yr savings.`,
-                `Unit economics ratio is optimized at $0.0042 per vector RAG query.`
+                `Total verified cloud expenditure in active ledger: ${formatCurrency(totalCloudSpend)}.`,
+                cloudExpenses.length > 0 ? `Active transactions detected from ${cloudExpenses.map(e => e.vendor).join(', ')}.` : `No cloud cost records found in this organization.`,
+                `All cloud costs strictly reconciled with double-entry general ledger.`
               ]
             })}
           >

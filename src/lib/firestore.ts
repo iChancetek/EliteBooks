@@ -322,6 +322,56 @@ export async function updateProduct(orgId: string, productId: string, data: Reco
 }
 
 // ═══════════════════════════════════════════
+// CUSTOMERS (Accounts Receivable Directory)
+// ═══════════════════════════════════════════
+
+export async function getCustomers(orgId: string) {
+  try {
+    const snapshot = await orgCollection(orgId, 'customers')
+      .orderBy('name', 'asc')
+      .get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (e) {
+    console.warn('Firestore customers get error:', e);
+    return [];
+  }
+}
+
+export async function getCustomer(orgId: string, customerId: string) {
+  const doc = await orgCollection(orgId, 'customers').doc(customerId).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() };
+}
+
+export async function createCustomer(orgId: string, data: Record<string, any>) {
+  const now = new Date().toISOString();
+  const customer = {
+    ...data,
+    orgId,
+    totalRevenue: data.totalRevenue || 0,
+    outstandingBalance: data.outstandingBalance || 0,
+    status: data.status || 'active',
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const ref = await orgCollection(orgId, 'customers').add(customer);
+  return { id: ref.id, ...customer };
+}
+
+export async function updateCustomer(orgId: string, customerId: string, data: Record<string, any>) {
+  const ref = orgCollection(orgId, 'customers').doc(customerId);
+  await ref.update({ ...data, updatedAt: new Date().toISOString() });
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() };
+}
+
+export async function deleteCustomer(orgId: string, customerId: string) {
+  await orgCollection(orgId, 'customers').doc(customerId).delete();
+  return { success: true };
+}
+
+// ═══════════════════════════════════════════
 // FINANCIAL SUMMARY (Reports / Dashboard)
 // ═══════════════════════════════════════════
 

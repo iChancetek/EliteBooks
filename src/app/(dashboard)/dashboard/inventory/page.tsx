@@ -95,22 +95,30 @@ export default function InventoryPage() {
   const totalValue = products.reduce((s, p) => s + (p.quantity || 0) * (p.costPrice || 0), 0);
   const lowStock = products.filter(p => (p.quantity || 0) <= (p.reorderPoint || 0));
 
-  // Inventory Chart Data
+  // Dynamic Inventory Chart Data
   const inventoryBarData = [
-    { name: 'Jan', StockValue: (totalValue || 45000) * 0.7, COGS: (totalValue || 45000) * 0.2 },
-    { name: 'Feb', StockValue: (totalValue || 45000) * 0.78, COGS: (totalValue || 45000) * 0.22 },
-    { name: 'Mar', StockValue: (totalValue || 45000) * 0.85, COGS: (totalValue || 45000) * 0.25 },
-    { name: 'Apr', StockValue: (totalValue || 45000) * 0.92, COGS: (totalValue || 45000) * 0.28 },
-    { name: 'May', StockValue: (totalValue || 45000) * 0.96, COGS: (totalValue || 45000) * 0.30 },
-    { name: 'Jun', StockValue: totalValue || 45000, COGS: (totalValue || 45000) * 0.32 },
+    { name: 'Current Period', StockValue: totalValue, COGS: totalValue * 0.3 },
   ];
 
-  const categoryPieData = [
-    { name: 'Widgets & Hard Goods', value: Math.max(totalValue * 0.4, 18000), color: '#3b82f6' },
-    { name: 'Modules & Assemblies', value: Math.max(totalValue * 0.3, 13500), color: '#10b981' },
-    { name: 'Accessories & Supplies', value: Math.max(totalValue * 0.18, 8100), color: '#f59e0b' },
-    { name: 'Software Licenses', value: Math.max(totalValue * 0.12, 5400), color: '#8b5cf6' },
-  ];
+  // Dynamic Category Breakdown
+  const catValTotals: Record<string, number> = {};
+  products.forEach(p => {
+    const cat = p.category || 'General';
+    catValTotals[cat] = (catValTotals[cat] || 0) + ((p.quantity || 0) * (p.costPrice || 0));
+  });
+
+  const catColors: Record<string, string> = {
+    'Widgets': '#3b82f6',
+    'Modules': '#10b981',
+    'Accessories': '#f59e0b',
+    'Licenses': '#8b5cf6',
+  };
+
+  const categoryPieData = Object.entries(catValTotals).map(([name, value]) => ({
+    name,
+    value,
+    color: catColors[name] || '#3b82f6'
+  }));
 
   return (
     <div className="inventory-page animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -119,8 +127,8 @@ export default function InventoryPage() {
         agentName="Inventory Ledger Agent Copilot"
         badgeText="COGS & Supply Chain Active"
         insights={[
-          `Automated FIFO/LIFO inventory valuation active across all SKU lines.`,
-          `Predictive reorder trigger active: ${lowStock.length} items currently at low stock threshold.`,
+          `Total inventory stock valuation: ${formatCurrency(totalValue)} across ${products.length} products.`,
+          lowStock.length > 0 ? `Predictive reorder trigger active: ${lowStock.length} items currently at low stock threshold.` : `All inventory SKU stock levels are healthy.`,
           `Cost of Goods Sold (COGS) mapped to double-entry general ledger.`
         ]}
         suggestedActions={[
@@ -161,7 +169,7 @@ export default function InventoryPage() {
           title="Inventory Category Breakdown"
           subtitle="Valuation distribution across product categories"
           data={categoryPieData}
-          centerText={formatCurrency(totalValue || 45000)}
+          centerText={formatCurrency(totalValue)}
           centerSubtext="Total Inventory"
         />
       </div>

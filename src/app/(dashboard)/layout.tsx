@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AutonomousAgentWidget from '@/components/AutonomousAgentWidget';
+import { GlobalCommandPalette } from '@/components/GlobalCommandPalette';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,6 +18,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileOpen, setMobileOpen] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendStatus, setResendStatus] = useState('');
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleResendVerification = async () => {
     if (!user) return;
@@ -140,9 +153,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button className="dash-menu-btn mobile-only" onClick={() => setMobileOpen(true)}>
             <Menu size={22} />
           </button>
-          <div className="dash-search">
+          <div className="dash-search" onClick={() => setIsCommandPaletteOpen(true)} style={{ cursor: 'pointer' }}>
             <Search size={16} />
-            <input type="text" placeholder="Search or ask anything..." className="dash-search-input" id="dash-search" />
+            <input 
+              type="text" 
+              placeholder="Search or ask anything..." 
+              className="dash-search-input" 
+              id="dash-search"
+              readOnly
+              onClick={() => setIsCommandPaletteOpen(true)}
+            />
             <kbd className="dash-search-kbd">⌘K</kbd>
           </div>
           <div className="dash-header-actions">
@@ -170,6 +190,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      <GlobalCommandPalette 
+        isOpen={isCommandPaletteOpen} 
+        onClose={() => setIsCommandPaletteOpen(false)} 
+      />
 
       <style>{`
         .dash-layout {

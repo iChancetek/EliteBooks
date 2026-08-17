@@ -30,6 +30,7 @@ export default function PersonalFinancePage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'bills' | 'investments' | 'tax'>('overview');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
+  const [search, setSearch] = useState('');
   const [newTransaction, setNewTransaction] = useState({
     merchant: '',
     amount: '',
@@ -104,21 +105,34 @@ export default function PersonalFinancePage() {
   const personalExpenses = (reportData?.expenses || []).filter((e: any) => e.isPersonal && e.status !== 'deleted');
   const totalPersonalSpend = personalExpenses.reduce((s: number, e: any) => s + (e.amount || 0), 0);
 
-  // Personal Finance Chart Data
-  const personalBarData = [
-    { name: 'Jan', NetDraw: 12000, PersonalSpend: (totalPersonalSpend || 2150) * 0.8 },
-    { name: 'Feb', NetDraw: 14500, PersonalSpend: (totalPersonalSpend || 2150) * 0.85 },
-    { name: 'Mar', NetDraw: 16000, PersonalSpend: (totalPersonalSpend || 2150) * 0.9 },
-    { name: 'Apr', NetDraw: 18500, PersonalSpend: (totalPersonalSpend || 2150) * 0.92 },
-    { name: 'May', NetDraw: 21000, PersonalSpend: (totalPersonalSpend || 2150) * 0.95 },
-    { name: 'Jun', NetDraw: 24500, PersonalSpend: totalPersonalSpend || 2150 },
-  ];
+  // Dynamic Personal Finance Category Breakdown
+  const catTotals: Record<string, number> = {};
+  personalExpenses.forEach((e: any) => {
+    const cat = e.category || 'Miscellaneous';
+    catTotals[cat] = (catTotals[cat] || 0) + (e.amount || 0);
+  });
 
-  const personalPieData = [
-    { name: 'Housing & Rent', value: Math.max(totalPersonalSpend * 0.45, 1200), color: '#3b82f6' },
-    { name: 'Groceries & Dining', value: Math.max(totalPersonalSpend * 0.25, 650), color: '#10b981' },
-    { name: 'Utilities & Subscriptions', value: Math.max(totalPersonalSpend * 0.18, 380), color: '#ec4899' },
-    { name: 'Travel & Shopping', value: Math.max(totalPersonalSpend * 0.12, 280), color: '#f59e0b' },
+  const catColors: Record<string, string> = {
+    'Groceries': '#10b981',
+    'Rent & Housing': '#3b82f6',
+    'Utilities': '#ec4899',
+    'Dining Out': '#f59e0b',
+    'Entertainment': '#8b5cf6',
+    'Travel': '#06b6d4',
+    'Subscriptions': '#d946ef',
+    'Shopping': '#f43f5e',
+    'Miscellaneous': '#64748b',
+  };
+
+  const personalPieData = Object.entries(catTotals).map(([name, value]) => ({
+    name,
+    value,
+    color: catColors[name] || '#3b82f6'
+  }));
+
+  // Personal Finance Monthly Spend Data
+  const personalBarData = [
+    { name: 'Month 1', NetDraw: 0, PersonalSpend: totalPersonalSpend },
   ];
 
   const { forecastData, insights, bills, transactions, goals } = useMemo(() => {
@@ -291,7 +305,7 @@ export default function PersonalFinancePage() {
           title="Personal Spend Allocation"
           subtitle="Household expenditure distribution by category"
           data={personalPieData}
-          centerText={formatCurrency(totalPersonalSpend || 2150)}
+          centerText={formatCurrency(totalPersonalSpend)}
           centerSubtext="Personal Spend"
         />
       </div>
@@ -365,7 +379,11 @@ export default function PersonalFinancePage() {
               <h3><History size={18} /> Daily Intelligence Feed</h3>
               <div className="pf-search">
                 <Search size={14} />
-                <input placeholder="Analyze spending patterns..." />
+                <input 
+                  placeholder="Analyze spending patterns..." 
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
               </div>
             </div>
             <div className="table-container">
@@ -380,7 +398,13 @@ export default function PersonalFinancePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.length > 0 ? transactions.map((tr: any, i: number) => (
+                  {transactions
+                    .filter((tr: any) => 
+                      !search || 
+                      tr.name.toLowerCase().includes(search.toLowerCase()) || 
+                      tr.cat.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .map((tr: any, i: number) => (
                     <tr
                       key={i}
                       className="cursor-pointer hover:bg-slate-800/40 transition-colors"
@@ -398,13 +422,8 @@ export default function PersonalFinancePage() {
                         description: `Personal financial transaction logged for ${tr.name} categorized under ${tr.cat}.`,
                         metrics: [
                           { label: 'Category', value: tr.cat },
-                          { label: 'Intelligence Action', value: tr.action },
-                          { label: 'Net Worth Impact', value: '0.01%' }
-                        ],
-                        aiInsights: [
-                          `Estimated Personal Net Worth is $1,240,000.00 across liquid reserves, equities, and real estate.`,
-                          `Savings rate operates at 34.2% of net personal income.`,
-                          `Tax-advantaged contributions (Roth IRA / 401k) maxed for 2026.`
+                          { label: 'Amount', value: formatCurrency(Math.abs(tr.amt)) },
+                          { label: 'Date', value: tr.date },
                         ]
                       })}
                     >
@@ -412,16 +431,24 @@ export default function PersonalFinancePage() {
                       <td><strong>{tr.name}</strong></td>
                       <td><span className="badge badge-neutral">{tr.cat}</span></td>
                       <td><span className="value-financial value-negative">{formatCurrency(tr.amt)}</span></td>
-                      <td>
-                        <span style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-text-secondary)' }}>
-                          <Bot size={12} color="var(--color-accent-primary)" /> {tr.action}
-                        </span>
-                      </td>
+                      <td><span className="badge badge-positive">{tr.action}</span></td>
                     </tr>
-                  )) : (
+                  ))}
+                  {transactions.filter((tr: any) => 
+                    !search || 
+                    tr.name.toLowerCase().includes(search.toLowerCase()) || 
+                    tr.cat.toLowerCase().includes(search.toLowerCase())
+                  ).length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-tertiary)' }}>
-                        No recent transactions found. Start logging expenses to see AI intelligence.
+                      <td colSpan={5} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-tertiary)' }}>
+                        {personalExpenses.length === 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
+                            <Wallet size={28} style={{ opacity: 0.3 }} />
+                            <span>No personal transactions recorded. Click &quot;+ Add Transaction&quot; to log your first personal expense.</span>
+                          </div>
+                        ) : (
+                          <span>No transactions found matching &quot;{search}&quot;.</span>
+                        )}
                       </td>
                     </tr>
                   )}

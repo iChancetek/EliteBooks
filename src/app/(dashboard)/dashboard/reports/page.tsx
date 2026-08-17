@@ -159,13 +159,9 @@ export default function ReportsPage() {
 
   const handleNlpGenerate = () => {
     if (!nlpQuery.trim()) return;
-    setIsGenerating(true);
-    // Simulate agentic delay
-    setTimeout(() => {
-      setIsGenerating(false);
-      setNlpQuery('');
-      alert('AI Report Generated: Check your downloads or reports queue.');
-    }, 2000);
+    const query = nlpQuery;
+    setNlpQuery('');
+    window.dispatchEvent(new CustomEvent('elitebooks:ask-agent', { detail: { query } }));
   };
 
   return (
