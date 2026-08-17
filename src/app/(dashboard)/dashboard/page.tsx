@@ -51,6 +51,7 @@ export default function DashboardHome() {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit'>('feed');
 
+  const [rawReportData, setRawReportData] = useState<any>(null);
   const [snapshot, setSnapshot] = useState({
     revenue: { value: 0, change: 0 },
     expenses: { value: 0, change: 0 },
@@ -78,6 +79,7 @@ export default function DashboardHome() {
       const json = await res.json();
       if (json.success && json.data) {
         const d = json.data;
+        setRawReportData(d);
         const rev = d.totalRevenue || 0;
         const exp = d.totalExpenses || 0;
         const prof = d.netProfit || 0;
@@ -417,14 +419,17 @@ export default function DashboardHome() {
             <div 
               key={metric.label} 
               className="cmd-metric glass-card cursor-pointer hover:border-amber-500/40 transition-all"
+              style={{ position: 'relative', overflow: 'hidden' }}
               onClick={() => setSelectedDeepDive({
                 title: metric.label,
                 type: metric.label.toLowerCase().includes('revenue') ? 'revenue' : metric.label.toLowerCase().includes('expense') ? 'expenses' : metric.label.toLowerCase().includes('profit') ? 'profit' : 'cash',
                 value: metric.value,
                 change: metric.change,
                 icon: metric.icon,
-                color: metric.color
+                color: metric.color,
+                reportData: rawReportData,
               })}
+              title={`Click for comprehensive ${metric.label} breakdown & live itemized audit`}
             >
               <div className="cmd-metric-header">
                 <div className="cmd-metric-icon" style={{ background: `${metric.color}15`, color: metric.color }}>
@@ -438,7 +443,24 @@ export default function DashboardHome() {
               <span className="cmd-metric-value value-financial">
                 {formatCurrency(metric.value)}
               </span>
-              <span className="cmd-metric-label">{metric.label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                <span className="cmd-metric-label">{metric.label}</span>
+                <span 
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: metric.color,
+                    background: `${metric.color}15`,
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                  }}
+                >
+                  Breakdown →
+                </span>
+              </div>
             </div>
           ))}
         </div>
