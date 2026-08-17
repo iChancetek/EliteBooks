@@ -103,8 +103,40 @@ export default function LandingPage() {
             <a href="#features" className={styles.navLink}>Features</a>
             <a href="#agents" className={styles.navLink}>AI Agents</a>
             <a href="#stats" className={styles.navLink}>Why EliteBooks</a>
+            <a 
+              href="https://famio.us" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={styles.navLink}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f472b6', fontWeight: 700 }}
+            >
+              <Sparkles size={14} style={{ color: '#ec4899' }} />
+              famio.us
+            </a>
           </div>
           <div className={styles.navActions}>
+            <a 
+              href="https://famio.us" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="btn btn-sm"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(139, 92, 246, 0.25))',
+                border: '1px solid rgba(236, 72, 153, 0.4)',
+                color: '#f472b6',
+                borderRadius: '100px',
+                fontWeight: 800,
+                fontSize: '12px',
+                padding: '6px 14px',
+                textDecoration: 'none',
+              }}
+            >
+              <Sparkles size={13} style={{ color: '#ec4899' }} />
+              famio.us
+            </a>
             <Link href="/login" className="btn btn-ghost" id="nav-login-btn">Sign In</Link>
             <Link href="/signup" className="btn btn-primary" id="nav-signup-btn">
               Get Started Free

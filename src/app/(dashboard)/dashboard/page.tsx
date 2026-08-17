@@ -52,17 +52,104 @@ export default function DashboardHome() {
   const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit'>('feed');
 
   const [snapshot, setSnapshot] = useState({
-    revenue: { value: 210500, change: 12.4 },
-    expenses: { value: 124300, change: 7.2 },
-    profit: { value: 86200, change: 18.5 },
-    cashFlow: { value: 145200.50, change: 9.3 },
+    revenue: { value: 0, change: 0 },
+    expenses: { value: 0, change: 0 },
+    profit: { value: 0, change: 0 },
+    cashFlow: { value: 0, change: 0 },
   });
+  const [monthlyData, setMonthlyData] = useState<{ name: string; Revenue: number; Expenses: number }[]>([]);
+  const [categoryPieData, setCategoryPieData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [copilotInsights, setCopilotInsights] = useState<string[]>([
+    'Autonomous agents active and monitoring general ledger double-entry balances in real-time.',
+    'All transaction disbursements, payroll accruals, and invoice aging reconciled continuously.',
+  ]);
 
-  const loadDashboardData = useCallback(() => {
+  const loadDashboardData = useCallback(async () => {
     // Load feeds and pending approvals
     setFeedItems(AIBusinessFeedService.getFeedItems());
     setPendingApprovals(AIBusinessFeedService.getPendingApprovals());
-  }, []);
+
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/reports', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const d = json.data;
+        const rev = d.totalRevenue || 0;
+        const exp = d.totalExpenses || 0;
+        const prof = d.netProfit || 0;
+        const cash = (d.totalPaid || 0) - exp;
+
+        setSnapshot({
+          revenue: { value: rev, change: 0 },
+          expenses: { value: exp, change: 0 },
+          profit: { value: prof, change: 0 },
+          cashFlow: { value: cash, change: 0 },
+        });
+
+        // Compute real monthly chart data from invoices and expenses
+        const monthMap: Record<string, { Revenue: number; Expenses: number }> = {};
+        (d.invoices || []).forEach((inv: any) => {
+          const dateStr = inv.issueDate || inv.createdAt;
+          if (dateStr) {
+            const m = new Date(dateStr).toLocaleString('default', { month: 'short' });
+            if (!monthMap[m]) monthMap[m] = { Revenue: 0, Expenses: 0 };
+            monthMap[m].Revenue += (inv.total || 0);
+          }
+        });
+        (d.expenses || []).filter((e: any) => e.status !== 'deleted' && !e.isPersonal).forEach((ex: any) => {
+          const dateStr = ex.date || ex.createdAt;
+          if (dateStr) {
+            const m = new Date(dateStr).toLocaleString('default', { month: 'short' });
+            if (!monthMap[m]) monthMap[m] = { Revenue: 0, Expenses: 0 };
+            monthMap[m].Expenses += (ex.amount || 0);
+          }
+        });
+
+        const dynamicMonthly = Object.entries(monthMap).map(([name, vals]) => ({
+          name,
+          Revenue: vals.Revenue,
+          Expenses: vals.Expenses,
+        }));
+        setMonthlyData(dynamicMonthly.length > 0 ? dynamicMonthly : [
+          { name: 'Current Period', Revenue: rev, Expenses: exp }
+        ]);
+
+        // Compute real category pie data
+        const catColors: Record<string, string> = {
+          'Cloud Services': '#0ea5e9',
+          'Software & SaaS': '#8b5cf6',
+          'Office & Supplies': '#3b82f6',
+          'Meals & Entertainment': '#ec4899',
+          'Travel & Transport': '#f59e0b',
+          'Rent & Utilities': '#10b981',
+          'Marketing': '#f43f5e',
+          'Professional Services': '#06b6d4',
+          'Subscriptions': '#d946ef',
+          'Miscellaneous': '#64748b',
+        };
+
+        const dynamicPie = Object.entries(d.expensesByCategory || {}).map(([name, val]) => ({
+          name,
+          value: Number(val) || 0,
+          color: catColors[name] || '#3b82f6'
+        })).filter(c => c.value > 0);
+        setCategoryPieData(dynamicPie);
+
+        // Ground Copilot insights in real numbers
+        setCopilotInsights([
+          `Total Recorded Revenue is ${formatCurrency(rev)} with Operating Expenses of ${formatCurrency(exp)}.`,
+          `Net Profit stands at ${formatCurrency(prof)} (${d.profitMargin ? d.profitMargin.toFixed(1) : '0.0'}% margin).`,
+          `Accounts Receivable has ${formatCurrency(d.totalOutstanding || 0)} pending collections.`,
+        ]);
+      }
+    } catch (e) {
+      console.error('Failed to load real dashboard summary:', e);
+    }
+  }, [user]);
 
   useEffect(() => {
     loadDashboardData();
@@ -110,24 +197,6 @@ export default function DashboardHome() {
     loadDashboardData();
   };
 
-  // Chart Datasets
-  const monthlyData = [
-    { name: 'Mar', Revenue: 142000, Expenses: 98000 },
-    { name: 'Apr', Revenue: 158000, Expenses: 104000 },
-    { name: 'May', Revenue: 175000, Expenses: 112000 },
-    { name: 'Jun', Revenue: 190000, Expenses: 118000 },
-    { name: 'Jul', Revenue: 198000, Expenses: 121000 },
-    { name: 'Aug', Revenue: 210500, Expenses: 124300 },
-  ];
-
-  const categoryPieData = [
-    { name: 'Software & SaaS', value: 38500, color: '#3b82f6' },
-    { name: 'Payroll & Salaries', value: 48000, color: '#10b981' },
-    { name: 'Rent & Facilities', value: 16500, color: '#f59e0b' },
-    { name: 'Cloud Infrastructure', value: 12500, color: '#8b5cf6' },
-    { name: 'Marketing & Subs', value: 8800, color: '#ec4899' },
-  ];
-
   return (
     <div className="cmd-center">
       {/* Deep Dive Modal */}
@@ -154,11 +223,7 @@ export default function DashboardHome() {
       <PageAgentCopilot
         agentName="CFO Strategist & Orchestrator"
         badgeText="10 Specialized Agents Active"
-        insights={[
-          `Quarterly Revenue operating at $210,500 (+12.4% YoY), primarily driven by enterprise expansion.`,
-          `Operating margin expanded to 40.9% (+5 percentage point improvement).`,
-          `30/60/90-Day Treasury Forecast projects cash reserves reaching $182,000 with strong liquidity runway.`
-        ]}
+        insights={copilotInsights}
         suggestedActions={[
           'Why did expenses increase this month?',
           'Forecast cash flow for next 6 months',

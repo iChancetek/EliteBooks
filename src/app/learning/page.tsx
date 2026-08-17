@@ -107,6 +107,15 @@ export default function LearningPage() {
             <span>EliteBooks</span>
           </Link>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <a 
+              href="https://famio.us" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="btn btn-secondary" 
+              style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', color: '#f472b6', borderColor: 'rgba(236,72,153,0.3)' }}
+            >
+              <Sparkles size={14} style={{ color: '#ec4899' }} /> famio.us
+            </a>
             <Link href="/dashboard" className="btn btn-secondary" style={{ fontSize: '13px' }}>
               Enter Dashboard
             </Link>

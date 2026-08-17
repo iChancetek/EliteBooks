@@ -165,7 +165,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             />
             <kbd className="dash-search-kbd">⌘K</kbd>
           </div>
-          <div className="dash-header-actions">
+          <div className="dash-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <a 
+              href="https://famio.us" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="btn btn-xs"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2))',
+                border: '1px solid rgba(236, 72, 153, 0.4)',
+                color: '#f472b6',
+                borderRadius: '100px',
+                padding: '4px 12px',
+                fontSize: '11px',
+                fontWeight: 800,
+                textDecoration: 'none',
+                letterSpacing: '0.03em',
+                transition: 'all 0.2s',
+              }}
+              title="Visit famio.us"
+            >
+              <Sparkles size={12} style={{ color: '#ec4899' }} />
+              famio.us
+            </a>
             <button className="btn btn-icon btn-ghost" id="notifications-btn" aria-label="Notifications">
               <Bell size={20} />
             </button>
