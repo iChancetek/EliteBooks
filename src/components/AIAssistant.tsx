@@ -46,6 +46,23 @@ export default function AIAssistant() {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  useEffect(() => {
+    const handleAskAgentEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ query?: string }>;
+      setIsOpen(true);
+      if (customEvent.detail?.query) {
+        handleSend(customEvent.detail.query);
+      }
+    };
+
+    window.addEventListener('elitebooks:ask-agent', handleAskAgentEvent);
+    window.addEventListener('elitebooks:open-chat', handleAskAgentEvent);
+    return () => {
+      window.removeEventListener('elitebooks:ask-agent', handleAskAgentEvent);
+      window.removeEventListener('elitebooks:open-chat', handleAskAgentEvent);
+    };
+  }, [messages, user]);
+
   const handleSend = async (text: string = input) => {
     if (!text.trim()) return;
 

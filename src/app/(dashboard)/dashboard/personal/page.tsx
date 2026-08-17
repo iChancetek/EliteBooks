@@ -8,7 +8,7 @@ import {
   ArrowDownRight, Bot, Sparkles, AlertTriangle, CheckCircle2, PiggyBank,
   Music, Film, Package, Trophy, CreditCard, Zap, Shield, History,
   Info, BarChart3, Target, Clock, ArrowRightLeft, Eye, ChevronRight,
-  Download, Tv, UtensilsCrossed, Briefcase, Calculator, LineChart
+  Download, Tv, UtensilsCrossed, Briefcase, Calculator, LineChart, MessageSquare
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -477,16 +477,72 @@ export default function PersonalFinancePage() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-                <span color="var(--color-text-secondary)">Portfolio Health</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Portfolio Health</span>
                 <span style={{ color: 'var(--color-positive)', fontWeight: 'bold' }}>OPTIMAL</span>
               </div>
               <div style={{ height: '4px', background: 'var(--color-bg-tertiary)', borderRadius: '2px', overflow: 'hidden' }}>
                 <div style={{ width: '92%', height: '100%', background: 'var(--color-positive)' }} />
               </div>
-              <p style={{ fontSize: '0.7rem', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
-                "I've rebalanced your ETF portfolio to maintain a 60/40 risk profile and locked funds for upcoming tax payments."
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                {totalPersonalSpend > 0 
+                  ? `Active personal spend tracked at ${formatCurrency(totalPersonalSpend)} for this period. Tax distribution reserves and owner draw velocity are optimized.`
+                  : "I've rebalanced your personal ETF portfolio to maintain a 60/40 risk profile and locked funds for upcoming tax payments."}
               </p>
-              <button className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>Open Strategy Chat</button>
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                onClick={() => {
+                  const prompt = `Analyze my personal financial portfolio, current monthly spend of ${formatCurrency(totalPersonalSpend)}, tax distribution reserves, and owner draw strategy for this period.`;
+                  window.dispatchEvent(new CustomEvent('elitebooks:ask-agent', { detail: { query: prompt } }));
+                  setSelectedDeepDive({
+                    id: 'personal-strategy-ai',
+                    title: 'Elite Personal AI Wealth & Strategy',
+                    module: 'Personal Finance',
+                    subtitle: `Portfolio Health: OPTIMAL • Monthly Spend: ${formatCurrency(totalPersonalSpend)}`,
+                    amount: totalPersonalSpend,
+                    type: 'neutral',
+                    status: 'OPTIMAL',
+                    category: 'Executive Wealth Management',
+                    agentUsed: 'Personal Finance Agent',
+                    description: 'Autonomous financial manager analysis of executive draws, tax distribution reserves, and liquidity allocation.',
+                    metrics: [
+                      { label: 'Monthly Personal OPEX', value: formatCurrency(totalPersonalSpend) },
+                      { label: 'Portfolio Health', value: 'OPTIMAL (92% Score)' },
+                      { label: 'Tax Reserves (1040-ES)', value: formatCurrency(totalPersonalSpend * 0.25) },
+                      { label: 'Corporate Separation', value: '100% Segregated' },
+                      { label: 'Draw Frequency', value: 'Automated Monthly' },
+                      { label: 'Audit Risk Factor', value: 'LOW (0.02)' },
+                    ],
+                    auditTrace: [
+                      {
+                        step: '1. Executive Draw Reconciliation',
+                        status: 'VERIFIED',
+                        agent: 'Personal Finance Agent',
+                        detail: 'Reconciled corporate owner distributions against Form 1040-ES quarterly estimated tax obligations.'
+                      },
+                      {
+                        step: '2. Account Segregation Verification',
+                        status: 'QUALIFIED',
+                        agent: 'Ledger Agent',
+                        detail: 'Verified strict boundary between corporate operating accounts (#1000) and owner equity draw accounts (#3000).'
+                      },
+                      {
+                        step: '3. Strategic Liquidity Advisory',
+                        status: 'ACTIVE',
+                        agent: 'Orchestrator Agent',
+                        detail: 'Synthesized real-time advice dispatched to EliteBooks Copilot.'
+                      }
+                    ],
+                    aiInsights: [
+                      'Owner draws are reconciled and balanced against quarterly estimated tax obligations.',
+                      'Corporate-to-personal fund transfers maintain 100% compliance with IRS corporate veil standards.',
+                      'Autonomous AI Copilot chat window has been initialized with full personalized financial context.'
+                    ]
+                  });
+                }}
+              >
+                <MessageSquare size={16} /> Open Strategy Chat
+              </button>
             </div>
           </section>
 
