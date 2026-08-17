@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { AgentResponse } from '@/types/agents';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UseAgentReturn {
   isLoading: boolean;
@@ -12,6 +13,7 @@ interface UseAgentReturn {
 }
 
 export function useAgent(): UseAgentReturn {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<AgentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +23,19 @@ export function useAgent(): UseAgentReturn {
     setError(null);
 
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (user) {
+        const token = await user.getIdToken();
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/agents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           message,
-          orgId: 'default', // TODO: Get from auth context
-          userId: 'current', // TODO: Get from auth context
+          orgId: user?.uid || 'default',
+          userId: user?.uid || 'anonymous',
         }),
       });
 
@@ -49,7 +57,7 @@ export function useAgent(): UseAgentReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const clearResponse = useCallback(() => {
     setResponse(null);

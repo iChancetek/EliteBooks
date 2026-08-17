@@ -36,6 +36,73 @@ function buildDateRange(filter: DateFilter): { start: string; end: string } | nu
   return { start: `${year}-${m}-01`, end: `${year}-${m}-${lastDay}` };
 }
 
+/**
+ * Resolves natural language period strings (from AI Copilot tool calls) into a DateFilter.
+ * Supports: "THIS MONTH", "LAST MONTH", "THIS YEAR", "LAST YEAR",
+ *           "August 2026", "Aug 2026", "Q1"-"Q4", "2026", etc.
+ */
+export function parsePeriod(periodStr?: string): DateFilter | undefined {
+  if (!periodStr) return undefined;
+  const p = periodStr.trim();
+
+  const now = new Date();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const lower = p.toLowerCase();
+
+  // "this month", "current month"
+  if (lower === 'this month' || lower === 'current month') {
+    return { year: now.getFullYear().toString(), month: months[now.getMonth()] };
+  }
+
+  // "last month", "previous month"
+  if (lower === 'last month' || lower === 'previous month') {
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return { year: prev.getFullYear().toString(), month: months[prev.getMonth()] };
+  }
+
+  // "this year", "current year"
+  if (lower === 'this year' || lower === 'current year') {
+    return { year: now.getFullYear().toString() };
+  }
+
+  // "last year", "previous year"
+  if (lower === 'last year' || lower === 'previous year') {
+    return { year: (now.getFullYear() - 1).toString() };
+  }
+
+  // Quarter: "Q1", "Q2 2026", etc.
+  const qMatch = lower.match(/^q([1-4])(?:\s+(\d{4}))?$/);
+  if (qMatch) {
+    // Quarters span multiple months; return year-only filter (buildDateRange will use full year)
+    const year = qMatch[2] || now.getFullYear().toString();
+    return { year };
+  }
+
+  // "August 2026" or "Aug 2026" format
+  const monthYearMatch = p.match(/^(\w+)\s+(\d{4})$/);
+  if (monthYearMatch) {
+    const mName = monthYearMatch[1];
+    const year = monthYearMatch[2];
+    // Try abbreviated month
+    let idx = months.findIndex(m => m.toLowerCase() === mName.toLowerCase());
+    // Try full month name
+    if (idx === -1) idx = monthsFull.findIndex(m => m.toLowerCase() === mName.toLowerCase());
+    if (idx !== -1) {
+      return { year, month: months[idx] };
+    }
+  }
+
+  // Plain year: "2026"
+  if (/^\d{4}$/.test(p)) {
+    return { year: p };
+  }
+
+  // Couldn't parse — return undefined (no filter applied)
+  return undefined;
+}
+
 // ─── Collection Helpers ───
 function orgCollection(orgId: string, collectionName: string) {
   return adminDb.collection('organizations').doc(orgId).collection(collectionName);
@@ -45,12 +112,7 @@ function orgCollection(orgId: string, collectionName: string) {
 // INVOICES
 // ═══════════════════════════════════════════
 
-export const defaultSampleInvoices = [
-  { id: 'inv-1', clientName: 'Acme Corp', number: 'INV-2026-0001', total: 12000.00, amountDue: 12000.00, amountPaid: 0, status: 'sent', issueDate: '2026-08-01', dueDate: '2026-08-31', description: 'Enterprise Financial Platform Integration' },
-  { id: 'inv-2', clientName: 'Starlight Tech Inc', number: 'INV-2026-0002', total: 6400.00, amountDue: 6400.00, amountPaid: 0, status: 'overdue', issueDate: '2026-07-01', dueDate: '2026-07-31', description: 'AI Agent Architecture & Cloud Engineering' },
-  { id: 'inv-3', clientName: 'Apex Systems Ltd', number: 'INV-2026-0003', total: 18400.00, amountDue: 0, amountPaid: 18400.00, status: 'paid', issueDate: '2026-08-05', dueDate: '2026-09-05', description: 'CFO Strategic Modeling & FP&A Deliverables' },
-  { id: 'inv-4', clientName: 'Horizon Media Ventures', number: 'INV-2026-0004', total: 8900.00, amountDue: 8900.00, amountPaid: 0, status: 'sent', issueDate: '2026-08-10', dueDate: '2026-09-10', description: 'Autonomous Multi-Agent Billing Systems' },
-];
+
 
 export async function getInvoices(orgId: string, filter?: DateFilter) {
   try {
@@ -62,12 +124,10 @@ export async function getInvoices(orgId: string, filter?: DateFilter) {
     }
 
     const snapshot = await query.limit(500).get();
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (docs.length > 0) return docs;
-    return defaultSampleInvoices;
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
-    console.warn('Firestore invoices get error, using default samples:', e);
-    return defaultSampleInvoices;
+    console.warn('Firestore invoices get error:', e);
+    return [];
   }
 }
 
@@ -113,30 +173,7 @@ export async function deleteInvoice(orgId: string, invoiceId: string) {
 // EXPENSES
 // ═══════════════════════════════════════════
 
-export const defaultSampleExpenses = [
-  { id: 'exp-1', vendor: 'Google Cloud Platform', category: 'Software & SaaS', amount: 1420.50, date: '2026-08-12', status: 'approved', aiConfidence: 0.99 },
-  { id: 'exp-2', vendor: 'Staples Office Supplies', category: 'Office & Supplies', amount: 342.10, date: '2026-08-12', status: 'approved', aiConfidence: 0.98 },
-  { id: 'exp-3', vendor: 'Whole Foods Market', category: 'Groceries', amount: 165.40, date: '2026-08-12', status: 'approved', aiConfidence: 0.95 },
-  { id: 'exp-4', vendor: 'Uber Business Travel', category: 'Travel & Transport', amount: 84.50, date: '2026-08-12', status: 'approved', aiConfidence: 0.96 },
-  { id: 'exp-5', vendor: 'Netflix & Spotify', category: 'Subscriptions', amount: 35.98, date: '2026-08-12', status: 'approved', aiConfidence: 0.97 },
-  { id: 'exp-6', vendor: 'iPostal', category: 'Subscriptions', amount: 14.99, date: '2026-07-05', status: 'pending', aiConfidence: 0.92 },
-  { id: 'exp-7', vendor: 'OpenAI', category: 'Software & SaaS', amount: 17.00, date: '2026-06-30', status: 'pending', aiConfidence: 0.94 },
-  { id: 'exp-8', vendor: 'Google Cloud', category: 'Software & SaaS', amount: 25.00, date: '2026-06-30', status: 'pending', aiConfidence: 0.95 },
-  { id: 'exp-9', vendor: 'Hannaford', category: 'Groceries', amount: 40.00, date: '2026-06-18', status: 'pending', aiConfidence: 0.91 },
 
-  { id: 'cat-1', vendor: 'Property Management Co', category: 'Rent & Utilities', amount: 5800.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-2', vendor: 'Corporate Legal & CPA Group', category: 'Professional Services', amount: 3500.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-3', vendor: 'Growth Marketing Agency', category: 'Marketing', amount: 2900.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-4', vendor: 'SaaS Software Suite', category: 'Software & SaaS', amount: 2883.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-5', vendor: 'Client Dining & Meals', category: 'Meals & Entertainment', amount: 1560.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-6', vendor: 'Commercial Risk Insurance', category: 'Insurance', amount: 1200.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-7', vendor: 'Executive Seminars', category: 'Training & Education', amount: 850.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-8', vendor: 'Operations & Supplies', category: 'Office & Supplies', amount: 684.20, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-9', vendor: 'Contingency Fund', category: 'Miscellaneous', amount: 210.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-10', vendor: 'Travel Logistics', category: 'Travel & Transport', amount: 169.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-11', vendor: 'Merchant Processing & Fees', category: 'Bank Fees & Interest', amount: 125.00, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-  { id: 'cat-12', vendor: 'Software Subscriptions', category: 'Subscriptions', amount: 86.95, date: '2026-08-01', status: 'approved', aiConfidence: 1.0 },
-];
 
 export async function getExpenses(orgId: string, filter?: DateFilter) {
   try {
@@ -148,12 +185,10 @@ export async function getExpenses(orgId: string, filter?: DateFilter) {
     }
 
     const snapshot = await query.limit(500).get();
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (docs.length > 0) return docs;
-    return defaultSampleExpenses;
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
-    console.warn('Firestore expenses get error, using default samples:', e);
-    return defaultSampleExpenses;
+    console.warn('Firestore expenses get error:', e);
+    return [];
   }
 }
 
@@ -194,12 +229,7 @@ export async function deleteExpense(orgId: string, expenseId: string) {
 // EMPLOYEES (Payroll)
 // ═══════════════════════════════════════════
 
-export const defaultSampleEmployees = [
-  { id: 'emp-101', firstName: 'Jane', lastName: 'Doe', email: 'jane.doe@company.com', role: 'Senior Software Engineer', department: 'Engineering', employmentType: 'full_time', salary: 140000, isActive: true },
-  { id: 'emp-102', firstName: 'Michael', lastName: 'Smith', email: 'm.smith@company.com', role: 'Head of Product', department: 'Engineering', employmentType: 'full_time', salary: 155000, isActive: true },
-  { id: 'emp-103', firstName: 'Sarah', lastName: 'Johnson', email: 's.johnson@company.com', role: 'Growth Marketing Lead', department: 'Sales & Growth', employmentType: 'full_time', salary: 110000, isActive: true },
-  { id: 'emp-104', firstName: 'Robert', lastName: 'Davis', email: 'r.davis@company.com', role: 'Financial Analyst', department: 'Operations & Finance', employmentType: 'full_time', salary: 95000, isActive: true },
-];
+
 
 export async function getEmployees(orgId: string) {
   try {
@@ -207,12 +237,10 @@ export async function getEmployees(orgId: string) {
       .where('isActive', '==', true)
       .orderBy('lastName', 'asc')
       .get();
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (docs.length > 0) return docs;
-    return defaultSampleEmployees;
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
-    console.error('Firestore getEmployees error, using default samples:', e);
-    return defaultSampleEmployees;
+    console.error('Firestore getEmployees error:', e);
+    return [];
   }
 }
 

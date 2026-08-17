@@ -5,11 +5,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { executeAgent } from '@/agents/orchestrator';
+import { adminAuth } from '@/lib/firebase/admin';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, orgId, userId, sessionId } = body;
+    const { message, sessionId } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -18,13 +19,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Extract authenticated orgId from Firebase token (preferred) or fall back to body
+    let orgId = body.orgId || 'default';
+    let userId = body.userId || 'anonymous';
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const decoded = await adminAuth.verifyIdToken(token);
+        orgId = decoded.uid;
+        userId = decoded.uid;
+      } catch (e) {
+        console.warn('[Agent API] Auth token verification failed, using fallback orgId');
+      }
+    }
+
     // Log the request for audit trail
     console.log(`[Agent Request] User: ${userId}, Org: ${orgId}, Session: ${sessionId}, Message: "${message}"`);
 
     const result = await executeAgent(
       message,
-      orgId || 'default',
-      userId || 'anonymous',
+      orgId,
+      userId,
       sessionId || `sess_${Date.now()}`
     );
 

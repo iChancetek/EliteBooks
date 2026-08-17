@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient } from '@/lib/openai';
 import { generateEmbedding, querySimilar } from '@/lib/pinecone';
 import { storeMemory, retrieveMemory } from '@/lib/rag';
-import { getInvoices, getExpenses, createExpense, getFinancialSummary, createInvoice } from '@/lib/firestore';
+import { getInvoices, getExpenses, createExpense, getFinancialSummary, createInvoice, parsePeriod } from '@/lib/firestore';
 import { adminAuth } from '@/lib/firebase/admin';
 
 export async function POST(request: NextRequest) {
@@ -160,6 +160,12 @@ AUTONOMOUS OPERATING DIRECTIVES (RESEARCH, GATHERING, & ACTION):
 - PAYROLL EXPERTISE: Autonomously research employee compensation structures, compute gross-to-net pay with tax withholdings, and execute payroll runs.
 - REPORT GENERATION EXPERTISE: Compile comprehensive financial summaries, P&L statements, burn rate evaluations, and custom management reports dynamically from live user data.
 
+CRITICAL DATA INTEGRITY RULE (ANTI-HALLUCINATION):
+- You MUST ONLY report numbers and figures that come directly from tool call results (database queries).
+- If a tool returns zero records or an empty array, you MUST honestly report that 0 records exist and $0.00 total spend/revenue for the queried period.
+- NEVER fabricate, estimate, or invent financial figures. If data is unavailable, say so clearly and offer to help the user create their first record.
+- When reporting expenses, invoices, payroll, or any financial data, every number you cite MUST be traceable to a specific tool call result.
+
 SPECIALIZED ELITE AGENTS:
 • Invoicing Agent: Elite Billing Strategist & Revenue Tracking Expert.
 • Expense Agent: Elite Expense Analyst & Financial Audit Expert.
@@ -210,10 +216,10 @@ ${context}`;
 
         try {
           if (name === 'get_invoices') {
-            const filter = args.period ? { month: args.period.split(' ')[0], year: args.period.split(' ')[1] } : undefined;
+            const filter = parsePeriod(args.period);
             result = await getInvoices(orgId, filter);
           } else if (name === 'get_expenses') {
-            const filter = args.period ? { month: args.period.split(' ')[0], year: args.period.split(' ')[1] } : undefined;
+            const filter = parsePeriod(args.period);
             result = await getExpenses(orgId, filter);
           } else if (name === 'send_invoice') {
             result = await createInvoice(orgId, {

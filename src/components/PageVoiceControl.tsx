@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import styles from './PageVoiceControl.module.css';
 import { useVoice } from '@/hooks/useVoice';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PageVoiceControlProps {
   contentId: string;
@@ -15,6 +16,7 @@ interface PageVoiceControlProps {
 }
 
 export default function PageVoiceControl({ contentId, pageTitle }: PageVoiceControlProps) {
+  const { user } = useAuth();
   const { isRecording, isPlaying, transcript, startRecording, stopRecording, speak, stopSpeaking } = useVoice();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
@@ -42,9 +44,15 @@ export default function PageVoiceControl({ contentId, pageTitle }: PageVoiceCont
         setIsAnswering(true);
         setIsExpanded(true);
         try {
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (user) {
+            const token = await user.getIdToken();
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
           const res = await fetch('/api/chat/rag', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ 
               messages: [
                 { role: 'user', content: `Context: This is the ${pageTitle} page. Question: ${query}` }
