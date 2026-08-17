@@ -10,10 +10,11 @@ export async function POST(request: NextRequest) {
   try {
     const contentType = request.headers.get('content-type') || '';
 
-    // Speech-to-Text (Whisper)
+    // Speech-to-Text (Whisper Multilingual)
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
       const audioFile = formData.get('audio') as File;
+      const language = (formData.get('language') as string) || 'en';
 
       if (!audioFile) {
         return NextResponse.json({ error: 'Audio file required' }, { status: 400 });
@@ -23,13 +24,14 @@ export async function POST(request: NextRequest) {
       const transcription = await openai.audio.transcriptions.create({
         file: audioFile,
         model: 'whisper-1',
-        language: 'en',
+        language: language,
         response_format: 'text',
       });
 
       return NextResponse.json({
         success: true,
         text: transcription,
+        language,
       });
     }
 

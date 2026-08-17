@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search, X, FileText, Receipt, Package, Users, LayoutDashboard,
-  BarChart3, Cloud, Wallet, Settings, Bot, Sparkles, ArrowRight, CornerDownLeft
+  BarChart3, Cloud, Wallet, Settings, Bot, Sparkles, ArrowRight, CornerDownLeft,
+  BookOpen, Shield, Scale, LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -27,6 +28,10 @@ const NAVIGATION_PAGES = [
   { title: 'Cloud FinOps', subtitle: 'FOCUS 1.3 spec & AI token unit economics', url: '/dashboard/finops', icon: Cloud },
   { title: 'Inventory & Products', subtitle: 'SKU tracking, valuation, and reorder alerts', url: '/dashboard/inventory', icon: Package },
   { title: 'Personal Finance', subtitle: 'Household wealth & owner draw tracking', url: '/dashboard/personal', icon: Wallet },
+  { title: 'Learning Masterclass', subtitle: 'Comprehensive architecture & agent guide', url: '/learning', icon: BookOpen },
+  { title: 'Support Center', subtitle: '24/7 AI diagnostics and enterprise help', url: '/support', icon: LifeBuoy },
+  { title: 'Terms of Service', subtitle: 'Enterprise terms and governance rules', url: '/terms', icon: Scale },
+  { title: 'Privacy Policy', subtitle: 'Cryptographic zero-knowledge data protection', url: '/privacy', icon: Shield },
   { title: 'Settings', subtitle: 'Account preferences, security, and integrations', url: '/dashboard/settings', icon: Settings },
 ];
 

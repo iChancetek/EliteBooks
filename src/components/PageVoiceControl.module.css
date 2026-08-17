@@ -66,6 +66,15 @@
   box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
 }
 
+.stopBtn {
+  color: #f43f5e;
+  padding: 6px 10px;
+}
+
+.stopBtn:hover {
+  background: rgba(244, 63, 94, 0.2) !important;
+}
+
 .btnLabel {
   font-size: 10px;
   font-weight: 800;

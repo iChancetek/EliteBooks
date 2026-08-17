@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowLeft, Shield, Lock, EyeOff, Server, Key, FileCheck } from 'lucide-react';
 import styles from './page.module.css';
 import PageVoiceControl from '@/components/PageVoiceControl';
 
@@ -20,49 +20,92 @@ export default function PrivacyPage() {
             </div>
             <span className={styles.logoText}>EliteBooks</span>
           </Link>
-          <Link href="/" className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ArrowLeft size={16} /> Back to Home
-          </Link>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Link href="/dashboard" className="btn btn-secondary" style={{ fontSize: '13px' }}>
+              Dashboard
+            </Link>
+            <Link href="/" className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+              <ArrowLeft size={16} /> Home
+            </Link>
+          </div>
         </div>
       </nav>
 
       <main className={styles.legalContent} id="privacy-main-content">
         <div className={styles.legalHeader}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '100px', background: 'rgba(16,185,129,0.15)', color: '#34d399', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '12px' }}>
+            <Shield size={12} /> Enterprise Data Protection
+          </div>
           <h1>Privacy Policy</h1>
-          <p>Last updated: May 3, 2026</p>
+          <p>Effective Date: August 17, 2026 • Cryptographic Zero-Knowledge Standards</p>
         </div>
 
         <div className={`glass-card ${styles.legalBody}`}>
           <section>
-            <h2>1. Information We Collect</h2>
-            <p>We collect information you provide directly to us when you create an account, connect a bank feed, or interact with our AI agents. This includes personal information (such as your name and email) and financial data (such as transaction histories and invoices).</p>
+            <h2>1. Zero-Data-Brokerage Pledge</h2>
+            <p>
+              EliteBooks is built upon a fundamental principle: <strong>Your financial data belongs exclusively to your business.</strong> We do not sell, rent, monetize, or broker corporate transaction logs, customer records, or financial metrics to third-party advertisers, data aggregators, or marketing networks under any circumstance.
+            </p>
           </section>
 
           <section>
-            <h2>2. How We Use Your Information</h2>
-            <p>Your data is primarily used to power the autonomous accounting features of EliteBooks. Specifically, our AI models analyze your financial data to categorize expenses, generate reports, and predict cash flow. We do NOT sell your financial data to third parties.</p>
+            <h2>2. Information We Ingest & Collect</h2>
+            <p>
+              To power our multi-agent autonomous accounting services, we collect and process the following categories of information:
+            </p>
+            <ul>
+              <li><strong>Corporate Account Credentials:</strong> Administrator name, verified corporate email address, and multi-tenant organization identifiers.</li>
+              <li><strong>Financial Ledger Data:</strong> Invoices, merchant receipts, bank transaction lines, category tags, and Chart of Accounts mappings.</li>
+              <li><strong>Workforce & Payroll Metadata:</strong> Employee names, compensation tiers, department assignments, and tax withholding profiles.</li>
+              <li><strong>Cloud Infrastructure Logs:</strong> Cloud cost metrics and resource billing lines (AWS, Azure, GCP, OpenAI) for FinOps optimization.</li>
+            </ul>
           </section>
 
           <section>
-            <h2>3. AI Processing</h2>
-            <p>To provide our services, your data is processed by our proprietary AI agents (Orchestrator, Ledger, Expense, etc.). This data is processed securely and is not used to train global public models without your explicit, anonymized consent.</p>
+            <h2>3. Cryptographic PII Vault (AES-256-GCM)</h2>
+            <p>
+              All Personally Identifiable Information (PII), including bank routing numbers, employee Taxpayer Identification Numbers (TINs/SSNs), and credit card tokens, is processed through our dedicated PII Vault. Data is tokenized and encrypted at rest using industry-standard AES-256-GCM authenticated encryption. Decryption keys are managed through isolated Hardware Security Modules (HSM).
+            </p>
           </section>
 
           <section>
-            <h2>4. Third-Party Integrations</h2>
-            <p>We use third-party providers, such as Plaid or Stripe, to securely connect to your banking institutions. These connections are governed by the privacy policies of the respective providers. We only store the data necessary to perform accounting tasks.</p>
+            <h2>4. Zero-Retention Private LLM Inference</h2>
+            <p>
+              When our AI agents synthesize financial summaries or categorize expenses, requests are transmitted via encrypted enterprise TLS 1.3 channels to isolated private model inference endpoints with strict zero-data-retention agreements. Your raw ledger entries and receipts are never stored on external servers to train global foundation models.
+            </p>
           </section>
 
           <section>
-            <h2>5. Your Rights</h2>
-            <p>You have the right to access, update, or delete your personal and financial information at any time. You can export your data from the dashboard or contact support to request a full account deletion.</p>
+            <h2>5. Banking & OAuth Token Segregation</h2>
+            <p>
+              Direct bank connections are established through certified Open Banking protocols (Plaid) and payment gateways (Stripe Connect). EliteBooks maintains only tokenized, read-only permissions and never has access to or stores your primary banking passwords or direct login credentials.
+            </p>
+          </section>
+
+          <section>
+            <h2>6. Global Compliance (GDPR & CCPA)</h2>
+            <p>
+              Regardless of your geographical headquarters, EliteBooks extends global privacy standards to all organizations:
+            </p>
+            <ul>
+              <li><strong>Right to Portability:</strong> Export your complete ledger history, journal entries, and customer rosters in standard JSON/CSV formats at any time.</li>
+              <li><strong>Right to Erasure:</strong> Request permanent cryptographic deletion of all stored receipts, logs, and organization records.</li>
+              <li><strong>Right to Rectification:</strong> Directly modify or generate reversing journal entries for any historical transaction.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>7. Security Governance & Incident Response</h2>
+            <p>
+              Our infrastructure is continuously monitored for anomalous access patterns by the Fraud Sentinel agent. In the unlikely event of a security incident, verified administrative contacts will be notified within 24 hours pursuant to enterprise compliance mandates.
+            </p>
           </section>
         </div>
       </main>
 
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <p>&copy; {new Date().getFullYear()} EliteBooks. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} EliteBooks. Zero-Knowledge Financial Privacy.</p>
         </div>
       </footer>
     </div>

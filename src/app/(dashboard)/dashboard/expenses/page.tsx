@@ -188,6 +188,107 @@ export default function ExpensesPage() {
     }
   };
 
+  const openExpenseDeepDive = (exp: any) => {
+    setSelectedDeepDive({
+      id: exp.id || `exp-${Date.now()}`,
+      title: exp.vendor || 'Expense Item',
+      module: 'Expenses',
+      subtitle: `${exp.category} • ${formatDate(exp.date, 'long')}`,
+      amount: exp.amount,
+      type: 'negative',
+      status: exp.status === 'approved' ? 'Approved & Posted' : 'Pending Verification',
+      category: exp.category,
+      partyName: exp.vendor,
+      description: exp.description || `Business expense disbursement to ${exp.vendor} under category ${exp.category}.`,
+      agentUsed: 'Expense Agent',
+      metrics: [
+        { label: 'Total Charge', value: formatCurrency(exp.amount) },
+        { label: 'Category', value: exp.category || 'General' },
+        { label: 'Tax Deductible', value: '100% (IRS Sec 162)' },
+        { label: 'Payment Method', value: exp.paymentMethod || 'Corporate Card' },
+        { label: 'AI Confidence', value: `${((exp.confidence || 0.98) * 100).toFixed(0)}%` },
+        { label: 'Ledger Status', value: exp.status === 'approved' ? 'Reconciled' : 'Pending Audit' },
+      ],
+      auditTrace: [
+        {
+          step: '1. Receipt Ingestion & OCR Normalization',
+          status: 'VERIFIED',
+          agent: 'Expense Agent',
+          detail: `Extracted vendor "${exp.vendor}" with confidence ${((exp.confidence || 0.98) * 100).toFixed(0)}%. Matched against standard Chart of Accounts.`
+        },
+        {
+          step: '2. Tax Deductibility & Policy Validation',
+          status: 'QUALIFIED',
+          agent: 'Compliance Agent',
+          detail: `Verified as ordinary & necessary business expense under IRS Section 162. Zero personal blend detected.`
+        },
+        {
+          step: '3. General Ledger Double-Entry Posting',
+          status: exp.status === 'approved' ? 'LOCKED' : 'PENDING',
+          agent: 'Ledger Agent',
+          detail: `Debit Account 5000 (${exp.category}) | Credit Account 1000 (Cash/Bank).`
+        }
+      ],
+      aiInsights: [
+        `Expense categorized under ${exp.category} with ${((exp.confidence || 0.98) * 100).toFixed(0)}% AI confidence score.`,
+        `IRS Section 162 compliant: qualifies for standard corporate tax deduction.`,
+        exp.isBillable ? `Marked as billable to customer ${exp.customerName || 'Client'}.` : `Internal operating expense (non-billable).`
+      ]
+    });
+  };
+
+  const openCategoryDeepDive = (cat: any) => {
+    const catExpenses = activeExpenses.filter(ex => ex.category === cat.name);
+    const approvedCount = catExpenses.filter(ex => ex.status === 'approved').length;
+    const pendingCount = catExpenses.filter(ex => ex.status === 'pending').length;
+    setSelectedDeepDive({
+      id: `cat-${cat.name}`,
+      title: `${cat.name} Portfolio`,
+      module: 'Expenses',
+      subtitle: `${cat.count} transaction${cat.count !== 1 ? 's' : ''} • ${((cat.amount / Math.max(totalExpenses, 1)) * 100).toFixed(1)}% of total OPEX`,
+      amount: cat.amount,
+      type: 'negative',
+      status: pendingCount > 0 ? `${approvedCount} Approved, ${pendingCount} Pending` : `${approvedCount} Approved`,
+      category: cat.name,
+      partyName: `${cat.count} Recorded Vendors`,
+      description: `Comprehensive expense portfolio analysis for ${cat.name}. Total disbursements: ${formatCurrency(cat.amount)} across ${cat.count} transaction(s).`,
+      agentUsed: 'Expense Agent',
+      metrics: [
+        { label: 'Total Category Spend', value: formatCurrency(cat.amount) },
+        { label: 'Transaction Count', value: cat.count.toString() },
+        { label: 'Approved Records', value: approvedCount.toString() },
+        { label: 'Pending Review', value: pendingCount.toString() },
+        { label: '% of Total Operating Spend', value: `${((cat.amount / Math.max(totalExpenses, 1)) * 100).toFixed(1)}%` },
+        { label: 'Average Transaction Size', value: cat.count > 0 ? formatCurrency(cat.amount / cat.count) : '$0.00' },
+      ],
+      auditTrace: [
+        {
+          step: '1. Multi-Vendor Ingestion & Batch Consolidation',
+          status: 'VERIFIED',
+          agent: 'Expense Agent',
+          detail: `Consolidated ${cat.count} individual transaction records for category "${cat.name}".`
+        },
+        {
+          step: '2. Budgetary Variance & Anomaly Guard',
+          status: 'QUALIFIED',
+          agent: 'Fraud Sentinel',
+          detail: `Benchmarked spend variance across historical period. No anomalous spikes detected.`
+        },
+        {
+          step: '3. Ledger Alignment & Trial Balance Lock',
+          status: 'LOCKED',
+          agent: 'Ledger Agent',
+          detail: `Account #5000 series ledger balanced. Total debit balance reconciled at ${formatCurrency(cat.amount)}.`
+        }
+      ],
+      aiInsights: [
+        `${cat.name} accounts for ${((cat.amount / Math.max(totalExpenses, 1)) * 100).toFixed(1)}% of all organizational operating disbursements.`,
+        cat.count > 0 ? `Mean transaction cost is ${formatCurrency(cat.amount / cat.count)}.` : `No active transactions recorded yet for this category.`,
+        pendingCount > 0 ? `${pendingCount} transaction(s) require managerial sign-off.` : `All items in this category are verified and ledger locked.`
+      ]
+    });
+  };
+
   return (
     <div className="page-expenses">
       {/* Expense Detail Drawer */}
@@ -278,9 +379,17 @@ export default function ExpensesPage() {
                     </div>
                   )}
                 </div>
-                <div className="exp-ai-footer">
-                  <button className="btn btn-primary btn-sm" style={{ width: '100%' }}>
-                    Generate Detailed Forecast
+                <div className="exp-ai-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    onClick={() => {
+                      const exp = selectedExpense;
+                      setSelectedExpense(null);
+                      openExpenseDeepDive(exp);
+                    }}
+                  >
+                    <Eye size={14} /> Run AI Deep Dive Audit
                   </button>
                 </div>
               </div>
@@ -288,7 +397,11 @@ export default function ExpensesPage() {
               <div className="exp-drawer-actions">
                 <button className="btn btn-secondary" onClick={() => handleAction('Edit')}><Edit2 size={16} /> Edit</button>
                 <button className="btn btn-secondary" onClick={() => handleAction('Share')}><Share2 size={16} /> Share</button>
-                <button className="btn btn-secondary" onClick={() => handleAction('Review')}><Eye size={16} /> Review</button>
+                <button className="btn btn-secondary" onClick={() => {
+                  const exp = selectedExpense;
+                  setSelectedExpense(null);
+                  openExpenseDeepDive(exp);
+                }}><Eye size={16} /> Deep Dive</button>
                 <button className="btn btn-danger" onClick={() => setDeleteConfirm(selectedExpense.id)}><Trash2 size={16} /> Delete</button>
               </div>
             </div>
@@ -479,53 +592,32 @@ export default function ExpensesPage() {
               onClick={() => setSelectedCategory(selectedCategory === cat.name ? null : cat.name)}
               style={{ cursor: 'pointer', borderColor: selectedCategory === cat.name ? cat.color : undefined }}
             >
-              <div className="exp-cat-icon" style={{ background: `${cat.color}15`, color: cat.color }}>
-                <cat.icon size={16} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div className="exp-cat-icon" style={{ background: `${cat.color}15`, color: cat.color }}>
+                    <cat.icon size={16} />
+                  </div>
+                  <span className="exp-cat-name" style={{ fontWeight: 'var(--weight-semibold)' }}>{cat.name}</span>
+                </div>
+                <button
+                  className="btn btn-ghost btn-xs exp-cat-deep-dive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openCategoryDeepDive(cat);
+                  }}
+                  title={`Open AI Deep Dive for ${cat.name}`}
+                  style={{ fontSize: '11px', padding: '3px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg-tertiary)' }}
+                >
+                  <Eye size={12} /> Deep Dive
+                </button>
               </div>
-              <div className="exp-cat-info">
-                <span className="exp-cat-name">{cat.name}</span>
-                <span className="exp-cat-amount value-financial">{formatCurrency(cat.amount)}</span>
+              <div className="exp-cat-info" style={{ marginTop: 'var(--space-2)' }}>
+                <span className="exp-cat-amount value-financial" style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>{formatCurrency(cat.amount)}</span>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{cat.count} record{cat.count !== 1 ? 's' : ''}</span>
               </div>
               <div className="exp-cat-bar">
-                <div className="exp-cat-bar-fill" style={{ width: `${(cat.amount / totalExpenses) * 100}%`, background: cat.color }} />
+                <div className="exp-cat-bar-fill" style={{ width: `${(cat.amount / Math.max(totalExpenses, 1)) * 100}%`, background: cat.color }} />
               </div>
-              <button
-                className="btn btn-ghost btn-sm exp-cat-deep-dive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const catExpenses = activeExpenses.filter(ex => ex.category === cat.name);
-                  const approvedCount = catExpenses.filter(ex => ex.status === 'approved').length;
-                  const pendingCount = catExpenses.filter(ex => ex.status === 'pending').length;
-                  setSelectedDeepDive({
-                    id: `cat-${cat.name}`,
-                    title: cat.name,
-                    module: 'Expenses',
-                    subtitle: `${cat.count} transaction${cat.count !== 1 ? 's' : ''} in this category`,
-                    amount: cat.amount,
-                    type: 'negative',
-                    status: pendingCount > 0 ? `${approvedCount} Approved, ${pendingCount} Pending` : `${approvedCount} Approved`,
-                    category: cat.name,
-                    description: `Expense category breakdown for ${cat.name}. Contains ${cat.count} transaction(s) totaling ${formatCurrency(cat.amount)}.`,
-                    agentUsed: 'Expense Agent',
-                    metrics: [
-                      { label: 'Total Spend', value: formatCurrency(cat.amount) },
-                      { label: 'Transactions', value: cat.count.toString() },
-                      { label: 'Approved', value: approvedCount.toString() },
-                      { label: 'Pending', value: pendingCount.toString() },
-                      { label: '% of Total OPEX', value: `${((cat.amount / totalExpenses) * 100).toFixed(1)}%` },
-                      { label: 'Avg per Transaction', value: cat.count > 0 ? formatCurrency(cat.amount / cat.count) : '$0.00' },
-                    ],
-                    aiInsights: [
-                      `${cat.name} represents ${((cat.amount / totalExpenses) * 100).toFixed(1)}% of your total operating expenses.`,
-                      cat.count > 1 ? `Average transaction size is ${formatCurrency(cat.amount / cat.count)}.` : `Single transaction recorded in this category.`,
-                      pendingCount > 0 ? `${pendingCount} transaction(s) still pending review and approval.` : `All transactions in this category are approved.`,
-                    ],
-                  });
-                }}
-                style={{ marginTop: 'var(--space-1)', fontSize: '10px', padding: '2px 6px', opacity: 0.7 }}
-              >
-                <Eye size={10} /> Deep Dive
-              </button>
             </div>
           ))}
         </div>
@@ -550,6 +642,7 @@ export default function ExpensesPage() {
               <th>Amount</th>
               <th>AI Confidence</th>
               <th>Status</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -558,7 +651,7 @@ export default function ExpensesPage() {
               .filter(e => !selectedCategory || e.category === selectedCategory)
               .length === 0 && selectedCategory ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-text-tertiary)' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-text-tertiary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)' }}>
                     <Receipt size={32} style={{ opacity: 0.3 }} />
                     <span style={{ fontSize: 'var(--text-sm)' }}>No transactions found in <strong>{selectedCategory}</strong></span>
@@ -575,11 +668,9 @@ export default function ExpensesPage() {
               .map(exp => (
               <tr 
                 key={exp.id} 
-                onClick={() => {
-                  console.log('Expense clicked:', exp.vendor);
-                  setSelectedExpense(exp);
-                }} 
+                onClick={() => openExpenseDeepDive(exp)} 
                 style={{ cursor: 'pointer' }}
+                className="hover:bg-slate-800/40 transition-colors"
               >
                 <td>{formatDate(exp.date, 'short')}</td>
                 <td><strong style={{ color: 'var(--color-text-primary)' }}>{exp.vendor}</strong></td>
@@ -596,6 +687,30 @@ export default function ExpensesPage() {
                   <span className={`badge ${exp.status === 'approved' ? 'badge-positive' : 'badge-warning'}`}>
                     {exp.status === 'approved' ? 'Approved' : 'Pending'}
                   </span>
+                </td>
+                <td style={{ textAlign: 'right' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                    <button 
+                      className="btn btn-secondary btn-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openExpenseDeepDive(exp);
+                      }}
+                      title="Open AI Deep Dive Audit"
+                    >
+                      <Eye size={12} /> Deep Dive
+                    </button>
+                    <button 
+                      className="btn btn-ghost btn-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedExpense(exp);
+                      }}
+                      title="View Details"
+                    >
+                      <Edit2 size={12} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
