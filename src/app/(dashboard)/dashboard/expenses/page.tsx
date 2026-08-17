@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import ColorfulBarChart from '@/components/ColorfulBarChart';
 import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
+import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 
 const categories = [
   { name: 'Office & Supplies', icon: ShoppingBag, color: '#3b82f6', amount: 2840 },
@@ -56,6 +57,7 @@ export default function ExpensesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'info' | 'warning' } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
 
   const [selectedMonth, setSelectedMonth] = useState('All Months');
   const [selectedYear, setSelectedYear] = useState('All Years');
@@ -90,11 +92,10 @@ export default function ExpensesPage() {
   const totalExpenses = activeExpenses.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
   const activeCategories = categories.map(cat => {
-    const total = activeExpenses
-      .filter(e => e.category === cat.name)
-      .reduce((sum, e) => sum + (e.amount || 0), 0);
-    return { ...cat, amount: total > 0 ? total : cat.amount };
-  }).sort((a, b) => b.amount - a.amount);
+    const catExpenses = activeExpenses.filter(e => e.category === cat.name);
+    const total = catExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    return { ...cat, amount: total, count: catExpenses.length };
+  }).filter(cat => cat.amount > 0).sort((a, b) => b.amount - a.amount);
 
   const showToast = (message: string, type: 'info' | 'warning' = 'info') => {
     setToast({ message, type });
@@ -472,8 +473,7 @@ export default function ExpensesPage() {
         </div>
         <div className="exp-cat-grid">
           {activeCategories.map(cat => (
-            <div 
-              key={cat.name} 
+            <div key={cat.name} 
               className={`glass-card exp-cat-card ${selectedCategory === cat.name ? 'active' : ''}`}
               onClick={() => setSelectedCategory(selectedCategory === cat.name ? null : cat.name)}
               style={{ cursor: 'pointer', borderColor: selectedCategory === cat.name ? cat.color : undefined }}
@@ -488,6 +488,43 @@ export default function ExpensesPage() {
               <div className="exp-cat-bar">
                 <div className="exp-cat-bar-fill" style={{ width: `${(cat.amount / totalExpenses) * 100}%`, background: cat.color }} />
               </div>
+              <button
+                className="btn btn-ghost btn-sm exp-cat-deep-dive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const catExpenses = activeExpenses.filter(ex => ex.category === cat.name);
+                  const approvedCount = catExpenses.filter(ex => ex.status === 'approved').length;
+                  const pendingCount = catExpenses.filter(ex => ex.status === 'pending').length;
+                  setSelectedDeepDive({
+                    id: `cat-${cat.name}`,
+                    title: cat.name,
+                    module: 'Expenses',
+                    subtitle: `${cat.count} transaction${cat.count !== 1 ? 's' : ''} in this category`,
+                    amount: cat.amount,
+                    type: 'negative',
+                    status: pendingCount > 0 ? `${approvedCount} Approved, ${pendingCount} Pending` : `${approvedCount} Approved`,
+                    category: cat.name,
+                    description: `Expense category breakdown for ${cat.name}. Contains ${cat.count} transaction(s) totaling ${formatCurrency(cat.amount)}.`,
+                    agentUsed: 'Expense Agent',
+                    metrics: [
+                      { label: 'Total Spend', value: formatCurrency(cat.amount) },
+                      { label: 'Transactions', value: cat.count.toString() },
+                      { label: 'Approved', value: approvedCount.toString() },
+                      { label: 'Pending', value: pendingCount.toString() },
+                      { label: '% of Total OPEX', value: `${((cat.amount / totalExpenses) * 100).toFixed(1)}%` },
+                      { label: 'Avg per Transaction', value: cat.count > 0 ? formatCurrency(cat.amount / cat.count) : '$0.00' },
+                    ],
+                    aiInsights: [
+                      `${cat.name} represents ${((cat.amount / totalExpenses) * 100).toFixed(1)}% of your total operating expenses.`,
+                      cat.count > 1 ? `Average transaction size is ${formatCurrency(cat.amount / cat.count)}.` : `Single transaction recorded in this category.`,
+                      pendingCount > 0 ? `${pendingCount} transaction(s) still pending review and approval.` : `All transactions in this category are approved.`,
+                    ],
+                  });
+                }}
+                style={{ marginTop: 'var(--space-1)', fontSize: '10px', padding: '2px 6px', opacity: 0.7 }}
+              >
+                <Eye size={10} /> Deep Dive
+              </button>
             </div>
           ))}
         </div>
@@ -515,6 +552,22 @@ export default function ExpensesPage() {
             </tr>
           </thead>
           <tbody>
+            {activeExpenses
+              .filter(e => (e.vendor || '').toLowerCase().includes(search.toLowerCase()))
+              .filter(e => !selectedCategory || e.category === selectedCategory)
+              .length === 0 && selectedCategory ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-text-tertiary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <Receipt size={32} style={{ opacity: 0.3 }} />
+                    <span style={{ fontSize: 'var(--text-sm)' }}>No transactions found in <strong>{selectedCategory}</strong></span>
+                    <button className="btn btn-primary btn-sm" onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }}>
+                      <Plus size={14} /> Add Expense in {selectedCategory}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : null}
             {activeExpenses
               .filter(e => (e.vendor || '').toLowerCase().includes(search.toLowerCase()))
               .filter(e => !selectedCategory || e.category === selectedCategory)
@@ -549,6 +602,24 @@ export default function ExpensesPage() {
         </table>
       </div>
 
+      {/* Empty State: No expenses at all */}
+      {activeExpenses.length === 0 && !isLoading && (
+        <div className="glass-card" style={{ textAlign: 'center', padding: 'var(--space-12)', marginBottom: 'var(--space-8)' }}>
+          <Receipt size={48} style={{ color: 'var(--color-text-muted)', opacity: 0.3, marginBottom: 'var(--space-4)' }} />
+          <h3 style={{ marginBottom: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>No Expenses Recorded</h3>
+          <p style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-6)', maxWidth: '400px', margin: '0 auto var(--space-6)' }}>
+            Your expense ledger is empty. Click the button below to log your first business expense.
+          </p>
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={16} /> Add Your First Expense
+          </button>
+        </div>
+      )}
+
+      <EliteDeepDiveModal
+        item={selectedDeepDive}
+        onClose={() => setSelectedDeepDive(null)}
+      />
       <style>{`
         .page-expenses { max-width: 1100px; }
         .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-8); }
@@ -573,6 +644,9 @@ export default function ExpensesPage() {
         .exp-cat-amount { font-size: var(--text-sm); }
         .exp-cat-bar { height: 3px; background: var(--color-bg-tertiary); border-radius: 2px; }
         .exp-cat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s var(--ease-out-expo); }
+        .exp-cat-deep-dive { transition: opacity 0.2s ease; }
+        .exp-cat-card:hover .exp-cat-deep-dive { opacity: 1 !important; }
+        .exp-cat-card.active { background: var(--color-bg-tertiary); }
 
         .exp-filters { margin-bottom: var(--space-6); }
         .inv-search { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); background: var(--color-bg-tertiary); border: 1px solid var(--color-border-secondary); border-radius: var(--radius-md); color: var(--color-text-muted); max-width: 300px; }
