@@ -92,11 +92,44 @@ export default function ExpensesPage() {
   const activeExpenses = expenses;
   const totalExpenses = activeExpenses.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
-  const activeCategories = categories.map(cat => {
-    const catExpenses = activeExpenses.filter(e => e.category === cat.name);
-    const total = catExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-    return { ...cat, amount: total, count: catExpenses.length };
-  }).filter(cat => cat.amount > 0).sort((a, b) => b.amount - a.amount);
+  const categoryMetaMap: Record<string, { icon: any, color: string }> = {
+    'Cloud Services': { icon: Cloud, color: '#0ea5e9' },
+    'Software & SaaS': { icon: Code, color: '#8b5cf6' },
+    'Office & Supplies': { icon: ShoppingBag, color: '#3b82f6' },
+    'Meals & Entertainment': { icon: Coffee, color: '#ec4899' },
+    'Travel & Transport': { icon: Plane, color: '#f59e0b' },
+    'Rent & Utilities': { icon: Home, color: '#10b981' },
+    'Marketing': { icon: Zap, color: '#f43f5e' },
+    'Professional Services': { icon: Briefcase, color: '#06b6d4' },
+    'Insurance': { icon: Shield, color: '#14b8a6' },
+    'Training & Education': { icon: BookOpen, color: '#6366f1' },
+    'Bank Fees & Interest': { icon: CreditCard, color: '#84cc16' },
+    'Subscriptions': { icon: Activity, color: '#d946ef' },
+    'Miscellaneous': { icon: MoreHorizontal, color: '#64748b' },
+    'Other': { icon: Tag, color: '#a855f7' },
+  };
+
+  const categoryTotals: Record<string, { amount: number, count: number }> = {};
+  activeExpenses.forEach(exp => {
+    const rawCat = (exp.category || 'Miscellaneous').trim();
+    const catName = rawCat || 'Miscellaneous';
+    if (!categoryTotals[catName]) {
+      categoryTotals[catName] = { amount: 0, count: 0 };
+    }
+    categoryTotals[catName].amount += (exp.amount || 0);
+    categoryTotals[catName].count += 1;
+  });
+
+  const activeCategories = Object.entries(categoryTotals).map(([name, stat]) => {
+    const meta = categoryMetaMap[name] || { icon: Tag, color: '#06b6d4' };
+    return {
+      name,
+      amount: stat.amount,
+      count: stat.count,
+      icon: meta.icon,
+      color: meta.color,
+    };
+  }).sort((a, b) => b.amount - a.amount);
 
   const showToast = (message: string, type: 'info' | 'warning' = 'info') => {
     setToast({ message, type });
