@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Mic, Send, X, Volume2, VolumeX, Bot, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import styles from './AIAssistant.module.css';
 import { useAuth } from '@/hooks/useAuth';
+import GraphRAGTopologyCard from './GraphRAGTopologyCard';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -208,11 +209,27 @@ export default function AIAssistant() {
           </div>
           
           <div className={styles.messages}>
-            {messages.map((msg, i) => (
-              <div key={i} className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.aiMessage}`}>
-                {msg.content}
-              </div>
-            ))}
+            {messages.map((msg, i) => {
+              const isGraphRAG = msg.role === 'assistant' && (
+                msg.content.includes('GRAPHRAG') || 
+                msg.content.includes('KNOWLEDGE GRAPH') ||
+                msg.content.includes('Active Entity Nodes Indexed')
+              );
+
+              if (isGraphRAG) {
+                return (
+                  <div key={i} style={{ width: '100%', margin: '8px 0' }}>
+                    <GraphRAGTopologyCard rawText={msg.content} />
+                  </div>
+                );
+              }
+
+              return (
+                <div key={i} className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.aiMessage}`}>
+                  {msg.content}
+                </div>
+              );
+            })}
             {isTyping && (
               <div className={`${styles.message} ${styles.aiMessage}`}>
                 <Loader2 size={16} className="animate-spin" />

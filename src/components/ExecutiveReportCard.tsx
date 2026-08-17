@@ -15,6 +15,7 @@ import {
   Loader2,
   X,
 } from 'lucide-react';
+import GraphRAGTopologyCard from './GraphRAGTopologyCard';
 
 interface ExecutiveReportCardProps {
   content: string;
@@ -225,44 +226,70 @@ export default function ExecutiveReportCard({
           if (isAgentLine && firstColon !== -1 && firstColon < 40) {
             const agentName = chunk.substring(0, firstColon).trim();
             const messageBody = chunk.substring(firstColon + 1).trim();
+            const isGraphRAG = agentName.includes('GraphRAG') || messageBody.includes('GRAPHRAG') || messageBody.includes('KNOWLEDGE GRAPH');
+
+            const isGraphAgent = agentName.includes('GraphRAG');
+            const isCFO = agentName.includes('CFO');
+            const agentColor = isGraphAgent ? '#a855f7' : isCFO ? '#10b981' : '#3b82f6';
+            const agentBg = isGraphAgent 
+              ? 'linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(15, 23, 42, 0.9))' 
+              : 'rgba(15, 23, 42, 0.65)';
+            const agentBorder = isGraphAgent 
+              ? '1px solid rgba(168, 85, 247, 0.4)' 
+              : '1px solid rgba(255, 255, 255, 0.08)';
 
             return (
               <div
                 key={idx}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: agentBg,
+                  border: agentBorder,
                   borderRadius: 'var(--radius-md)',
                   padding: 'var(--space-4)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 'var(--space-2)',
+                  gap: 'var(--space-3)',
+                  boxShadow: isGraphAgent ? '0 10px 25px -5px rgba(168, 85, 247, 0.2)' : undefined,
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6' }} />
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agentColor, boxShadow: `0 0 8px ${agentColor}` }} />
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: agentColor, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       {agentName}
                     </span>
                   </div>
-                  <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', background: 'rgba(255, 255, 255, 0.05)', padding: '2px 8px', borderRadius: '12px' }}>
-                    Verified Output
+                  <span 
+                    style={{ 
+                      fontSize: '10px', 
+                      fontWeight: 700,
+                      color: isGraphAgent ? '#c084fc' : 'var(--color-text-tertiary)', 
+                      background: isGraphAgent ? 'rgba(168, 85, 247, 0.15)' : 'rgba(255, 255, 255, 0.05)', 
+                      border: isGraphAgent ? '1px solid rgba(168, 85, 247, 0.3)' : undefined,
+                      padding: '2px 8px', 
+                      borderRadius: '12px' 
+                    }}
+                  >
+                    {isGraphAgent ? 'Vector Graph Verified' : 'Verified Output'}
                   </span>
                 </div>
 
-                <div
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    lineHeight: 1.7,
-                    color: 'var(--color-text-primary)',
-                    whiteSpace: 'pre-wrap',
-                    fontFamily: 'var(--font-sans)',
-                    letterSpacing: '0.01em',
-                  }}
-                >
-                  {messageBody}
-                </div>
+                {isGraphRAG ? (
+                  <GraphRAGTopologyCard rawText={messageBody} />
+                ) : (
+                  <div
+                    style={{
+                      fontSize: 'var(--text-sm)',
+                      lineHeight: 1.7,
+                      color: 'var(--color-text-primary)',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'var(--font-sans)',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    {messageBody}
+                  </div>
+                )}
               </div>
             );
           }
