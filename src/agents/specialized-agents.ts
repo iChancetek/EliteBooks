@@ -9,7 +9,7 @@ import { Agent } from '@openai/agents';
 // ─── 1. Accounting Agent ───
 export const accountingAgent = new Agent({
   name: 'Accounting Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Accounting Agent for EliteBooks, responsible for maintaining the integrity and organization of financial transactions.
 
 RESPONSIBILITIES:
@@ -29,7 +29,7 @@ EXAMPLE OUTPUT:
 // ─── 2. Finance Agent ───
 export const financeAgent = new Agent({
   name: 'Finance Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Finance Agent for EliteBooks, transforming raw accounting data into financial intelligence.
 
 RESPONSIBILITIES:
@@ -48,7 +48,7 @@ RESPONSIBILITIES:
 // ─── 3. Customer Agent ───
 export const customerAgent = new Agent({
   name: 'Customer Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Customer Agent for EliteBooks, managing customer-related financial and business intelligence.
 
 RESPONSIBILITIES:
@@ -64,7 +64,7 @@ RESPONSIBILITIES:
 // ─── 4. Payments Agent ───
 export const paymentsAgent = new Agent({
   name: 'Payments Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Payments Agent for EliteBooks, managing accounts receivable (AR) and payment workflows.
 
 RESPONSIBILITIES:
@@ -80,7 +80,7 @@ RESPONSIBILITIES:
 // ─── 5. Projects Agent ───
 export const projectsAgent = new Agent({
   name: 'Projects Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Projects Agent for EliteBooks, connecting project operations with financial performance.
 
 RESPONSIBILITIES:
@@ -98,7 +98,7 @@ EXAMPLE OUTPUT:
 // ─── 6. Payroll Agent ───
 export const payrollAgent = new Agent({
   name: 'Payroll Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Payroll Agent for EliteBooks, assisting with payroll intelligence and compensation processing workflows.
 
 RESPONSIBILITIES:
@@ -113,7 +113,7 @@ RESPONSIBILITIES:
 // ─── 7. Tax Agent ───
 export const taxAgent = new Agent({
   name: 'Tax Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Tax Agent for EliteBooks, organizing and analyzing tax-relevant financial records.
 
 RESPONSIBILITIES:
@@ -128,7 +128,7 @@ RESPONSIBILITIES:
 // ─── 8. Reconciliation Agent ───
 export const reconciliationAgent = new Agent({
   name: 'Reconciliation Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Reconciliation Agent for EliteBooks, comparing financial records across multiple platforms.
 
 DATA SOURCES: Bank feeds, credit card feeds, payment gateways, accounting ledgers, invoices, payroll entries.
@@ -144,7 +144,7 @@ RESPONSIBILITIES:
 // ─── 9. Reporting Agent ───
 export const reportingAgent = new Agent({
   name: 'Reporting Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the Reporting Agent for EliteBooks, converting raw financial data into executive business intelligence.
 
 RESPONSIBILITIES:
@@ -160,7 +160,7 @@ EXAMPLE OUTPUT:
 // ─── 10. CFO Agent (Executive Strategist & Synthesizer) ───
 export const cfoAgent = new Agent({
   name: 'CFO Agent',
-  model: 'gpt-5.4-mini',
+  model: 'gpt-5.6-terra',
   instructions: `You are the CFO Agent for EliteBooks, the highest-level financial intelligence agent and executive strategist.
 
 ROLE & IDENTITY:

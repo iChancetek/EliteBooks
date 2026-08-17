@@ -191,7 +191,7 @@ ${context}`;
 
     const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
-      model: 'gpt-5.4-mini',
+      model: 'gpt-5.6-terra',
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages
@@ -263,7 +263,7 @@ ${context}`;
 
       // Execute second OpenAI completion to summarize the actual data retrieved from database
       const secondResponse = await openai.chat.completions.create({
-        model: 'gpt-5.4-mini',
+        model: 'gpt-5.6-terra',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages,

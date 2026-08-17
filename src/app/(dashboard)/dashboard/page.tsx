@@ -253,30 +253,6 @@ export default function DashboardHome() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '4px 12px', borderRadius: '20px' }}>
-            <Cpu size={14} style={{ color: '#f59e0b' }} />
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Active Reasoning Model:</span>
-            <select
-              style={{
-                background: 'transparent',
-                color: '#f59e0b',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: 'none',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="Claude 3.7 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.7 Sonnet (Hybrid Reasoning Flagship)</option>
-              <option value="Claude 3.7 Sonnet (Thinking)" style={{ background: '#0f172a', color: '#f59e0b' }}>🧠 Claude 3.7 Sonnet (Extended Thinking Mode)</option>
-              <option value="Claude 3.5 Haiku" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ Claude 3.5 Haiku (Ultra-Low Latency)</option>
-              <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Multi-Agent Orchestrator)</option>
-              <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Pro (Deep Financial Strategy)</option>
-            </select>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="cmd-input-wrap" id="command-form">
           <Sparkles size={20} className={`cmd-input-icon ${isLoading ? 'animate-pulse text-amber-400' : ''}`} />
           <input

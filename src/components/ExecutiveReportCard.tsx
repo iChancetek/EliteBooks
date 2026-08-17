@@ -129,44 +129,9 @@ export default function ExecutiveReportCard({
               <span className="badge badge-primary" style={{ fontSize: '11px', fontWeight: 600 }}>
                 Executive Analysis
               </span>
-
-              {/* Model Selector Dropdown inside Report Card */}
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                  padding: '2px 8px',
-                  borderRadius: '16px',
-                  marginLeft: '4px',
-                }}
-              >
-                <Cpu size={12} style={{ color: '#f59e0b' }} />
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  style={{
-                    background: 'transparent',
-                    color: '#f59e0b',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    border: 'none',
-                    outline: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <option value="Claude 3.7 Sonnet" style={{ background: '#0f172a', color: '#f59e0b' }}>🎯 Claude 3.7 Sonnet (Hybrid Reasoning Flagship)</option>
-                  <option value="Claude 3.7 Sonnet (Thinking)" style={{ background: '#0f172a', color: '#f59e0b' }}>🧠 Claude 3.7 Sonnet (Extended Thinking Mode)</option>
-                  <option value="Claude 3.5 Haiku" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ Claude 3.5 Haiku (Ultra-Low Latency)</option>
-                  <option value="GPT-5.4 Mini" style={{ background: '#0f172a', color: '#f59e0b' }}>⚡ GPT-5.4 Mini (Multi-Agent Orchestrator)</option>
-                  <option value="Gemini 3.7 Pro" style={{ background: '#0f172a', color: '#f59e0b' }}>♊ Gemini 3.7 Pro (Deep Financial Strategy)</option>
-                </select>
-              </div>
             </div>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
-              Autonomous multi-agent synthesis using <strong style={{ color: '#f59e0b' }}>{selectedModel}</strong>
+              Multi-agent financial intelligence & verified general ledger synthesis
             </p>
           </div>
         </div>

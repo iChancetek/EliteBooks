@@ -690,7 +690,7 @@ CRITICAL FORMATTING RULES:
 - Never invent figures. Ground every dollar strictly in the context above.`;
 
         const completion = await openai.chat.completions.create({
-          model: 'gpt-5.4-mini',
+          model: 'gpt-5.6-terra',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: unmaskedQuery }
@@ -1422,7 +1422,7 @@ ${realProducts.length === 0 ? 'Inventory Agent: "You have 0 products in your inv
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY FALLBACK: Dynamic OpenAI GPT-5.4 Executive Synthesizer with Live Financial Grounding
+  // PRIORITY FALLBACK: Dynamic OpenAI GPT-5.6-Terra Executive Synthesizer with Live Financial Grounding
   // ══════════════════════════════════════════════════════════════════════
   try {
     const openai = getOpenAIClient();
@@ -1480,7 +1480,7 @@ DIRECTIVES:
 4. If asked to explain any figure, break down its constituent parts (invoices, vendors, formulas, tax rules, or cash timing).`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5.4-mini',
+      model: 'gpt-5.6-terra',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: unmaskedQuery }
