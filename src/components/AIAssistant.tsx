@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Mic, Send, X, Volume2, VolumeX, Bot, Sparkles, Loader2, Trash2 } from 'lucide-react';
+import { MessageSquare, Mic, Send, X, Volume2, VolumeX, Bot, Sparkles, Loader2, Trash2, Copy, Check, Zap } from 'lucide-react';
 import styles from './AIAssistant.module.css';
 import { useAuth } from '@/hooks/useAuth';
 import GraphRAGTopologyCard from './GraphRAGTopologyCard';
+import RichMessageContent from './RichMessageContent';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  timestamp?: string;
 }
 
 export default function AIAssistant() {
@@ -20,6 +22,7 @@ export default function AIAssistant() {
   const [isTyping, setIsTyping] = useState(false);
   const [autoRead, setAutoRead] = useState(false);
   const [predictedQuestions, setPredictedQuestions] = useState<string[]>([]);
+  const [copiedMsgIdx, setCopiedMsgIdx] = useState<number | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -35,7 +38,11 @@ export default function AIAssistant() {
     if (saved) {
       setMessages(JSON.parse(saved));
     } else {
-      setMessages([{ role: 'assistant', content: 'Hello! I am your EliteBooks assistant. How can I help you with your accounting today?' }]);
+      setMessages([{ 
+        role: 'assistant', 
+        content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot** powered by **GPT-5.6-Terra**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
     }
   }, []);
 
@@ -48,57 +55,83 @@ export default function AIAssistant() {
   }, [messages, isTyping]);
 
   useEffect(() => {
-    const handleAskAgentEvent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ query?: string }>;
-      setIsOpen(true);
-      if (customEvent.detail?.query) {
-        handleSend(customEvent.detail.query);
+    // Predict next questions when user receives response
+    if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      predictFollowUps(messages[messages.length - 1].content);
+    }
+  }, [messages]);
+
+  const predictFollowUps = async (lastResponse: string) => {
+    try {
+      const res = await fetch('/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: lastResponse })
+      });
+      const data = await res.json();
+      if (data.questions) {
+        setPredictedQuestions(data.questions);
       }
-    };
+    } catch (e) {
+      setPredictedQuestions([
+        'Explain this in detail',
+        'Show ledger balance impact',
+        'Forecast 90-day cash flow'
+      ]);
+    }
+  };
 
-    window.addEventListener('elitebooks:ask-agent', handleAskAgentEvent);
-    window.addEventListener('elitebooks:open-chat', handleAskAgentEvent);
-    return () => {
-      window.removeEventListener('elitebooks:ask-agent', handleAskAgentEvent);
-      window.removeEventListener('elitebooks:open-chat', handleAskAgentEvent);
-    };
-  }, [messages, user]);
+  const handleCopyMessage = (content: string, idx: number) => {
+    navigator.clipboard.writeText(content);
+    setCopiedMsgIdx(idx);
+    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  };
 
-  const handleSend = async (text: string = input) => {
+  const handleSend = async (textToSend?: string) => {
+    const text = textToSend || input;
     if (!text.trim()) return;
 
-    const newMessages = [...messages, { role: 'user', content: text } as Message];
-    setMessages(newMessages);
-    setInput('');
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const userMsg: Message = { role: 'user', content: text, timestamp: timeStr };
+    setMessages((prev) => [...prev, userMsg]);
+    if (!textToSend) setInput('');
     setIsTyping(true);
+    setPredictedQuestions([]);
 
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (user) {
-        const token = await user.getIdToken();
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch('/api/chat/rag', {
+      const token = user ? await user.getIdToken() : '';
+      const res = await fetch('/api/chat/rag', {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ messages: newMessages }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          message: text,
+          messages: messages.slice(-5)
+        })
       });
-
-      const data = await response.json();
       
-      if (data.success) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
-        setPredictedQuestions(data.predictedQuestions || []);
-        if (autoRead) {
-          playTTS(data.answer);
-        }
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+      const data = await res.json();
+      const aiResponse = data.message || "I apologize, but I couldn't process that request at this moment.";
+      
+      const aiMsg: Message = { 
+        role: 'assistant', 
+        content: aiResponse,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+      
+      if (autoRead) {
+        speakResponse(aiResponse);
       }
     } catch (error) {
       console.error('Chat error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to connect to the assistant.' }]);
+      setMessages((prev) => [...prev, { 
+        role: 'assistant', 
+        content: 'Error communicating with agent. Please verify connection and retry.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
     } finally {
       setIsTyping(false);
     }
@@ -107,64 +140,65 @@ export default function AIAssistant() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
-        sendAudioToSTT(audioBlob);
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await sendAudioToWhisper(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start();
+      mediaRecorderRef.current.start();
       setIsRecording(true);
     } catch (err) {
-      console.error('Recording error:', err);
-      alert('Could not access microphone.');
+      console.error('Microphone access denied:', err);
     }
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
   };
 
-  const sendAudioToSTT = async (blob: Blob) => {
+  const sendAudioToWhisper = async (audioBlob: Blob) => {
+    setIsTyping(true);
     const formData = new FormData();
-    formData.append('audio', blob, 'voice.mp3');
+    formData.append('file', audioBlob, 'audio.webm');
 
     try {
-      setIsTyping(true);
-      const response = await fetch('/api/voice', {
+      const res = await fetch('/api/transcribe', {
         method: 'POST',
-        body: formData,
+        body: formData
       });
-      const data = await response.json();
+      const data = await res.json();
       if (data.text) {
         handleSend(data.text);
       }
-    } catch (error) {
-      console.error('STT error:', error);
+    } catch (e) {
+      console.error('Transcription error:', e);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const playTTS = async (text: string) => {
+  const speakResponse = async (text: string) => {
     try {
-      const response = await fetch('/api/voice', {
+      const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text })
       });
-      const audioBlob = await response.blob();
-      const url = URL.createObjectURL(audioBlob);
-      const audio = new Audio(url);
+      const blob = await res.blob();
+      const audio = new Audio(URL.createObjectURL(blob));
       audio.play();
     } catch (error) {
       console.error('TTS error:', error);
@@ -172,7 +206,11 @@ export default function AIAssistant() {
   };
 
   const clearHistory = () => {
-    const initial = [{ role: 'assistant', content: 'Hello! I am your EliteBooks assistant. How can I help you with your accounting today?' } as Message];
+    const initial: Message[] = [{ 
+      role: 'assistant', 
+      content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot** powered by **GPT-5.6-Terra**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }];
     setMessages(initial);
     localStorage.removeItem('elite_chat_history');
     setPredictedQuestions([]);
@@ -184,25 +222,36 @@ export default function AIAssistant() {
         <div className={styles.chatWindow}>
           <div className={styles.header}>
             <div className={styles.headerTitle}>
-              <Sparkles size={16} className="text-gradient" />
-              <span>EliteBooks AI</span>
+              <div className={styles.agentAvatar}>
+                <Bot size={18} />
+              </div>
+              <div className={styles.headerText}>
+                <div className={styles.headerName}>
+                  <span>EliteBooks AI Co-Pilot</span>
+                  <span className={styles.statusDot} />
+                </div>
+                <div className={styles.headerSubtitle}>
+                  <Zap size={10} style={{ color: '#60a5fa' }} />
+                  <span>GPT-5.6-Terra • Active RAG Grounded</span>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
               <button 
                 className={styles.iconBtn} 
                 onClick={clearHistory}
-                title="Clear History"
+                title="Clear Chat History"
               >
-                <Trash2 size={18} />
+                <Trash2 size={16} />
               </button>
               <button 
                 className={styles.iconBtn} 
                 onClick={() => setAutoRead(!autoRead)}
                 title={autoRead ? "Disable Auto-read" : "Enable Auto-read"}
               >
-                {autoRead ? <Volume2 size={18} /> : <VolumeX size={18} />}
+                {autoRead ? <Volume2 size={16} style={{ color: '#3b82f6' }} /> : <VolumeX size={16} />}
               </button>
-              <button className={styles.iconBtn} onClick={() => setIsOpen(false)}>
+              <button className={styles.iconBtn} onClick={() => setIsOpen(false)} title="Close Chat">
                 <X size={18} />
               </button>
             </div>
@@ -218,30 +267,85 @@ export default function AIAssistant() {
 
               if (isGraphRAG) {
                 return (
-                  <div key={i} style={{ width: '100%', margin: '8px 0' }}>
+                  <div key={i} style={{ width: '100%', margin: '4px 0' }}>
                     <GraphRAGTopologyCard rawText={msg.content} />
                   </div>
                 );
               }
 
+              if (msg.role === 'user') {
+                return (
+                  <div key={i} className={styles.userMessageWrapper}>
+                    <div className={styles.userBubble}>
+                      {msg.content}
+                    </div>
+                    {msg.timestamp && <span className={styles.messageTime}>{msg.timestamp}</span>}
+                  </div>
+                );
+              }
+
               return (
-                <div key={i} className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.aiMessage}`}>
-                  {msg.content}
+                <div key={i} className={styles.aiMessageWrapper}>
+                  <div className={styles.aiHeader}>
+                    <span className={styles.aiBadge}>
+                      <Sparkles size={10} /> GPT-5.6-Terra
+                    </span>
+                    {msg.timestamp && <span className={styles.messageTime}>{msg.timestamp}</span>}
+                  </div>
+                  <div className={styles.aiBubble}>
+                    <RichMessageContent content={msg.content} />
+                    <div className={styles.aiBubbleFooter}>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={() => handleCopyMessage(msg.content, i)}
+                        title="Copy response"
+                      >
+                        {copiedMsgIdx === i ? <Check size={12} style={{ color: '#10b981' }} /> : <Copy size={12} />}
+                        <span>{copiedMsgIdx === i ? 'Copied' : 'Copy'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={() => speakResponse(msg.content)}
+                        title="Read aloud"
+                      >
+                        <Volume2 size={12} />
+                        <span>Speak</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               );
             })}
+
             {isTyping && (
-              <div className={`${styles.message} ${styles.aiMessage}`}>
-                <Loader2 size={16} className="animate-spin" />
+              <div className={styles.aiMessageWrapper}>
+                <div className={styles.aiHeader}>
+                  <span className={styles.aiBadge}>
+                    <Sparkles size={10} /> GPT-5.6-Terra
+                  </span>
+                </div>
+                <div className={styles.typingBubble}>
+                  <div className={styles.typingDot} />
+                  <div className={styles.typingDot} />
+                  <div className={styles.typingDot} />
+                  <span style={{ marginLeft: '4px' }}>Synthesizing multi-agent response...</span>
+                </div>
               </div>
             )}
+
             {!isTyping && predictedQuestions.length > 0 && (
               <div className={styles.predictions}>
-                {predictedQuestions.map((q, i) => (
-                  <button key={i} className={styles.predictionChip} onClick={() => handleSend(q)}>
-                    {q}
-                  </button>
-                ))}
+                <span className={styles.predictionsLabel}>Recommended Follow-Ups</span>
+                <div className={styles.predictionChipsWrapper}>
+                  {predictedQuestions.map((q, i) => (
+                    <button key={i} className={styles.predictionChip} onClick={() => handleSend(q)}>
+                      <span>{q}</span>
+                      <Sparkles size={10} style={{ color: '#60a5fa' }} />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -258,29 +362,29 @@ export default function AIAssistant() {
               onMouseUp={stopRecording}
               onTouchStart={startRecording}
               onTouchEnd={stopRecording}
+              title={isRecording ? 'Listening...' : 'Hold to Speak'}
             >
-              <Mic size={20} />
+              <Mic size={18} />
             </button>
-            <input 
-              className={styles.input}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a question..."
-            />
-            <button type="submit" className={styles.iconBtn}>
-              <Send size={20} />
+            <div className={styles.inputContainer}>
+              <input 
+                className={styles.input}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask GPT-5.6-Terra about your finances..."
+              />
+            </div>
+            <button type="submit" className={styles.sendBtn} title="Send Message" disabled={!input.trim() && !isRecording}>
+              <Send size={15} />
             </button>
           </form>
         </div>
       )}
 
-      <button className={styles.trigger} onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <X size={28} /> : (
-          <>
-            <MessageSquare size={28} />
-            {!isOpen && <span className={styles.triggerLabel}>Ask about EliteBooks</span>}
-          </>
-        )}
+      <button className={styles.trigger} onClick={() => setIsOpen(!isOpen)} title="Open AI Financial Co-Pilot">
+        <div className={styles.triggerPulse} />
+        {isOpen ? <X size={26} /> : <MessageSquare size={26} />}
+        {!isOpen && <span className={styles.triggerLabel}>Ask GPT-5.6-Terra</span>}
       </button>
     </div>
   );

@@ -29,11 +29,30 @@ export function formatPercent(value: number): string {
   return `${sign}${value.toFixed(1)}%`;
 }
 
-/** Format date */
+/** Safely parse a date string (YYYY-MM-DD or ISO) into a local Date without UTC offset shift */
+export function parseLocalDate(dateStr: string): Date {
+  if (!dateStr) return new Date();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+  if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
+    const datePart = dateStr.split('T')[0];
+    const [year, month, day] = datePart.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
+}
+
+/** Format date with timezone-safe parsing for YYYY-MM-DD strings */
 export function formatDate(dateStr: string, style: 'short' | 'medium' | 'long' = 'medium'): string {
-  const date = new Date(dateStr);
+  if (!dateStr) return '';
+
+  const date = parseLocalDate(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+
   const options: Intl.DateTimeFormatOptions =
-    style === 'short' ? { month: 'short', day: 'numeric' } :
+    style === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit' } :
     style === 'long' ? { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' } :
     { year: 'numeric', month: 'short', day: 'numeric' };
   return date.toLocaleDateString('en-US', options);

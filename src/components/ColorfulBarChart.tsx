@@ -127,6 +127,7 @@ export default function ColorfulBarChart({
             ))}
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

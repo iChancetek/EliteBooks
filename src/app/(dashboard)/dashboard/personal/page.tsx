@@ -14,7 +14,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, ReferenceLine 
 } from 'recharts';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 
 import ColorfulBarChart from '@/components/ColorfulBarChart';
@@ -38,7 +38,8 @@ export default function PersonalFinancePage() {
     category: 'Groceries',
     date: '',
     description: '',
-    paymentMethod: 'Credit Card',
+    paymentMethod: 'Debit Card',
+    recurrence: 'One-time',
     customCategory: ''
   });
 
@@ -86,6 +87,7 @@ export default function PersonalFinancePage() {
           date: newTransaction.date || new Date().toISOString().split('T')[0],
           description: newTransaction.description,
           paymentMethod: newTransaction.paymentMethod,
+          recurrence: newTransaction.recurrence,
           isPersonal: true
         })
       });
@@ -94,7 +96,7 @@ export default function PersonalFinancePage() {
         setIsModalOpen(false);
         setNewTransaction({
           merchant: '', amount: '', category: 'Groceries', date: '', 
-          description: '', paymentMethod: 'Credit Card', customCategory: ''
+          description: '', paymentMethod: 'Debit Card', recurrence: 'One-time', customCategory: ''
         });
         fetchReport();
       }
@@ -723,7 +725,7 @@ export default function PersonalFinancePage() {
                             ]
                           })}
                         >
-                          <td>{tr.date}</td>
+                          <td>{formatDate(tr.date, 'short')}</td>
                           <td><strong>{tr.name}</strong></td>
                           <td><span className="badge badge-neutral">{tr.cat}</span></td>
                           <td><span className="value-financial value-negative">{formatCurrency(tr.amt)}</span></td>
@@ -935,10 +937,26 @@ export default function PersonalFinancePage() {
                     value={newTransaction.paymentMethod} 
                     onChange={e => setNewTransaction({...newTransaction, paymentMethod: e.target.value})}
                   >
-                    <option value="Credit Card">Credit Card</option>
                     <option value="Debit Card">Debit Card</option>
+                    <option value="Credit Card">Credit Card</option>
                     <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Bank Transfer">Bank Transfer / ACH</option>
+                    <option value="Check">Check</option>
+                    <option value="None / Unspecified">None / Unspecified</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Recurrence</label>
+                  <select 
+                    className="input" 
+                    value={newTransaction.recurrence} 
+                    onChange={e => setNewTransaction({...newTransaction, recurrence: e.target.value})}
+                  >
+                    <option value="One-time">One-time</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Bi-weekly">Bi-weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Annually">Annually</option>
                   </select>
                 </div>
               </div>

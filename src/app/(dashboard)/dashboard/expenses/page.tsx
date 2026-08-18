@@ -38,6 +38,7 @@ export default function ExpensesPage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [newExpense, setNewExpense] = useState({ 
     vendor: '', 
@@ -46,7 +47,8 @@ export default function ExpensesPage() {
     date: '', 
     customCategory: '',
     description: '',
-    paymentMethod: 'Credit Card',
+    paymentMethod: 'Debit Card',
+    recurrence: 'One-time',
     referenceNumber: '',
     isBillable: false,
     customerName: '',
@@ -167,6 +169,27 @@ export default function ExpensesPage() {
     }));
   }, []);
 
+  const handleOpenEdit = (exp: any) => {
+    setSelectedExpense(null);
+    setEditingId(exp.id);
+    setNewExpense({
+      vendor: exp.vendor || '',
+      amount: exp.amount !== undefined ? String(exp.amount) : '',
+      category: categories.some(c => c.name === exp.category) ? exp.category : (exp.category ? 'Other' : 'Office & Supplies'),
+      date: exp.date || new Date().toISOString().split('T')[0],
+      customCategory: categories.some(c => c.name === exp.category) ? '' : (exp.category || ''),
+      description: exp.description || '',
+      paymentMethod: exp.paymentMethod || 'Debit Card',
+      recurrence: exp.recurrence || exp.recurrance || 'One-time',
+      referenceNumber: exp.referenceNumber || '',
+      isBillable: !!exp.isBillable,
+      customerName: exp.customerName || '',
+      taxAmount: exp.taxAmount !== undefined ? String(exp.taxAmount) : '0',
+      receiptUrl: exp.receiptUrl || ''
+    });
+    setIsModalOpen(true);
+  };
+
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -174,72 +197,158 @@ export default function ExpensesPage() {
     
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/expenses', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
+
+      if (editingId) {
+        // Edit existing expense
+        const updatedPayload = {
+          id: editingId,
           date: newExpense.date,
           vendor: newExpense.vendor,
           amount: parseFloat(newExpense.amount),
           category: finalCategory,
-          description: newExpense.description || 'Manually added expense',
+          description: newExpense.description || '',
           paymentMethod: newExpense.paymentMethod,
+          recurrence: newExpense.recurrence,
           referenceNumber: newExpense.referenceNumber,
           isBillable: newExpense.isBillable,
           customerName: newExpense.isBillable ? newExpense.customerName : '',
           taxAmount: parseFloat(newExpense.taxAmount || '0'),
           receiptUrl: newExpense.receiptUrl
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setExpenses(prev => [data.data, ...prev]);
-        setIsModalOpen(false);
-        setNewExpense({ 
-          vendor: '', 
-          amount: '', 
-          category: 'Office & Supplies', 
-          date: new Date().toISOString().split('T')[0], 
-          customCategory: '',
-          description: '',
-          paymentMethod: 'Credit Card',
-          referenceNumber: '',
-          isBillable: false,
-          customerName: '',
-          taxAmount: '0',
-          receiptUrl: ''
+        };
+
+        const res = await fetch('/api/expenses', {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedPayload),
         });
-        showToast('Expense added successfully');
+        const data = await res.json();
+        if (data.success) {
+          setExpenses(prev => prev.map(item => item.id === editingId ? { ...item, ...updatedPayload } : item));
+          setIsModalOpen(false);
+          setEditingId(null);
+          setNewExpense({ 
+            vendor: '', 
+            amount: '', 
+            category: 'Office & Supplies', 
+            date: new Date().toISOString().split('T')[0], 
+            customCategory: '',
+            description: '',
+            paymentMethod: 'Debit Card',
+            recurrence: 'One-time',
+            referenceNumber: '',
+            isBillable: false,
+            customerName: '',
+            taxAmount: '0',
+            receiptUrl: ''
+          });
+          showToast('Expense updated successfully');
+        } else {
+          console.error('Expense update failed:', data.error);
+        }
       } else {
-        console.error('Expense save failed:', data.error);
+        // Create new expense
+        const res = await fetch('/api/expenses', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            date: newExpense.date,
+            vendor: newExpense.vendor,
+            amount: parseFloat(newExpense.amount),
+            category: finalCategory,
+            description: newExpense.description || 'Manually added expense',
+            paymentMethod: newExpense.paymentMethod,
+            recurrence: newExpense.recurrence,
+            referenceNumber: newExpense.referenceNumber,
+            isBillable: newExpense.isBillable,
+            customerName: newExpense.isBillable ? newExpense.customerName : '',
+            taxAmount: parseFloat(newExpense.taxAmount || '0'),
+            receiptUrl: newExpense.receiptUrl
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setExpenses(prev => [data.data, ...prev]);
+          setIsModalOpen(false);
+          setNewExpense({ 
+            vendor: '', 
+            amount: '', 
+            category: 'Office & Supplies', 
+            date: new Date().toISOString().split('T')[0], 
+            customCategory: '',
+            description: '',
+            paymentMethod: 'Debit Card',
+            recurrence: 'One-time',
+            referenceNumber: '',
+            isBillable: false,
+            customerName: '',
+            taxAmount: '0',
+            receiptUrl: ''
+          });
+          showToast('Expense added successfully');
+        } else {
+          console.error('Expense save failed:', data.error);
+        }
       }
     } catch (error) {
-      console.error('Failed to create expense:', error);
+      console.error('Failed to save expense:', error);
+    }
+  };
+
+  const handleToggleStatus = async (exp: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const newStatus = exp.status === 'approved' ? 'pending' : 'approved';
+    
+    // Optimistic UI update
+    setExpenses(prev => prev.map(item => item.id === exp.id ? { ...item, status: newStatus } : item));
+    setToast({
+      message: `Expense "${exp.vendor}" marked as ${newStatus === 'approved' ? 'Approved & Posted' : 'Pending Review'}.`,
+      type: 'success'
+    });
+
+    try {
+      if (!user) return;
+      const token = await user.getIdToken();
+      await fetch('/api/expenses', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: exp.id, status: newStatus })
+      });
+    } catch (err) {
+      console.error('Failed to update expense status', err);
     }
   };
 
   const openExpenseDeepDive = (exp: any) => {
+    const rawConf = typeof exp.confidence === 'number' && !isNaN(exp.confidence) ? exp.confidence : 0.98;
+    const confPct = `${(rawConf * 100).toFixed(0)}%`;
+
     setSelectedDeepDive({
       id: exp.id || `exp-${Date.now()}`,
       title: exp.vendor || 'Expense Item',
       module: 'Expenses',
-      subtitle: `${exp.category} • ${formatDate(exp.date, 'long')}`,
+      subtitle: `${exp.category || 'General'} • ${formatDate(exp.date, 'long')}`,
       amount: exp.amount,
       type: 'negative',
       status: exp.status === 'approved' ? 'Approved & Posted' : 'Pending Verification',
-      category: exp.category,
+      category: exp.category || 'General',
       partyName: exp.vendor,
-      description: exp.description || `Business expense disbursement to ${exp.vendor} under category ${exp.category}.`,
+      description: exp.description || `Business expense disbursement to ${exp.vendor} under category ${exp.category || 'General'}.`,
       agentUsed: 'Expense Agent',
       metrics: [
         { label: 'Total Charge', value: formatCurrency(exp.amount) },
         { label: 'Category', value: exp.category || 'General' },
         { label: 'Tax Deductible', value: '100% (IRS Sec 162)' },
         { label: 'Payment Method', value: exp.paymentMethod || 'Corporate Card' },
-        { label: 'AI Confidence', value: `${((exp.confidence || 0.98) * 100).toFixed(0)}%` },
+        { label: 'AI Confidence', value: confPct },
         { label: 'Ledger Status', value: exp.status === 'approved' ? 'Reconciled' : 'Pending Audit' },
       ],
       auditTrace: [
@@ -247,7 +356,7 @@ export default function ExpensesPage() {
           step: '1. Receipt Ingestion & OCR Normalization',
           status: 'VERIFIED',
           agent: 'Expense Agent',
-          detail: `Extracted vendor "${exp.vendor}" with confidence ${((exp.confidence || 0.98) * 100).toFixed(0)}%. Matched against standard Chart of Accounts.`
+          detail: `Extracted vendor "${exp.vendor}" with confidence ${confPct}. Matched against standard Chart of Accounts.`
         },
         {
           step: '2. Tax Deductibility & Policy Validation',
@@ -259,11 +368,11 @@ export default function ExpensesPage() {
           step: '3. General Ledger Double-Entry Posting',
           status: exp.status === 'approved' ? 'LOCKED' : 'PENDING',
           agent: 'Ledger Agent',
-          detail: `Debit Account 5000 (${exp.category}) | Credit Account 1000 (Cash/Bank).`
+          detail: `Debit Account 5000 (${exp.category || 'General'}) | Credit Account 1000 (Cash/Bank).`
         }
       ],
       aiInsights: [
-        `Expense categorized under ${exp.category} with ${((exp.confidence || 0.98) * 100).toFixed(0)}% AI confidence score.`,
+        `Expense categorized under ${exp.category || 'General'} with ${confPct} AI confidence score.`,
         `IRS Section 162 compliant: qualifies for standard corporate tax deduction.`,
         exp.isBillable ? `Marked as billable to customer ${exp.customerName || 'Client'}.` : `Internal operating expense (non-billable).`
       ]
@@ -372,14 +481,14 @@ export default function ExpensesPage() {
                   <CreditCard size={14} />
                   <div>
                     <label>Payment Method</label>
-                    <span>Chase Visa (*4242)</span>
+                    <span>{selectedExpense.paymentMethod || 'None / Unspecified'}</span>
                   </div>
                 </div>
                 <div className="exp-detail-item">
                   <TrendingUp size={14} />
                   <div>
                     <label>Recurrence</label>
-                    <span>{selectedExpense.recurrance || selectedExpense.recurrence || 'Monthly'}</span>
+                    <span>{selectedExpense.recurrence || selectedExpense.recurrance || 'One-time'}</span>
                   </div>
                 </div>
               </div>
@@ -399,16 +508,20 @@ export default function ExpensesPage() {
                 <div className="exp-ai-body">
                   <div className="ai-insight">
                     <Zap size={14} />
-                    <p>This is a <strong>{(selectedExpense.recurrance || selectedExpense.recurrence || 'Monthly').toLowerCase()}</strong> expense. I forecast a total spend of <strong>{formatCurrency((selectedExpense.amount || 0) * 12)}</strong> over the next 12 months.</p>
+                    {((selectedExpense.recurrence || selectedExpense.recurrance || 'One-time').toLowerCase() === 'one-time') ? (
+                      <p>This is a <strong>one-time</strong> transaction logged at <strong>{formatCurrency(selectedExpense.amount || 0)}</strong>. No recurring monthly cash flow liability detected.</p>
+                    ) : (
+                      <p>This is a <strong>{(selectedExpense.recurrence || selectedExpense.recurrance || 'Monthly').toLowerCase()}</strong> recurring expense. I forecast an annualized spend of <strong>{formatCurrency((selectedExpense.amount || 0) * (selectedExpense.recurrence === 'Weekly' ? 52 : selectedExpense.recurrence === 'Quarterly' ? 4 : selectedExpense.recurrence === 'Annually' ? 1 : 12))}</strong>.</p>
+                    )}
                   </div>
                   <div className="ai-insight">
                     <TrendingUp size={14} />
-                    <p>This vendor (<strong>{selectedExpense.vendor || 'Vendor'}</strong>) costs <strong>12% more</strong> than the market average for similar services. Consider renegotiating.</p>
+                    <p>Vendor <strong>{selectedExpense.vendor || 'Vendor'}</strong> is categorized under <strong>{selectedExpense.category || 'General'}</strong> and eligible for standard business expense deductions.</p>
                   </div>
-                  {(selectedExpense.amount || 0) > 1000 && (
+                  {(selectedExpense.amount || 0) > 500 && (
                     <div className="ai-insight warning">
                       <AlertTriangle size={14} />
-                      <p>High-value transaction detected. I have flagged this for your quarterly tax deduction strategy.</p>
+                      <p>Significant transaction detected. I have verified the ledger journal balance and receipt trail.</p>
                     </div>
                   )}
                 </div>
@@ -428,8 +541,8 @@ export default function ExpensesPage() {
               </div>
 
               <div className="exp-drawer-actions">
-                <button className="btn btn-secondary" onClick={() => handleAction('Edit')}><Edit2 size={16} /> Edit</button>
-                <button className="btn btn-secondary" onClick={() => handleAction('Share')}><Share2 size={16} /> Share</button>
+                <button className="btn btn-secondary" onClick={() => handleOpenEdit(selectedExpense)}><Edit2 size={16} /> Edit</button>
+                <button className="btn btn-secondary" onClick={() => handleToggleStatus(selectedExpense)}><CheckCircle2 size={16} /> {selectedExpense.status === 'approved' ? 'Mark Pending' : 'Approve'}</button>
                 <button className="btn btn-secondary" onClick={() => {
                   const exp = selectedExpense;
                   setSelectedExpense(null);
@@ -479,19 +592,19 @@ export default function ExpensesPage() {
         </div>
       )}
 
-      {/* Add Expense Modal */}
+      {/* Add / Edit Expense Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-overlay" onClick={() => { setIsModalOpen(false); setEditingId(null); }}>
           <div className="modal-content glass-card animate-scale-in" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Add New Expense</h2>
-              <button className="btn btn-icon btn-ghost" onClick={() => setIsModalOpen(false)}><Plus size={20} style={{ transform: 'rotate(45deg)' }} /></button>
+              <h2>{editingId ? 'Edit Expense Record' : 'Add New Expense'}</h2>
+              <button className="btn btn-icon btn-ghost" onClick={() => { setIsModalOpen(false); setEditingId(null); }}><Plus size={20} style={{ transform: 'rotate(45deg)' }} /></button>
             </div>
             <form onSubmit={handleAddExpense} className="modal-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label>Vendor</label>
-                  <input type="text" className="input" placeholder="e.g. AWS, Azure, Google Cloud, Uber" value={newExpense.vendor} onChange={e => setNewExpense({...newExpense, vendor: e.target.value})} required />
+                  <label>Vendor / Payee</label>
+                  <input type="text" className="input" placeholder="e.g. Hannaford, AWS, Uber" value={newExpense.vendor} onChange={e => setNewExpense({...newExpense, vendor: e.target.value})} required />
                 </div>
                 <div className="form-group">
                   <label>Category</label>
@@ -542,14 +655,31 @@ export default function ExpensesPage() {
                     value={newExpense.paymentMethod} 
                     onChange={e => setNewExpense({...newExpense, paymentMethod: e.target.value})}
                   >
+                    <option value="Debit Card">Debit Card</option>
                     <option value="Credit Card">Credit Card</option>
                     <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Bank Transfer">Bank Transfer / ACH</option>
                     <option value="Check">Check</option>
+                    <option value="None / Unspecified">None / Unspecified</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Reference / Check #</label>
+                  <label>Recurrence</label>
+                  <select 
+                    className="input" 
+                    value={newExpense.recurrence} 
+                    onChange={e => setNewExpense({...newExpense, recurrence: e.target.value})}
+                  >
+                    <option value="One-time">One-time</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Bi-weekly">Bi-weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Annually">Annually</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Reference #</label>
                   <input type="text" className="input" placeholder="e.g. #1024" value={newExpense.referenceNumber} onChange={e => setNewExpense({...newExpense, referenceNumber: e.target.value})} />
                 </div>
               </div>
@@ -583,8 +713,8 @@ export default function ExpensesPage() {
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Add Expense</button>
+                <button type="button" className="btn btn-secondary" onClick={() => { setIsModalOpen(false); setEditingId(null); }}>Cancel</button>
+                <button type="submit" className="btn btn-primary">{editingId ? 'Save Changes' : 'Add Expense'}</button>
               </div>
             </form>
           </div>
@@ -698,55 +828,73 @@ export default function ExpensesPage() {
             {activeExpenses
               .filter(e => (e.vendor || '').toLowerCase().includes(search.toLowerCase()))
               .filter(e => !selectedCategory || e.category === selectedCategory)
-              .map(exp => (
-              <tr 
-                key={exp.id} 
-                onClick={() => openExpenseDeepDive(exp)} 
-                style={{ cursor: 'pointer' }}
-                className="hover:bg-slate-800/40 transition-colors"
-              >
-                <td>{formatDate(exp.date, 'short')}</td>
-                <td><strong style={{ color: 'var(--color-text-primary)' }}>{exp.vendor}</strong></td>
-                <td>
-                  <span className="badge badge-neutral"><Tag size={10} /> {exp.category}</span>
-                </td>
-                <td><span className="value-financial value-negative">-{formatCurrency(exp.amount)}</span></td>
-                <td>
-                  <span className={`exp-confidence ${exp.confidence >= 0.95 ? 'high' : exp.confidence >= 0.9 ? 'medium' : 'low'}`}>
-                    {(exp.confidence * 100).toFixed(0)}%
-                  </span>
-                </td>
-                <td>
-                  <span className={`badge ${exp.status === 'approved' ? 'badge-positive' : 'badge-warning'}`}>
-                    {exp.status === 'approved' ? 'Approved' : 'Pending'}
-                  </span>
-                </td>
-                <td style={{ textAlign: 'right' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                    <button 
-                      className="btn btn-secondary btn-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openExpenseDeepDive(exp);
-                      }}
-                      title="Open AI Deep Dive Audit"
-                    >
-                      <Eye size={12} /> Deep Dive
-                    </button>
-                    <button 
-                      className="btn btn-ghost btn-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedExpense(exp);
-                      }}
-                      title="View Details"
-                    >
-                      <Edit2 size={12} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+              .map(exp => {
+                const confVal = typeof exp.confidence === 'number' && !isNaN(exp.confidence) ? exp.confidence : 0.98;
+                return (
+                  <tr 
+                    key={exp.id} 
+                    onClick={() => openExpenseDeepDive(exp)} 
+                    style={{ cursor: 'pointer' }}
+                    className="hover:bg-slate-800/40 transition-colors"
+                  >
+                    <td>{formatDate(exp.date, 'short')}</td>
+                    <td><strong style={{ color: 'var(--color-text-primary)' }}>{exp.vendor}</strong></td>
+                    <td>
+                      <span className="badge badge-neutral"><Tag size={10} /> {exp.category || 'General'}</span>
+                    </td>
+                    <td><span className="value-financial value-negative">-{formatCurrency(exp.amount)}</span></td>
+                    <td>
+                      <span className={`exp-confidence ${confVal >= 0.95 ? 'high' : confVal >= 0.9 ? 'medium' : 'low'}`}>
+                        {(confVal * 100).toFixed(0)}%
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={(e) => handleToggleStatus(exp, e)}
+                        className={`badge ${exp.status === 'approved' ? 'badge-positive' : 'badge-warning'}`}
+                        style={{
+                          cursor: 'pointer',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '100px',
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        title={`Click to ${exp.status === 'approved' ? 'mark Pending' : 'Approve & Post to General Ledger'}`}
+                      >
+                        {exp.status === 'approved' ? '✓ Approved' : '⏳ Pending'}
+                      </button>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                        <button 
+                          className="btn btn-secondary btn-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openExpenseDeepDive(exp);
+                          }}
+                          title="Open AI Deep Dive Audit"
+                        >
+                          <Eye size={12} /> Deep Dive
+                        </button>
+                        <button 
+                          className="btn btn-ghost btn-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedExpense(exp);
+                          }}
+                          title="View Details"
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

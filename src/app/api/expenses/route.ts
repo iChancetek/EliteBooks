@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getExpenses, createExpense } from '@/lib/firestore';
+import { getExpenses, createExpense, updateExpense } from '@/lib/firestore';
 import { adminAuth } from '@/lib/firebase/admin';
 
 async function getOrgId(request: NextRequest): Promise<string> {
@@ -51,6 +51,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: expense }, { status: 201 });
   } catch (error: any) {
     console.error('[Expenses POST]', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const orgId = await getOrgId(request);
+    const body = await request.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Expense id is required' }, { status: 400 });
+    }
+
+    await updateExpense(orgId, id, updates);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[Expenses PATCH]', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

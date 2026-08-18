@@ -6,7 +6,7 @@ import {
   ArrowUpRight, ArrowDownRight, Mic, Bot, Zap, CreditCard,
   BarChart3, Receipt, PieChart, Clock, AlertTriangle, ShieldCheck, Layers, Cpu
 } from 'lucide-react';
-import { formatCurrency, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatPercent, parseLocalDate } from '@/lib/utils';
 import { useAgent } from '@/hooks/useAgent';
 import { useVoice } from '@/hooks/useVoice';
 import { useAuth } from '@/hooks/useAuth';
@@ -98,7 +98,7 @@ export default function DashboardHome() {
         (d.invoices || []).forEach((inv: any) => {
           const dateStr = inv.issueDate || inv.createdAt;
           if (dateStr) {
-            const m = new Date(dateStr).toLocaleString('default', { month: 'short' });
+            const m = parseLocalDate(dateStr).toLocaleString('default', { month: 'short' });
             if (!monthMap[m]) monthMap[m] = { Revenue: 0, Expenses: 0 };
             monthMap[m].Revenue += (inv.total || 0);
           }
@@ -106,7 +106,7 @@ export default function DashboardHome() {
         (d.expenses || []).filter((e: any) => e.status !== 'deleted' && !e.isPersonal).forEach((ex: any) => {
           const dateStr = ex.date || ex.createdAt;
           if (dateStr) {
-            const m = new Date(dateStr).toLocaleString('default', { month: 'short' });
+            const m = parseLocalDate(dateStr).toLocaleString('default', { month: 'short' });
             if (!monthMap[m]) monthMap[m] = { Revenue: 0, Expenses: 0 };
             monthMap[m].Expenses += (ex.amount || 0);
           }

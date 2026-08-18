@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import GraphRAGTopologyCard from './GraphRAGTopologyCard';
+import RichMessageContent from './RichMessageContent';
 
 interface ExecutiveReportCardProps {
   content: string;
@@ -241,17 +242,8 @@ export default function ExecutiveReportCard({
                 {isGraphRAG ? (
                   <GraphRAGTopologyCard rawText={messageBody} />
                 ) : (
-                  <div
-                    style={{
-                      fontSize: 'var(--text-sm)',
-                      lineHeight: 1.7,
-                      color: 'var(--color-text-primary)',
-                      whiteSpace: 'pre-wrap',
-                      fontFamily: 'var(--font-sans)',
-                      letterSpacing: '0.01em',
-                    }}
-                  >
-                    {messageBody}
+                  <div style={{ fontSize: 'var(--text-sm)', lineHeight: 1.7, color: 'var(--color-text-primary)' }}>
+                    <RichMessageContent content={messageBody} />
                   </div>
                 )}
               </div>
@@ -265,14 +257,13 @@ export default function ExecutiveReportCard({
                 fontSize: 'var(--text-sm)',
                 lineHeight: 1.7,
                 color: 'var(--color-text-primary)',
-                whiteSpace: 'pre-wrap',
-                background: 'rgba(30, 41, 59, 0.3)',
-                padding: 'var(--space-3) var(--space-4)',
+                background: 'rgba(30, 41, 59, 0.4)',
+                padding: 'var(--space-4)',
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--color-border-subtle)',
               }}
             >
-              {chunk}
+              <RichMessageContent content={chunk} />
             </div>
           );
         })}

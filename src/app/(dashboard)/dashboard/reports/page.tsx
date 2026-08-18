@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles, Network } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, Brush } from 'recharts';
-import { formatCurrency, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatPercent, parseLocalDate } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
@@ -51,7 +51,7 @@ export default function ReportsPage() {
   const allInvoices = reportData?.invoices || [];
 
   const activeExpenses = allExpenses.filter((e: any) => {
-    const dateObj = new Date(e.date);
+    const dateObj = parseLocalDate(e.date);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const expenseMonth = months[dateObj.getMonth()];
     const expenseYear = dateObj.getFullYear().toString();
@@ -62,7 +62,7 @@ export default function ReportsPage() {
   });
 
   const activeInvoices = allInvoices.filter((i: any) => {
-    const dateObj = new Date(i.dueDate || i.createdAt);
+    const dateObj = parseLocalDate(i.dueDate || i.createdAt);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const invMonth = months[dateObj.getMonth()];
     const invYear = dateObj.getFullYear().toString();
@@ -78,7 +78,7 @@ export default function ReportsPage() {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     allInvoices.forEach((inv: any) => {
-      const dateObj = new Date(inv.dueDate || inv.createdAt);
+      const dateObj = parseLocalDate(inv.dueDate || inv.createdAt);
       const m = months[dateObj.getMonth()];
       const y = dateObj.getFullYear().toString();
       const label = `${m} ${y}`;
@@ -96,7 +96,7 @@ export default function ReportsPage() {
 
     allExpenses.forEach((exp: any) => {
       if (exp.status === 'deleted') return;
-      const dateObj = new Date(exp.date);
+      const dateObj = parseLocalDate(exp.date);
       const m = months[dateObj.getMonth()];
       const y = dateObj.getFullYear().toString();
       const label = `${m} ${y}`;
