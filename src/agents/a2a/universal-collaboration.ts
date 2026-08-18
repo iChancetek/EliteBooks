@@ -75,6 +75,145 @@ export async function runUniversalAgentCollaboration(
     queryLower.includes('bought ') || queryLower.includes('purchased ')
   ) && amount !== null;
 
+  // ── Natural Language Date Extraction ──
+  // Parses explicit dates from user queries: "August 27th 2026", "8/27/2026",
+  // "due on Friday", "due in 10 days", "Net 15", "due on receipt", etc.
+  function parseNaturalDate(query: string): string | null {
+    const q = query.toLowerCase();
+
+    // 1. Explicit date formats: "August 27th 2026", "Aug 27, 2026", "august 27 2026"
+    const monthNames: Record<string, number> = {
+      january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+      july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+      jan: 0, feb: 1, mar: 2, apr: 3, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+    };
+    const namedDateMatch = query.match(
+      /(?:due|by|before|on|for)\s+(?:date\s+)?(?:is\s+)?(\b(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\b)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})?/i
+    );
+    if (namedDateMatch) {
+      const month = monthNames[namedDateMatch[1].toLowerCase()];
+      const day = parseInt(namedDateMatch[2]);
+      const year = namedDateMatch[3] ? parseInt(namedDateMatch[3]) : new Date().getFullYear();
+      if (month !== undefined && day >= 1 && day <= 31) {
+        const d = new Date(year, month, day);
+        return d.toISOString().split('T')[0];
+      }
+    }
+
+    // 2. Numeric date formats: "8/27/2026", "08-27-2026", "2026-08-27"
+    const numericDateMatch = query.match(
+      /(?:due|by|before|on|for)\s+(?:date\s+)?(?:is\s+)?(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/i
+    );
+    if (numericDateMatch) {
+      let m = parseInt(numericDateMatch[1]);
+      let d = parseInt(numericDateMatch[2]);
+      let y = parseInt(numericDateMatch[3]);
+      if (y < 100) y += 2000;
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        return new Date(y, m - 1, d).toISOString().split('T')[0];
+      }
+    }
+
+    // 2b. ISO format in query: "2026-08-27"
+    const isoDateMatch = query.match(
+      /(?:due|by|before|on|for)\s+(?:date\s+)?(?:is\s+)?(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/i
+    );
+    if (isoDateMatch) {
+      const y = parseInt(isoDateMatch[1]);
+      const m = parseInt(isoDateMatch[2]);
+      const d = parseInt(isoDateMatch[3]);
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        return new Date(y, m - 1, d).toISOString().split('T')[0];
+      }
+    }
+
+    // 3. Relative days: "in 10 days", "in 2 weeks"
+    const relativeDaysMatch = q.match(/(?:due\s+)?in\s+(\d+)\s+(days?|weeks?|months?)/i);
+    if (relativeDaysMatch) {
+      const n = parseInt(relativeDaysMatch[1]);
+      const unit = relativeDaysMatch[2].toLowerCase();
+      const now = new Date();
+      if (unit.startsWith('day')) now.setDate(now.getDate() + n);
+      else if (unit.startsWith('week')) now.setDate(now.getDate() + n * 7);
+      else if (unit.startsWith('month')) now.setMonth(now.getMonth() + n);
+      return now.toISOString().split('T')[0];
+    }
+
+    // 4. Net terms: "Net 15", "Net 45", "Net 60"
+    const netMatch = q.match(/net\s*(\d+)/i);
+    if (netMatch) {
+      const days = parseInt(netMatch[1]);
+      const now = new Date();
+      now.setDate(now.getDate() + days);
+      return now.toISOString().split('T')[0];
+    }
+
+    // 5. Day-of-week references: "due on Friday", "due next Monday"
+    const dayOfWeekNames: Record<string, number> = {
+      sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+      sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6,
+    };
+    const dowMatch = q.match(
+      /(?:due|by|before|on)\s+(?:next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|wed|thu|fri|sat)/i
+    );
+    if (dowMatch) {
+      const targetDay = dayOfWeekNames[dowMatch[1].toLowerCase()];
+      const isNext = q.includes('next');
+      const now = new Date();
+      const currentDay = now.getDay();
+      let daysAhead = targetDay - currentDay;
+      if (daysAhead <= 0 || isNext) daysAhead += 7;
+      if (isNext && daysAhead <= 7) daysAhead += 7;
+      now.setDate(now.getDate() + daysAhead);
+      return now.toISOString().split('T')[0];
+    }
+
+    // 6. "tomorrow", "end of month", "end of week"
+    if (q.includes('tomorrow')) {
+      const d = new Date(); d.setDate(d.getDate() + 1);
+      return d.toISOString().split('T')[0];
+    }
+    if (q.includes('end of month') || q.includes('month end') || q.includes('eom')) {
+      const d = new Date(); d.setMonth(d.getMonth() + 1, 0);
+      return d.toISOString().split('T')[0];
+    }
+    if (q.includes('end of week') || q.includes('eow')) {
+      const d = new Date(); d.setDate(d.getDate() + (5 - d.getDay()));
+      return d.toISOString().split('T')[0];
+    }
+
+    // 7. Standalone date without "due" prefix — catch "August 27th 2026" anywhere
+    const standaloneNamedDate = query.match(
+      /(\b(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\b)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})/i
+    );
+    if (standaloneNamedDate) {
+      const month = monthNames[standaloneNamedDate[1].toLowerCase()];
+      const day = parseInt(standaloneNamedDate[2]);
+      const year = parseInt(standaloneNamedDate[3]);
+      if (month !== undefined && day >= 1 && day <= 31) {
+        const d = new Date(year, month, day);
+        return d.toISOString().split('T')[0];
+      }
+    }
+
+    return null;
+  }
+
+  // ── Intent-Based Invoice Status Detection ──
+  // "create and send invoice" → 'sent'
+  // "send invoice to..." → 'sent'
+  // "draft invoice for..." → 'draft' (explicit)
+  // default → 'draft' (safety guardrail)
+  const isSendIntent = (
+    queryLower.includes('send ') || queryLower.includes('and send') ||
+    queryLower.includes('issue ') || queryLower.includes('finalize') ||
+    queryLower.includes('dispatch') || queryLower.includes('deliver')
+  );
+  const invoiceStatus = isSendIntent ? 'sent' : 'draft';
+
+  // ── Extract Due Date (used across handlers) ──
+  const parsedDueDate = parseNaturalDate(unmaskedQuery);
+
   // ── Autonomous Expense Creation ──
   if (
     isCreationIntent &&
@@ -130,14 +269,14 @@ export async function runUniversalAgentCollaboration(
     else if (queryLower.includes('spotify')) vendorName = 'Spotify';
     else if (forMatch && !forMatch[1].match(/^\$/)) vendorName = forMatch[1].trim();
 
-    const dateToday = new Date().toISOString().split('T')[0];
+    const expenseDate = parsedDueDate || new Date().toISOString().split('T')[0];
 
     try {
       const createdExpense = await createExpense(orgId, {
         vendor: vendorName,
         amount: amount,
         category: assignedCategory,
-        date: dateToday,
+        date: expenseDate,
         description: unmaskedQuery,
         paymentMethod: 'Corporate Card',
         aiCategorized: true,
@@ -159,7 +298,7 @@ export async function runUniversalAgentCollaboration(
 • Vendor: ${vendorName}
 • Amount: $${amount!.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 • Category: ${assignedCategory} (AI Confidence: 96%)
-• Date: ${dateToday}
+• Date: ${expenseDate}
 • Status: Pending (awaiting controller approval)
 • Payment Method: Corporate Card
 
@@ -231,7 +370,18 @@ Expense Agent has persisted this transaction to your live general ledger databas
     else if (queryLower.includes('apex')) clientName = 'Apex Systems';
 
     const dateToday = new Date().toISOString().split('T')[0];
-    const dueDate = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+    const defaultDueDate = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+    const dueDate = parsedDueDate || defaultDueDate;
+
+    // Compute payment terms label dynamically
+    const dueDateObj = new Date(dueDate + 'T00:00:00');
+    const todayObj = new Date(dateToday + 'T00:00:00');
+    const daysDiff = Math.round((dueDateObj.getTime() - todayObj.getTime()) / 86400000);
+    const termsLabel = parsedDueDate
+      ? (daysDiff <= 0 ? 'Due on Receipt' : `Net ${daysDiff}`)
+      : 'Net 30';
+
+    const statusLabel = invoiceStatus === 'sent' ? 'Sent (issued to client)' : 'Draft (ready for review & send)';
 
     try {
       const createdInvoice = await createInvoice(orgId, {
@@ -247,8 +397,8 @@ Expense Agent has persisted this transaction to your live general ledger databas
         total: Math.round(amount! * 1.08 * 100) / 100,
         issueDate: dateToday,
         dueDate: dueDate,
-        status: 'draft',
-        terms: 'Net 30',
+        status: invoiceStatus,
+        terms: termsLabel,
       });
 
       const block = auditLock.appendBlock(orgId, 'INVOICE_CREATED_VIA_AI', 'Invoicing Agent', {
@@ -266,8 +416,8 @@ Expense Agent has persisted this transaction to your live general ledger databas
 • Tax (8%): $${(Math.round(amount! * 0.08 * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
 • Total Due: $${(Math.round(amount! * 1.08 * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
 • Issue Date: ${dateToday}
-• Due Date: ${dueDate} (Net 30)
-• Status: Draft (ready for review & send)
+• Due Date: ${dueDate} (${termsLabel})
+• Status: ${statusLabel}
 
 Invoicing Agent has persisted this invoice to your accounts receivable ledger. Dispatching to Ledger Agent for ASC-606 revenue recognition.`;
 
@@ -534,14 +684,14 @@ Inventory Agent has added this product to your active catalog. Dispatching to Le
     else if (queryLower.includes('netflix')) pVendor = 'Netflix';
     else if (queryLower.includes('spotify')) pVendor = 'Spotify';
 
-    const dateToday = new Date().toISOString().split('T')[0];
+    const personalDate = parsedDueDate || new Date().toISOString().split('T')[0];
 
     try {
       const createdExpense = await createExpense(orgId, {
         vendor: pVendor,
         amount: amount,
         category: pCategory,
-        date: dateToday,
+        date: personalDate,
         description: unmaskedQuery,
         paymentMethod: 'Personal Card',
         aiCategorized: true,
@@ -560,7 +710,7 @@ Inventory Agent has added this product to your active catalog. Dispatching to Le
 • Vendor: ${pVendor}
 • Amount: $${amount!.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 • Category: ${pCategory} (AI Confidence: 94%)
-• Date: ${dateToday}
+• Date: ${personalDate}
 • Account: Personal (separated from corporate ledger)
 • Status: Logged
 
