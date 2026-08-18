@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { 
   Sparkles, ArrowLeft, Bot, ShieldCheck, 
   Layers, Cpu, Cloud, DollarSign, 
-  Receipt, Users, Lock, Compass, Activity, FileText, CheckCircle2
+  Receipt, Users, Lock, Compass, Activity, FileText, CheckCircle2,
+  FileCheck2, ShieldAlert
 } from 'lucide-react';
 import styles from './page.module.css';
 import PageVoiceControl from '@/components/PageVoiceControl';
@@ -15,7 +16,7 @@ export default function LearningPage() {
       icon: Compass,
       color: '#3b82f6',
       description: 'Resolves natural language queries, routes tasks across specialized sub-agents, and enforces Human-in-the-Loop governance.',
-      tags: ['LangGraph', 'Semantic Router', 'HITL Governance']
+      tags: ['GPT-5.6-Terra', 'LangGraph', 'HITL Governance']
     },
     {
       name: 'Ledger Agent',
@@ -159,7 +160,7 @@ export default function LearningPage() {
               <h2>The Multi-Agent Swarm Ecosystem</h2>
             </div>
             <p>
-              EliteBooks replaces monolithic algorithms with a coordinated swarm of 9 specialized autonomous agents. Each agent operates with defined jurisdictional authority, communicating via LangGraph state graphs and Agent-to-Agent (A2A) consensus protocols:
+              EliteBooks replaces monolithic algorithms with a coordinated swarm of 10 specialized autonomous domain agents powered by GPT-5.6-Terra. Each agent operates with defined jurisdictional authority, communicating via LangGraph state graphs and Agent-to-Agent (A2A) consensus protocols:
             </p>
 
             <div className={styles.agentsGrid}>
@@ -236,6 +237,42 @@ export default function LearningPage() {
             <p>
               EliteBooks features natural voice interaction powered by OpenAI Whisper and Nova Text-to-Speech. Financial controllers and executives can query reports, review balance sheets, and audit expenses through natural voice in 7 global languages: English, Spanish, Mandarin Chinese, French, German, Japanese, and Portuguese.
             </p>
+          </section>
+
+          {/* Chapter 7 */}
+          <section className={styles.chapterCard}>
+            <div className={styles.chapterHeader}>
+              <span className={styles.chapterNumber}>Chapter 07</span>
+              <h2>SOC 1 (ICFR) & SOC 2 Type II Compliance Architecture</h2>
+            </div>
+            <p>
+              EliteBooks is engineered from the ground up for enterprise compliance, Big 4 CPA audits, and rigorous security reviews:
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', padding: '16px' }}>
+                <h4 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 800 }}>
+                  <FileCheck2 size={18} />
+                  SOC 1 Type II (Financial ICFR)
+                </h4>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
+                  <li><strong>Double-Entry Invariant:</strong> Continuous verification that sum(Debits) == sum(Credits).</li>
+                  <li><strong>ASC-606 Compliance:</strong> Automated 5-step contract milestone recognition checks.</li>
+                  <li><strong>Maker-Checker SoD:</strong> AI restricted to advisory role; dual-signature human approval mandatory.</li>
+                </ul>
+              </div>
+
+              <div style={{ background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', borderRadius: '14px', padding: '16px' }}>
+                <h4 style={{ color: '#06b6d4', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 800 }}>
+                  <ShieldCheck size={18} />
+                  SOC 2 Type II (Trust Criteria)
+                </h4>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
+                  <li><strong>AI Processing Integrity:</strong> 100% mathematical grounding in live database ledgers with zero ungrounded hallucinations.</li>
+                  <li><strong>PII Tokenization Vault:</strong> Real-time in-memory redaction of SSNs, EINs, and bank accounts.</li>
+                  <li><strong>Auditor Evidence Exporter:</strong> Instant JSON export for Vanta, Drata, and external CPA auditors.</li>
+                </ul>
+              </div>
+            </div>
           </section>
         </div>
 

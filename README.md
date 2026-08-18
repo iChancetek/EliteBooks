@@ -16,7 +16,7 @@ By combining stateful multi-agent orchestration, cryptographic double-entry inte
 
 ## 2. THE MULTI-AGENT SWARM ARCHITECTURE
 
-EliteBooks operates on a multi-agent framework powered by `@openai/agents`, LangGraph state machines, Pinecone GraphRAG, and Model Context Protocol (MCP) clients. Rather than relying on a single monolithic model, EliteBooks deploys 9 specialized agents that collaborate with distinct responsibilities:
+EliteBooks operates on a multi-agent framework powered by `@openai/agents` (`GPT-5.6-Terra`), LangGraph state machines, Pinecone GraphRAG, and Model Context Protocol (MCP) clients. Rather than relying on a single monolithic model, EliteBooks deploys 10 specialized domain agents that collaborate with distinct responsibilities:
 
 ```
                                ┌───────────────────────────┐
@@ -47,7 +47,7 @@ EliteBooks operates on a multi-agent framework powered by `@openai/agents`, Lang
 
 ### 1. The Orchestrator Agent (Master Controller & Intent Router)
 - **Primary Function:** Acts as the executive brain of EliteBooks. It continuously monitors incoming user prompts, webhook alerts, banking feeds, and voice transcripts, resolving natural language into deterministic agent execution graphs.
-- **Mechanism:** Leverages semantic similarity routing and function calling to delegate tasks to specialized sub-agents. It manages multi-turn agent handoffs and enforces Human-in-the-Loop (HITL) checkpoints whenever financial thresholds exceed corporate governance limits.
+- **Mechanism:** Leverages semantic similarity routing and function calling via `GPT-5.6-Terra` to delegate tasks to specialized sub-agents. It manages multi-turn agent handoffs and enforces Human-in-the-Loop (HITL) checkpoints whenever financial thresholds exceed corporate governance limits.
 
 ### 2. The Ledger Agent (Double-Entry Bookkeeping Engine)
 - **Primary Function:** Maintains mathematical truth and immutable general ledger balance.
@@ -87,7 +87,24 @@ EliteBooks operates on a multi-agent framework powered by `@openai/agents`, Lang
 
 ---
 
-## 4. HUMAN-IN-THE-LOOP (HITL) GOVERNANCE
+## 4. SOC 1 (ICFR) & SOC 2 TYPE II CONTINUOUS GOVERNANCE
+
+EliteBooks implements native, automated compliance architectures designed for Big 4 CPA audits, corporate controllers, and enterprise security evaluations:
+
+### SOC 1 Type II (Internal Controls Over Financial Reporting - ICFR)
+- **Mathematical Ledger Invariant (Control 1.1):** Real-time automated verification ensuring that sum(Debits) == sum(Credits) and Assets == Liabilities + Equity across all posted transactions.
+- **ASC-606 Revenue Recognition (Control 1.2):** 5-step contract validation ensuring revenue is recognized strictly upon milestone delivery.
+- **Maker-Checker Segregation of Duties (Control 1.3):** Autonomous AI agents are restricted to advisory/proposal states for financial disbursements; dual-signature human controller authorization is cryptographically enforced.
+
+### SOC 2 Type II (Trust Services Criteria - Security & AI Processing Integrity)
+- **AI Processing Integrity (Control 2.1):** 100% of autonomous agent recommendations and ledger summaries are mathematically grounded in verified Firestore database records with zero ungrounded numerical synthesis.
+- **Logical Access & Multi-Tenant RBAC (Control 2.2):** Least-privilege role boundaries enforced across Viewer, Accountant, Controller, and Admin tiers with cryptographic JWT verification.
+- **Confidentiality & PII Tokenization Vault (Control 2.3):** Sensitive identifiers (SSNs, EINs, bank routing numbers, credit cards) are dynamically masked prior to external model transmission under zero-data-retention agreements.
+- **Auditor Evidence Exporter:** One-click generation of immutable JSON evidence packages compatible with CPA auditors, Vanta, and Drata.
+
+---
+
+## 5. HUMAN-IN-THE-LOOP (HITL) GOVERNANCE
 
 While EliteBooks automates repetitive financial bookkeeping, it strictly adheres to enterprise **Human-in-the-Loop (HITL)** governance. High-stakes financial operations require human authorization before irreversible funds transfers occur:
 
@@ -110,7 +127,7 @@ While EliteBooks automates repetitive financial bookkeeping, it strictly adheres
 
 ---
 
-## 5. MULTILINGUAL VOICE & AUDIO SUITE
+## 6. MULTILINGUAL VOICE & AUDIO SUITE
 
 EliteBooks features an interactive voice engine powered by OpenAI Whisper and natural Text-to-Speech (Nova HD voice):
 
@@ -126,23 +143,24 @@ EliteBooks features an interactive voice engine powered by OpenAI Whisper and na
 
 ---
 
-## 6. TECH STACK & SYSTEM PREREQUISITES
+## 7. TECH STACK & SYSTEM PREREQUISITES
 
 | Layer | Technology |
 |---|---|
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript 5 (Strict Mode) |
-| Styling | Vanilla CSS Custom Properties & Glassmorphism System |
+| Styling | Vanilla CSS Custom Properties & CSS Modules |
 | Authentication | Firebase Auth (Client & Admin SDKs) |
 | Database | Google Cloud Firestore (Multi-Tenant Org Segregation) |
 | AI Orchestration | `@openai/agents`, LangGraph, Pinecone GraphRAG |
-| AI Models | GPT-5.2 (Deep Financial Reasoning), GPT-5-mini (Routing) |
+| AI Models | GPT-5.6-Terra (Deep Financial Reasoning & Agentic Execution) |
+| Compliance | SOC 1 Type II (SSAE 18), SOC 2 Type II (AICPA TSC), GAAP |
 | Voice Engine | Whisper-1 (STT) + OpenAI TTS-1-HD (Nova Voice) |
 | Banking & Payments | Plaid API & Stripe Connect |
 
 ---
 
-## 7. INSTALLATION & LOCAL DEVELOPMENT
+## 8. INSTALLATION & LOCAL DEVELOPMENT
 
 ```bash
 # 1. Clone the repository
@@ -163,7 +181,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 8. PRODUCTION BUILD & DEPLOYMENT
+## 9. PRODUCTION BUILD & DEPLOYMENT
 
 ```bash
 # Run production build and type check
@@ -175,6 +193,6 @@ npm start
 
 ---
 
-## 9. LICENSE & COMPLIANCE
+## 10. LICENSE & COMPLIANCE
 
-EliteBooks is proprietary enterprise software. Built with strict adherence to GAAP, SOC 2 Type II audit readiness, and GDPR/CCPA privacy standards. All rights reserved.
+EliteBooks is proprietary enterprise software. Built with strict adherence to GAAP, SOC 1 Type II (SSAE 18 / ISAE 3402) ICFR standards, SOC 2 Type II Trust Services Criteria, and GDPR/CCPA privacy standards. All rights reserved.

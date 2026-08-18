@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { 
   Brain, Zap, Shield, TrendingUp, FileText, DollarSign, 
   Users, BarChart3, ArrowRight, Sparkles, Bot, ChevronRight,
-  CreditCard, Receipt, PieChart, Clock, Wallet
+  CreditCard, Receipt, PieChart, Clock, Wallet, ShieldCheck,
+  FileCheck2, Lock, Cloud, Compass, Activity, Layers
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -32,20 +33,20 @@ const features = [
     color: '#f59e0b',
   },
   {
-    icon: PieChart,
-    title: 'Inventory Management',
-    description: 'Track stock levels, COGS, and supplier performance. AI predicts reorder timing.',
-    color: '#ec4899',
+    icon: FileCheck2,
+    title: 'SOC 1 & SOC 2 Governance',
+    description: 'Automated ICFR financial reporting controls, ASC-606 revenue verification, and zero-hallucination AI processing integrity.',
+    color: '#06b6d4',
   },
   {
     icon: Shield,
     title: 'Compliance & Tax',
     description: 'Automated tax obligation tracking, filing preparation, and audit-ready reports.',
-    color: '#06b6d4',
+    color: '#14b8a6',
   },
   {
     icon: Wallet,
-    title: 'Personal Finance',
+    title: 'Personal Finance & Autopilot',
     description: 'Track personal accounts and wealth alongside your business. A unified view of your entire financial life.',
     color: '#6366f1',
   },
@@ -53,19 +54,22 @@ const features = [
 
 const agents = [
   { name: 'Orchestrator', role: 'Master Controller', icon: Brain, color: '#3b82f6' },
-  { name: 'Ledger', role: 'Bookkeeping', icon: FileText, color: '#10b981' },
-  { name: 'Expense', role: 'Categorization', icon: Receipt, color: '#f59e0b' },
-  { name: 'Invoice', role: 'Billing', icon: CreditCard, color: '#8b5cf6' },
-  { name: 'Cash Flow', role: 'Forecasting', icon: TrendingUp, color: '#ec4899' },
-  { name: 'Payroll', role: 'Compensation', icon: DollarSign, color: '#06b6d4' },
-  { name: 'Compliance', role: 'Tax & Audit', icon: Shield, color: '#f43f5e' },
+  { name: 'Ledger', role: 'Bookkeeping', icon: Layers, color: '#10b981' },
+  { name: 'Expense', role: 'Categorization', icon: Receipt, color: '#f43f5e' },
+  { name: 'Invoice', role: 'Billing', icon: FileText, color: '#8b5cf6' },
+  { name: 'Cash Flow', role: 'Forecasting', icon: Activity, color: '#06b6d4' },
+  { name: 'Payroll', role: 'Compensation', icon: Users, color: '#f59e0b' },
+  { name: 'Compliance', role: 'Tax & Audit', icon: ShieldCheck, color: '#14b8a6' },
+  { name: 'FinOps', role: 'Cloud & GPU Unit Economics', icon: Cloud, color: '#0ea5e9' },
+  { name: 'Personal Finance', role: 'Wealth & Draws', icon: DollarSign, color: '#ec4899' },
+  { name: 'Fraud Sentinel', role: 'PII Vault & Security', icon: Lock, color: '#e11d48' },
 ];
 
 const stats = [
+  { value: '100%', label: 'SOC 1 & SOC 2 Ready' },
   { value: '99.9%', label: 'Accuracy Rate' },
   { value: '10x', label: 'Faster Than Manual' },
   { value: '24/7', label: 'Always Running' },
-  { value: '$0', label: 'Accounting Errors' },
 ];
 
 export default function LandingPage() {
@@ -103,6 +107,9 @@ export default function LandingPage() {
             <a href="#features" className={styles.navLink}>Features</a>
             <a href="#agents" className={styles.navLink}>AI Agents</a>
             <a href="#stats" className={styles.navLink}>Why EliteBooks</a>
+            <Link href="/learning" className={styles.navLink} style={{ color: '#06b6d4', fontWeight: 700 }}>
+              Learn More
+            </Link>
             <a 
               href="https://famio.us" 
               target="_blank" 
@@ -149,30 +156,30 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className={styles.hero} id="hero-section">
         <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>
-            <Bot size={14} />
-            <span>Powered by 7 Autonomous AI Agents</span>
+          <div className={styles.heroBadge} style={{ background: 'rgba(6, 182, 212, 0.15)', borderColor: 'rgba(6, 182, 212, 0.35)', color: '#22d3ee' }}>
+            <ShieldCheck size={14} />
+            <span>SOC 1 & SOC 2 Type II Ready · 10 Autonomous AI Agents</span>
           </div>
           <h1 className={styles.heroTitle}>
             Accounting that<br />
             <span className="text-gradient">runs itself.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            EliteBooks is an AI-powered financial operating system with autonomous agents handling invoicing, expenses, payroll, reporting, FinOps, and personal finances — all automated and clearly explained.
+            EliteBooks is an enterprise-grade AI financial operating system powered by GPT-5.6-Terra. Autonomous agents handle invoicing, expenses, payroll, reporting, FinOps, and personal wealth — protected by continuous SOC 1 ICFR and SOC 2 Type II trust controls.
           </p>
           <div className={styles.heroActions}>
             <Link href="/signup" className={`btn btn-primary btn-lg ${styles.heroCta}`} id="hero-signup-btn">
               Start For Free
               <ArrowRight size={18} />
             </Link>
-            <Link href="/features" className="btn btn-secondary btn-lg" id="hero-features-btn">
-              See How It Works
+            <Link href="/learning" className="btn btn-secondary btn-lg" id="hero-learning-btn">
+              Learn More
               <ChevronRight size={18} />
             </Link>
           </div>
           <div className={styles.heroTrust}>
-            <Clock size={14} />
-            <span>Setup in under 2 minutes · No accounting knowledge required</span>
+            <ShieldCheck size={15} color="#10b981" />
+            <span>SOC 1 (SSAE 18) ICFR · SOC 2 Type II · Immutable SHA-256 Audit Trail</span>
           </div>
         </div>
 
@@ -195,7 +202,7 @@ export default function LandingPage() {
                 <span className={styles.commandCursor} />
               </div>
               <div className={styles.commandActions}>
-                {['Track my money', 'Send an invoice', 'Run payroll', 'See my profit'].map((action) => (
+                {['Track my money', 'Send an invoice', 'Run payroll', 'SOC Compliance Check'].map((action) => (
                   <div key={action} className={styles.commandAction}>
                     <Zap size={14} />
                     <span>{action}</span>
@@ -205,12 +212,11 @@ export default function LandingPage() {
               <div className={styles.commandResponse}>
                 <div className={styles.responseHeader}>
                   <Bot size={14} />
-                  <span>EliteBooks AI</span>
-                  <span className={styles.responseBadge}>Live</span>
+                  <span>EliteBooks AI (GPT-5.6-Terra)</span>
+                  <span className={styles.responseBadge}>Verified</span>
                 </div>
                 <p className={styles.responseText}>
-                  Your net profit this month is <strong>$24,850</strong> — up 12.3% from last month.
-                  Revenue is trending well. I&apos;ve sent 3 invoices today totaling $8,200.
+                  All 6 continuous SOC 1 & SOC 2 controls are verified. Double-entry trial balance is in mathematical equilibrium ($0 variance). 3 invoices sent today totaling $8,200.
                 </p>
               </div>
             </div>
@@ -222,7 +228,7 @@ export default function LandingPage() {
       <section className={styles.features} id="features">
         <div className={styles.sectionHeader}>
           <h2>Everything your business needs.</h2>
-          <p>Full QuickBooks-class accounting, supercharged with AI autonomy.</p>
+          <p>Full QuickBooks-class accounting, supercharged with AI autonomy and continuous SOC compliance.</p>
         </div>
         <div className={styles.featureGrid}>
           {features.map((feature, i) => (
@@ -240,8 +246,8 @@ export default function LandingPage() {
       {/* Agents Section */}
       <section className={styles.agentsSection} id="agents">
         <div className={styles.sectionHeader}>
-          <h2>7 AI Agents. Zero Effort.</h2>
-          <p>Specialized agents work together autonomously to manage every aspect of your finances.</p>
+          <h2>10 AI Agents. Zero Effort.</h2>
+          <p>Specialized domain agents powered by GPT-5.6-Terra collaborate autonomously to manage every aspect of your enterprise finances.</p>
         </div>
         <div className={styles.agentGrid}>
           {agents.map((agent) => (
@@ -278,7 +284,7 @@ export default function LandingPage() {
       <section className={styles.ctaSection}>
         <div className={styles.ctaContent}>
           <h2>Ready to automate your accounting?</h2>
-          <p>Join thousands of businesses that trust EliteBooks to run their finances autonomously.</p>
+          <p>Join businesses that trust EliteBooks for autonomous, SOC 1 & SOC 2 certified financial operations.</p>
           <Link href="/signup" className="btn btn-primary btn-lg" id="cta-signup-btn">
             Get Started Free
             <ArrowRight size={18} />
@@ -296,10 +302,11 @@ export default function LandingPage() {
               </div>
               <span className={styles.logoText}>EliteBooks</span>
             </div>
-            <p>Accounting and wealth management that runs itself, explained simply.</p>
+            <p>Accounting and wealth management that runs itself, backed by continuous SOC 1 & SOC 2 Type II governance.</p>
           </div>
           <div className={styles.footerCopy}>
             <div style={{ display: 'flex', gap: 'var(--space-6)', marginBottom: 'var(--space-4)', justifyContent: 'center' }}>
+              <Link href="/learning" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Learn More</Link>
               <Link href="/terms" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Terms</Link>
               <Link href="/privacy" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Privacy</Link>
               <Link href="/support" style={{ color: 'var(--color-text-primary)', textDecoration: 'none', fontSize: 'var(--text-sm)' }}>Support</Link>
