@@ -25,6 +25,7 @@ import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
 import { useForecast } from '@/hooks/useForecast';
 import { AIBusinessFeedService } from '@/lib/feed-service';
 import { AIBusinessFeedItem, HITLApprovalRequest } from '@/types/agent-system';
+import EliteIntelligenceDashboard from '@/intelligence/components/EliteIntelligenceDashboard';
 
 const quickActions = [
   { label: 'Forecast 90-day cash flow', icon: DollarSign, color: '#10b981' },
@@ -53,7 +54,7 @@ export default function DashboardHome() {
   const [pendingApprovals, setPendingApprovals] = useState<HITLApprovalRequest[]>([]);
   const [activeApprovalRequest, setActiveApprovalRequest] = useState<HITLApprovalRequest | null>(null);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit' | 'soc'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit' | 'soc' | 'intelligence'>('feed');
 
   const [rawReportData, setRawReportData] = useState<any>(null);
   const [snapshot, setSnapshot] = useState({
@@ -619,6 +620,39 @@ export default function DashboardHome() {
               100% READY
             </span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('intelligence')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: 'none',
+              whiteSpace: 'nowrap',
+              background: activeTab === 'intelligence' ? 'linear-gradient(135deg, #f59e0b, #ec4899)' : 'rgba(255, 255, 255, 0.05)',
+              color: activeTab === 'intelligence' ? '#0f172a' : 'rgba(255, 255, 255, 0.7)',
+              boxShadow: activeTab === 'intelligence' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Sparkles size={16} />
+            <span>EliteBooks Intelligence & KPI Studio</span>
+            <span style={{ 
+              fontSize: '10px', 
+              fontWeight: 800, 
+              padding: '2px 7px', 
+              borderRadius: '100px', 
+              background: activeTab === 'intelligence' ? 'rgba(0, 0, 0, 0.25)' : 'rgba(245, 158, 11, 0.2)',
+              color: activeTab === 'intelligence' ? '#0f172a' : '#f59e0b'
+            }}>
+              PRO
+            </span>
+          </button>
         </div>
 
         {/* Tab Content Display */}
@@ -710,6 +744,21 @@ export default function DashboardHome() {
 
         {activeTab === 'audit' && <AIAuditCenter orgId="default" />}
         {activeTab === 'soc' && <SOCComplianceCenter />}
+        {activeTab === 'intelligence' && (
+          <EliteIntelligenceDashboard
+            financialData={rawReportData ? {
+              totalRevenue: rawReportData.totalRevenue || 0,
+              totalExpenses: rawReportData.totalExpenses || 0,
+              netProfit: rawReportData.netProfit || 0,
+              totalPaid: rawReportData.totalPaid || 0,
+              totalOutstanding: rawReportData.totalOutstanding || 0,
+              operatingCash: (rawReportData.totalPaid || 0) - (rawReportData.totalExpenses || 0),
+              expensesByCategory: rawReportData.expensesByCategory || {},
+              invoices: rawReportData.invoices || [],
+              expenses: rawReportData.expenses || [],
+            } : undefined}
+          />
+        )}
       </section>
 
       {/* AI Guided Creation Modal (Human-in-the-Loop) */}
