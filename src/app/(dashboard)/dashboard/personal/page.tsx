@@ -1107,45 +1107,58 @@ export default function PersonalFinancePage() {
           {/* Colorful Visual Analytics with Interactive Deep Dives */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-6)' }}>
             {/* Bar Chart Container */}
-            <div 
-              className="glass-card cursor-pointer hover:border-emerald-500/40 transition-all p-2 rounded-2xl"
-              style={{ position: 'relative' }}
-              onClick={() => setSelectedDeepDive({
-                id: `personal-vs-draw-${selectedYear}`,
-                title: `Owner Distributions vs Personal Spend (${selectedYear === 'All Years' ? 'All Time' : selectedYear})`,
-                module: 'Personal Finance',
-                subtitle: 'Net Cash Velocity & Equity Draw Analysis',
-                amount: totalPersonalSpend,
-                type: totalOwnerDraw >= totalPersonalSpend ? 'positive' : 'negative',
-                status: totalOwnerDraw >= totalPersonalSpend ? 'BALANCED' : 'DEFICIT_WARNING',
-                category: 'Corporate-to-Personal Velocity',
-                agentUsed: 'Personal Finance Agent',
-                description: `Comprehensive analysis of owner equity draw distributions ($${formatCurrency(totalOwnerDraw)}) compared against personal household expenditures ($${formatCurrency(totalPersonalSpend)}) for ${selectedYear}.`,
-                metrics: [
-                  { label: 'Total Personal Spend', value: formatCurrency(totalPersonalSpend) },
-                  { label: "Owner's Distribution Draw", value: formatCurrency(totalOwnerDraw) },
-                  { label: 'Net Cash Retention', value: formatCurrency(Math.max(0, totalOwnerDraw - totalPersonalSpend)) },
-                  { label: 'Draw Coverage Ratio', value: totalPersonalSpend > 0 ? `${((totalOwnerDraw / totalPersonalSpend) * 100).toFixed(1)}%` : '100.0%' },
-                  { label: 'IRS Corporate Veil Integrity', value: '100% Segregated (#3000)' },
-                  { label: 'Tax Safe Harbor Buffer (25%)', value: formatCurrency(totalPersonalSpend * 0.25) },
-                ],
-                auditTrace: [
-                  { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account #3000.' },
-                  { step: '2. Personal OPEX Isolation', status: 'ISOLATED', agent: 'Personal Finance Agent', detail: 'Household expenses filtered out of business P&L per GAAP rules.' },
-                  { step: '3. Form 1040-ES Safe Harbor Audit', status: 'QUALIFIED', agent: 'Compliance Agent', detail: 'Evaluated quarterly estimated tax adequacy.' }
-                ],
-                aiInsights: [
-                  totalPersonalSpend > 0 
-                    ? `Your personal household burn rate is currently ${totalOwnerDraw >= totalPersonalSpend ? 'covered 100%' : 'exceeding'} your owner distribution velocity.`
-                    : 'No personal spend recorded yet for this active period.',
-                  'All corporate equity draws remain strictly segregated from business operating expenses.'
-                ]
-              })}
-            >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '4px 12px 0 0' }}>
-                <span style={{ fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDeepDive({
+                    id: `personal-vs-draw-${selectedYear}`,
+                    title: `Owner Distributions vs Personal Spend (${selectedYear === 'All Years' ? 'All Time' : selectedYear})`,
+                    module: 'Personal Finance',
+                    subtitle: 'Net Cash Velocity & Equity Draw Analysis',
+                    amount: totalPersonalSpend,
+                    type: totalOwnerDraw >= totalPersonalSpend ? 'positive' : 'negative',
+                    status: totalOwnerDraw >= totalPersonalSpend ? 'BALANCED' : 'DEFICIT_WARNING',
+                    category: 'Corporate-to-Personal Velocity',
+                    agentUsed: 'Personal Finance Agent',
+                    description: `Comprehensive analysis of owner equity draw distributions ($${formatCurrency(totalOwnerDraw)}) compared against personal household expenditures ($${formatCurrency(totalPersonalSpend)}) for ${selectedYear}.`,
+                    metrics: [
+                      { label: 'Total Personal Spend', value: formatCurrency(totalPersonalSpend) },
+                      { label: "Owner's Distribution Draw", value: formatCurrency(totalOwnerDraw) },
+                      { label: 'Net Cash Retention', value: formatCurrency(Math.max(0, totalOwnerDraw - totalPersonalSpend)) },
+                      { label: 'Draw Coverage Ratio', value: totalPersonalSpend > 0 ? `${((totalOwnerDraw / totalPersonalSpend) * 100).toFixed(1)}%` : '100.0%' },
+                      { label: 'IRS Corporate Veil Integrity', value: '100% Segregated (#3000)' },
+                      { label: 'Tax Safe Harbor Buffer (25%)', value: formatCurrency(totalPersonalSpend * 0.25) },
+                    ],
+                    auditTrace: [
+                      { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account #3000.' },
+                      { step: '2. Personal OPEX Isolation', status: 'ISOLATED', agent: 'Personal Finance Agent', detail: 'Household expenses filtered out of business P&L per GAAP rules.' },
+                      { step: '3. Form 1040-ES Safe Harbor Audit', status: 'QUALIFIED', agent: 'Compliance Agent', detail: 'Evaluated quarterly estimated tax adequacy.' }
+                    ],
+                    aiInsights: [
+                      totalPersonalSpend > 0 
+                        ? `Your personal household burn rate is currently ${totalOwnerDraw >= totalPersonalSpend ? 'covered 100%' : 'exceeding'} your owner distribution velocity.`
+                        : 'No personal spend recorded yet for this active period.',
+                      'All corporate equity draws remain strictly segregated from business operating expenses.'
+                    ]
+                  })}
+                  style={{
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    color: '#10b981',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
                   Click for Velocity Deep Dive <ChevronRight size={12} />
-                </span>
+                </button>
               </div>
               <ColorfulBarChart
                 title="Owner Distributions vs Personal Spend"
@@ -1155,47 +1168,91 @@ export default function PersonalFinancePage() {
                   { key: 'NetDraw', label: 'Owner Draw ($)', color: '#10b981' },
                   { key: 'PersonalSpend', label: 'Personal Spend ($)', color: '#ec4899' },
                 ]}
+                onClick={() => setSelectedDeepDive({
+                  id: `personal-vs-draw-${selectedYear}`,
+                  title: `Owner Distributions vs Personal Spend (${selectedYear === 'All Years' ? 'All Time' : selectedYear})`,
+                  module: 'Personal Finance',
+                  subtitle: 'Net Cash Velocity & Equity Draw Analysis',
+                  amount: totalPersonalSpend,
+                  type: totalOwnerDraw >= totalPersonalSpend ? 'positive' : 'negative',
+                  status: totalOwnerDraw >= totalPersonalSpend ? 'BALANCED' : 'DEFICIT_WARNING',
+                  category: 'Corporate-to-Personal Velocity',
+                  agentUsed: 'Personal Finance Agent',
+                  description: `Comprehensive analysis of owner equity draw distributions ($${formatCurrency(totalOwnerDraw)}) compared against personal household expenditures ($${formatCurrency(totalPersonalSpend)}) for ${selectedYear}.`,
+                  metrics: [
+                    { label: 'Total Personal Spend', value: formatCurrency(totalPersonalSpend) },
+                    { label: "Owner's Distribution Draw", value: formatCurrency(totalOwnerDraw) },
+                    { label: 'Net Cash Retention', value: formatCurrency(Math.max(0, totalOwnerDraw - totalPersonalSpend)) },
+                    { label: 'Draw Coverage Ratio', value: totalPersonalSpend > 0 ? `${((totalOwnerDraw / totalPersonalSpend) * 100).toFixed(1)}%` : '100.0%' },
+                    { label: 'IRS Corporate Veil Integrity', value: '100% Segregated (#3000)' },
+                    { label: 'Tax Safe Harbor Buffer (25%)', value: formatCurrency(totalPersonalSpend * 0.25) },
+                  ],
+                  auditTrace: [
+                    { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account #3000.' },
+                    { step: '2. Personal OPEX Isolation', status: 'ISOLATED', agent: 'Personal Finance Agent', detail: 'Household expenses filtered out of business P&L per GAAP rules.' },
+                    { step: '3. Form 1040-ES Safe Harbor Audit', status: 'QUALIFIED', agent: 'Compliance Agent', detail: 'Evaluated quarterly estimated tax adequacy.' }
+                  ],
+                  aiInsights: [
+                    totalPersonalSpend > 0 
+                      ? `Your personal household burn rate is currently ${totalOwnerDraw >= totalPersonalSpend ? 'covered 100%' : 'exceeding'} your owner distribution velocity.`
+                      : 'No personal spend recorded yet for this active period.',
+                    'All corporate equity draws remain strictly segregated from business operating expenses.'
+                  ]
+                })}
               />
             </div>
 
             {/* Pie Chart Container */}
-            <div 
-              className="glass-card cursor-pointer hover:border-pink-500/40 transition-all p-2 rounded-2xl"
-              style={{ position: 'relative' }}
-              onClick={() => setSelectedDeepDive({
-                id: `personal-category-breakdown-${selectedYear}`,
-                title: `Personal Spend Allocation by Category (${selectedYear === 'All Years' ? 'All Time' : selectedYear})`,
-                module: 'Personal Finance',
-                subtitle: `${personalPieData.length} Active Household Spending Categories`,
-                amount: totalPersonalSpend,
-                type: 'neutral',
-                status: personalPieData.length > 0 ? 'OPTIMIZED' : 'EMPTY',
-                category: 'Household Budget Allocation',
-                agentUsed: 'Personal Finance Agent',
-                description: personalPieData.length > 0
-                  ? `Comprehensive category breakdown of ${formatCurrency(totalPersonalSpend)} in household expenditures across ${personalPieData.length} active spending sectors.`
-                  : `No personal spend categories active yet. Log personal expenses to populate the allocation breakdown.`,
-                metrics: [
-                  { label: 'Total Personal Spend', value: formatCurrency(totalPersonalSpend) },
-                  { label: 'Top Expense Category', value: personalPieData[0]?.name ? `${personalPieData[0].name} (${formatCurrency(personalPieData[0].value)})` : 'None' },
-                  { label: 'Active Categories', value: `${personalPieData.length} Categories` },
-                ],
-                auditTrace: [
-                  { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via OpenAI Whisper and GPT-5.6-Terra.' },
-                  { step: '2. GAAP Expense Segregation', status: 'VERIFIED', agent: 'Compliance Agent', detail: 'Validated 0% commingling with corporate books.' }
-                ],
-                aiInsights: [
-                  personalPieData[0]?.name
-                    ? `${personalPieData[0].name} accounts for the largest share of household spending.`
-                    : 'No personal expense data available yet.',
-                  'All categorized items reflect 100% live database transactions.'
-                ]
-              })}
-            >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '4px 12px 0 0' }}>
-                <span style={{ fontSize: '11px', color: '#f472b6', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDeepDive({
+                    id: `personal-category-breakdown-${selectedYear}`,
+                    title: `Personal Spend Allocation by Category (${selectedYear === 'All Years' ? 'All Time' : selectedYear})`,
+                    module: 'Personal Finance',
+                    subtitle: `${personalPieData.length} Active Household Spending Categories`,
+                    amount: totalPersonalSpend,
+                    type: 'neutral',
+                    status: personalPieData.length > 0 ? 'OPTIMIZED' : 'EMPTY',
+                    category: 'Household Budget Allocation',
+                    agentUsed: 'Personal Finance Agent',
+                    description: personalPieData.length > 0
+                      ? `Comprehensive category breakdown of ${formatCurrency(totalPersonalSpend)} in household expenditures across ${personalPieData.length} active spending sectors.`
+                      : `No personal spend categories active yet. Log personal expenses to populate the allocation breakdown.`,
+                    metrics: [
+                      { label: 'Total Personal Spend', value: formatCurrency(totalPersonalSpend) },
+                      { label: 'Top Expense Category', value: personalPieData[0]?.name ? `${personalPieData[0].name} (${formatCurrency(personalPieData[0].value)})` : 'None' },
+                      { label: 'Active Categories', value: `${personalPieData.length} Categories` },
+                    ],
+                    auditTrace: [
+                      { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via OpenAI Whisper and GPT-5.6-Terra.' },
+                      { step: '2. GAAP Expense Segregation', status: 'VERIFIED', agent: 'Compliance Agent', detail: 'Validated 0% commingling with corporate books.' }
+                    ],
+                    aiInsights: [
+                      personalPieData[0]?.name
+                        ? `${personalPieData[0].name} accounts for the largest share of household spending.`
+                        : 'No personal expense data available yet.',
+                      'All categorized items reflect 100% live database transactions.'
+                    ]
+                  })}
+                  style={{
+                    background: 'rgba(244, 63, 94, 0.15)',
+                    border: '1px solid rgba(244, 63, 94, 0.3)',
+                    color: '#f472b6',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
                   Click for Category Deep Dive <ChevronRight size={12} />
-                </span>
+                </button>
               </div>
               <ColorfulPieChart
                 title="Personal Spend Allocation"
@@ -1203,6 +1260,35 @@ export default function PersonalFinancePage() {
                 data={personalPieData}
                 centerText={formatCurrency(totalPersonalSpend)}
                 centerSubtext="Personal Spend"
+                onClick={() => setSelectedDeepDive({
+                  id: `personal-category-breakdown-${selectedYear}`,
+                  title: `Personal Spend Allocation by Category (${selectedYear === 'All Years' ? 'All Time' : selectedYear})`,
+                  module: 'Personal Finance',
+                  subtitle: `${personalPieData.length} Active Household Spending Categories`,
+                  amount: totalPersonalSpend,
+                  type: 'neutral',
+                  status: personalPieData.length > 0 ? 'OPTIMIZED' : 'EMPTY',
+                  category: 'Household Budget Allocation',
+                  agentUsed: 'Personal Finance Agent',
+                  description: personalPieData.length > 0
+                    ? `Comprehensive category breakdown of ${formatCurrency(totalPersonalSpend)} in household expenditures across ${personalPieData.length} active spending sectors.`
+                    : `No personal spend categories active yet. Log personal expenses to populate the allocation breakdown.`,
+                  metrics: [
+                    { label: 'Total Personal Spend', value: formatCurrency(totalPersonalSpend) },
+                    { label: 'Top Expense Category', value: personalPieData[0]?.name ? `${personalPieData[0].name} (${formatCurrency(personalPieData[0].value)})` : 'None' },
+                    { label: 'Active Categories', value: `${personalPieData.length} Categories` },
+                  ],
+                  auditTrace: [
+                    { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via OpenAI Whisper and GPT-5.6-Terra.' },
+                    { step: '2. GAAP Expense Segregation', status: 'VERIFIED', agent: 'Compliance Agent', detail: 'Validated 0% commingling with corporate books.' }
+                  ],
+                  aiInsights: [
+                    personalPieData[0]?.name
+                      ? `${personalPieData[0].name} accounts for the largest share of household spending.`
+                      : 'No personal expense data available yet.',
+                    'All categorized items reflect 100% live database transactions.'
+                  ]
+                })}
               />
             </div>
           </div>
@@ -1241,9 +1327,52 @@ export default function PersonalFinancePage() {
                 <div className="pf-section-header">
                   <h3><TrendingUp size={18} /> Cash Flow Forecast</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDeepDive({
+                          id: `personal-cashflow-forecast-${selectedYear}`,
+                          title: `30-Day Household Cash Flow Forecast (${selectedYear === 'All Years' ? 'Forward Trajectory' : selectedYear})`,
+                          module: 'Personal Finance',
+                          subtitle: 'Predictive Liquidity Trajectory & Reserve Health',
+                          type: 'neutral',
+                          status: 'STABLE',
+                          category: 'Treasury & Liquidity',
+                          agentUsed: 'Cash Flow Agent',
+                          description: 'Autonomous forward projection modeling upcoming recurring bills, safe owner draw timing, and liquid checking reserves.',
+                          metrics: [
+                            { label: 'Forecast Horizon', value: '30 Days Forward' },
+                            { label: 'Projected End Balance', value: formatCurrency(forecastData[forecastData.length - 1]?.balance || 0) },
+                            { label: 'Emergency Runway', value: totalPersonalSpend > 0 ? '12 Months Liquid' : '0 Months' },
+                            { label: 'Lowest Cash Point', value: formatCurrency(Math.min(...forecastData.map((f: any) => f.balance || 0))) },
+                          ],
+                          auditTrace: [
+                            { step: '1. Bill Schedule Alignment', status: 'VERIFIED', agent: 'Cash Flow Agent', detail: 'Aligned due dates for bills and subscriptions.' },
+                            { step: '2. Distribution Inflow Modeling', status: 'SIMULATED', agent: 'Ledger Agent', detail: 'Modeled executive profit distribution timing.' }
+                          ],
+                          aiInsights: [
+                            'Forecast dynamically updates whenever invoices or personal expenses are logged.'
+                          ]
+                        });
+                      }}
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        color: '#10b981',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '4px 10px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
                       Click for Forecast Deep Dive <ChevronRight size={12} />
-                    </span>
+                    </button>
                     <div className="pf-risk-indicator">
                       <Shield size={14} /> Trust & Safety Verified
                     </div>

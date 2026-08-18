@@ -24,6 +24,8 @@ interface ColorfulPieChartProps {
   centerText?: string;
   centerSubtext?: string;
   formatAsCurrency?: boolean;
+  onClick?: () => void;
+  className?: string;
 }
 
 const CustomPieTooltip = ({ active, payload, formatAsCurrency }: any) => {
@@ -58,7 +60,9 @@ export default function ColorfulPieChart({
   height = 320,
   centerText,
   centerSubtext,
-  formatAsCurrency = true
+  formatAsCurrency = true,
+  onClick,
+  className = ''
 }: ColorfulPieChartProps) {
   const [mounted, setMounted] = React.useState(false);
 
@@ -69,7 +73,11 @@ export default function ColorfulPieChart({
   const totalValue = data.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
-    <div className="glass-card" style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <div 
+      className={`glass-card ${className}`} 
+      style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', cursor: onClick ? 'pointer' : 'default' }}
+      onClick={onClick}
+    >
       <div>
         <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)' }}>
           {title}

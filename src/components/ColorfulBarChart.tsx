@@ -32,6 +32,8 @@ interface ColorfulBarChartProps {
   series: BarSeriesConfig[];
   height?: number;
   formatAsCurrency?: boolean;
+  onClick?: () => void;
+  className?: string;
 }
 
 const CustomTooltip = ({ active, payload, label, formatAsCurrency }: any) => {
@@ -68,7 +70,9 @@ export default function ColorfulBarChart({
   data,
   series,
   height = 320,
-  formatAsCurrency = true
+  formatAsCurrency = true,
+  onClick,
+  className = ''
 }: ColorfulBarChartProps) {
   const [mounted, setMounted] = React.useState(false);
 
@@ -77,7 +81,11 @@ export default function ColorfulBarChart({
   }, []);
 
   return (
-    <div className="glass-card" style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <div 
+      className={`glass-card ${className}`} 
+      style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', cursor: onClick ? 'pointer' : 'default' }}
+      onClick={onClick}
+    >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)' }}>
