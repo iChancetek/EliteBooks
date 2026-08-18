@@ -311,10 +311,20 @@ export default function PersonalFinancePage() {
       </div>
 
       {/* 4 Core Financial Intelligence Snapshot Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+        {/* Card 1: Personal Spend */}
         <div 
-          className="glass-card cursor-pointer hover:border-pink-500/50 transition-all p-4"
-          style={{ border: '1px solid rgba(236, 72, 153, 0.3)', borderRadius: '16px' }}
+          className="glass-card cursor-pointer transition-all"
+          style={{ 
+            background: 'linear-gradient(145deg, rgba(244, 63, 94, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
+            border: '1px solid rgba(244, 63, 94, 0.25)', 
+            borderRadius: '16px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}
           onClick={() => setSelectedDeepDive({
             id: 'personal-spend-deepdive',
             title: 'Personal Household Expenditure',
@@ -333,23 +343,77 @@ export default function PersonalFinancePage() {
             ]
           })}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '11px', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase' }}>Personal Spend</span>
-            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              Breakdown <ChevronRight size={12} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ 
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '10px', 
+                background: 'rgba(244, 63, 94, 0.15)', 
+                color: '#f43f5e', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <Wallet size={18} />
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Personal Spend</span>
+            </div>
+            <span style={{ 
+              fontSize: '11px', 
+              fontWeight: 600, 
+              padding: '4px 10px', 
+              borderRadius: '999px', 
+              background: 'rgba(244, 63, 94, 0.12)', 
+              color: '#f472b6', 
+              border: '1px solid rgba(244, 63, 94, 0.25)', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '3px' 
+            }}>
+              Household OPEX <ChevronRight size={12} />
             </span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', marginTop: '6px', fontFamily: 'var(--font-mono, monospace)' }}>
-            {formatCurrency(totalPersonalSpend)}
+
+          <div>
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 800, 
+              color: '#ffffff', 
+              letterSpacing: '-0.02em', 
+              fontFamily: 'var(--font-mono, monospace)' 
+            }}>
+              {formatCurrency(totalPersonalSpend)}
+            </div>
           </div>
-          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
-            {personalPieData.length} household categories active
+
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            paddingTop: '10px', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)', 
+            fontSize: '12px', 
+            color: 'rgba(255, 255, 255, 0.6)' 
+          }}>
+            <span>{personalPieData.length} categories active</span>
+            <span style={{ color: '#f472b6', fontWeight: 600 }}>Top: {personalPieData[0]?.name || 'Groceries'}</span>
           </div>
         </div>
 
+        {/* Card 2: Owner Distributions */}
         <div 
-          className="glass-card cursor-pointer hover:border-emerald-500/50 transition-all p-4"
-          style={{ border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '16px' }}
+          className="glass-card cursor-pointer transition-all"
+          style={{ 
+            background: 'linear-gradient(145deg, rgba(16, 185, 129, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
+            border: '1px solid rgba(16, 185, 129, 0.25)', 
+            borderRadius: '16px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}
           onClick={() => setSelectedDeepDive({
             id: 'owner-draw-deepdive',
             title: "Owner's Distribution & Equity Draw",
@@ -368,23 +432,77 @@ export default function PersonalFinancePage() {
             ]
           })}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '11px', color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase' }}>Owner Distributions</span>
-            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              Breakdown <ChevronRight size={12} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ 
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '10px', 
+                background: 'rgba(16, 185, 129, 0.15)', 
+                color: '#10b981', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <ArrowRightLeft size={18} />
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Owner Distributions</span>
+            </div>
+            <span style={{ 
+              fontSize: '11px', 
+              fontWeight: 600, 
+              padding: '4px 10px', 
+              borderRadius: '999px', 
+              background: 'rgba(16, 185, 129, 0.12)', 
+              color: '#6ee7b7', 
+              border: '1px solid rgba(16, 185, 129, 0.25)', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '3px' 
+            }}>
+              Equity #3000 <ChevronRight size={12} />
             </span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#10b981', marginTop: '6px', fontFamily: 'var(--font-mono, monospace)' }}>
-            {formatCurrency(totalOwnerDraw)}
+
+          <div>
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 800, 
+              color: '#10b981', 
+              letterSpacing: '-0.02em', 
+              fontFamily: 'var(--font-mono, monospace)' 
+            }}>
+              {formatCurrency(totalOwnerDraw)}
+            </div>
           </div>
-          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
-            Reconciled against equity accounts (#3000)
+
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            paddingTop: '10px', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)', 
+            fontSize: '12px', 
+            color: 'rgba(255, 255, 255, 0.6)' 
+          }}>
+            <span>Reconciled equity</span>
+            <span style={{ color: '#10b981', fontWeight: 600 }}>100% Segregated</span>
           </div>
         </div>
 
+        {/* Card 3: Tax Reserves */}
         <div 
-          className="glass-card cursor-pointer hover:border-amber-500/50 transition-all p-4"
-          style={{ border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '16px' }}
+          className="glass-card cursor-pointer transition-all"
+          style={{ 
+            background: 'linear-gradient(145deg, rgba(245, 158, 11, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.25)', 
+            borderRadius: '16px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}
           onClick={() => setSelectedDeepDive({
             id: 'tax-reserves-deepdive',
             title: 'Quarterly Estimated Tax Reserves (1040-ES)',
@@ -403,23 +521,77 @@ export default function PersonalFinancePage() {
             ]
           })}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '11px', color: '#fde68a', fontWeight: 800, textTransform: 'uppercase' }}>Tax Reserves (1040-ES)</span>
-            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              Breakdown <ChevronRight size={12} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ 
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '10px', 
+                background: 'rgba(245, 158, 11, 0.15)', 
+                color: '#f59e0b', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <Shield size={18} />
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Tax Reserves</span>
+            </div>
+            <span style={{ 
+              fontSize: '11px', 
+              fontWeight: 600, 
+              padding: '4px 10px', 
+              borderRadius: '999px', 
+              background: 'rgba(245, 158, 11, 0.12)', 
+              color: '#fde68a', 
+              border: '1px solid rgba(245, 158, 11, 0.25)', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '3px' 
+            }}>
+              Form 1040-ES <ChevronRight size={12} />
             </span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#f59e0b', marginTop: '6px', fontFamily: 'var(--font-mono, monospace)' }}>
-            {formatCurrency(totalPersonalSpend * 0.25)}
+
+          <div>
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 800, 
+              color: '#f59e0b', 
+              letterSpacing: '-0.02em', 
+              fontFamily: 'var(--font-mono, monospace)' 
+            }}>
+              {formatCurrency(totalPersonalSpend * 0.25)}
+            </div>
           </div>
-          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
-            Safe harbor quarterly buffer secured
+
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            paddingTop: '10px', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)', 
+            fontSize: '12px', 
+            color: 'rgba(255, 255, 255, 0.6)' 
+          }}>
+            <span>Quarterly safe harbor</span>
+            <span style={{ color: '#f59e0b', fontWeight: 600 }}>25.0% Buffer</span>
           </div>
         </div>
 
+        {/* Card 4: Portfolio Health */}
         <div 
-          className="glass-card cursor-pointer hover:border-blue-500/50 transition-all p-4"
-          style={{ border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '16px' }}
+          className="glass-card cursor-pointer transition-all"
+          style={{ 
+            background: 'linear-gradient(145deg, rgba(59, 130, 246, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
+            border: '1px solid rgba(59, 130, 246, 0.25)', 
+            borderRadius: '16px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}
           onClick={() => setSelectedDeepDive({
             id: 'portfolio-health-deepdive',
             title: 'Personal Portfolio & Autopilot Health',
@@ -437,17 +609,61 @@ export default function PersonalFinancePage() {
             ]
           })}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '11px', color: '#93c5fd', fontWeight: 800, textTransform: 'uppercase' }}>Portfolio Health</span>
-            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              Breakdown <ChevronRight size={12} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ 
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '10px', 
+                background: 'rgba(59, 130, 246, 0.15)', 
+                color: '#3b82f6', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <Zap size={18} />
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Portfolio Health</span>
+            </div>
+            <span style={{ 
+              fontSize: '11px', 
+              fontWeight: 600, 
+              padding: '4px 10px', 
+              borderRadius: '999px', 
+              background: 'rgba(59, 130, 246, 0.12)', 
+              color: '#93c5fd', 
+              border: '1px solid rgba(59, 130, 246, 0.25)', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '3px' 
+            }}>
+              Autopilot Lvl 2 <ChevronRight size={12} />
             </span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#3b82f6', marginTop: '6px' }}>
-            OPTIMAL (92%)
+
+          <div>
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 800, 
+              color: '#60a5fa', 
+              letterSpacing: '-0.02em', 
+              fontFamily: 'var(--font-mono, monospace)' 
+            }}>
+              OPTIMAL <span style={{ fontSize: '18px', fontWeight: 600, color: 'rgba(255, 255, 255, 0.6)' }}>(92%)</span>
+            </div>
           </div>
-          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
-            12-month emergency runway met
+
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            paddingTop: '10px', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)', 
+            fontSize: '12px', 
+            color: 'rgba(255, 255, 255, 0.6)' 
+          }}>
+            <span>Emergency cash buffer</span>
+            <span style={{ color: '#60a5fa', fontWeight: 600 }}>12 Mo Runway</span>
           </div>
         </div>
       </div>
