@@ -154,7 +154,7 @@ Classification: Public System Comparative Framework (Zero Sensitive Data Include
 
 3. GRAPHRAG FINANCIAL KNOWLEDGE GRAPH REASONING
 ----------------------------------------------------------------------
-• EliteBooks: Leverages a GraphRAG knowledge graph combined with GPT-5.6-Terra to analyze multi-hop relationships across client contracts, milestone deliverables, vendor terms, and ASC-606 revenue recognition criteria.
+• EliteBooks: Leverages a GraphRAG knowledge graph to analyze multi-hop relationships across client contracts, milestone deliverables, vendor terms, and ASC-606 revenue recognition criteria.
 • ${targetPlatform}: Limited to static keyword search and rigid rule filters without relational context or entity reasoning.
 
 4. NATIVE CLOUD FINOPS & COMPUTE COST OPTIMIZATION

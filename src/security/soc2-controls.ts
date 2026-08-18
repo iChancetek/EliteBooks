@@ -38,7 +38,7 @@ export class SOC2ControlsEngine {
 
   /**
    * TSC Control 2.1: Processing Integrity (PI1.1) — Autonomous AI Output Grounding
-   * Verifies that GPT-5.6-Terra multi-agent outputs are strictly grounded in verified database facts.
+   * Verifies that autonomous multi-agent outputs are strictly grounded in verified database facts.
    */
   public verifyAIProcessingIntegrity(orgId: string): SOC2ControlResult {
     return {

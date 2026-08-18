@@ -119,7 +119,7 @@ export const AIBusinessFeed: React.FC<AIBusinessFeedProps> = ({
           <div>
             <h2>AI Business Intelligence Feed</h2>
             <p>
-              Proactive continuous intelligence stream powered by GPT-5.6-Terra & 10 Autonomous Financial Agents
+              Proactive continuous intelligence stream powered by 10 Autonomous Financial Agents
             </p>
           </div>
         </div>

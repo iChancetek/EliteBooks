@@ -500,7 +500,7 @@ export default function FinOpsPage() {
                 <textarea 
                   className="input" 
                   rows={2} 
-                  placeholder="e.g. Production Cluster usage, GPT-4o fine-tuning run" 
+                  placeholder="e.g. Production Cluster usage, LLM fine-tuning run" 
                   value={newCloudCost.notes} 
                   onChange={e => setNewCloudCost({...newCloudCost, notes: e.target.value})} 
                 />

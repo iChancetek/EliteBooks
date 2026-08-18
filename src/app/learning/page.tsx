@@ -16,7 +16,7 @@ export default function LearningPage() {
       icon: Compass,
       color: '#3b82f6',
       description: 'Resolves natural language queries, routes tasks across specialized sub-agents, and enforces Human-in-the-Loop governance.',
-      tags: ['GPT-5.6-Terra', 'LangGraph', 'HITL Governance']
+      tags: ['Autonomous AI', 'LangGraph', 'HITL Governance']
     },
     {
       name: 'Ledger Agent',
@@ -160,7 +160,7 @@ export default function LearningPage() {
               <h2>The Multi-Agent Swarm Ecosystem</h2>
             </div>
             <p>
-              EliteBooks replaces monolithic algorithms with a coordinated swarm of 10 specialized autonomous domain agents powered by GPT-5.6-Terra. Each agent operates with defined jurisdictional authority, communicating via LangGraph state graphs and Agent-to-Agent (A2A) consensus protocols:
+              EliteBooks replaces monolithic algorithms with a coordinated swarm of 10 specialized autonomous domain agents. Each agent operates with defined jurisdictional authority, communicating via LangGraph state graphs and Agent-to-Agent (A2A) consensus protocols:
             </p>
 
             <div className={styles.agentsGrid}>

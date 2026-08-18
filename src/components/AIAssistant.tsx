@@ -40,7 +40,7 @@ export default function AIAssistant() {
     } else {
       setMessages([{ 
         role: 'assistant', 
-        content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot** powered by **GPT-5.6-Terra**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
+        content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     }
@@ -257,7 +257,7 @@ export default function AIAssistant() {
 
     const initial: Message[] = [{ 
       role: 'assistant', 
-      content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot** powered by **GPT-5.6-Terra**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
+      content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }];
     setMessages(initial);
@@ -281,7 +281,7 @@ export default function AIAssistant() {
                 </div>
                 <div className={styles.headerSubtitle}>
                   <Zap size={10} style={{ color: '#60a5fa' }} />
-                  <span>GPT-5.6-Terra • Active RAG Grounded</span>
+                  <span>Autonomous AI • Active RAG Grounded</span>
                 </div>
               </div>
             </div>
@@ -337,7 +337,7 @@ export default function AIAssistant() {
                 <div key={i} className={styles.aiMessageWrapper}>
                   <div className={styles.aiHeader}>
                     <span className={styles.aiBadge}>
-                      <Sparkles size={10} /> GPT-5.6-Terra
+                      <Sparkles size={10} /> AI Co-Pilot
                     </span>
                     {msg.timestamp && <span className={styles.messageTime}>{msg.timestamp}</span>}
                   </div>
@@ -372,7 +372,7 @@ export default function AIAssistant() {
               <div className={styles.aiMessageWrapper}>
                 <div className={styles.aiHeader}>
                   <span className={styles.aiBadge}>
-                    <Sparkles size={10} /> GPT-5.6-Terra
+                    <Sparkles size={10} /> AI Co-Pilot
                   </span>
                 </div>
                 <div className={styles.typingBubble}>
@@ -420,7 +420,7 @@ export default function AIAssistant() {
                 className={styles.input}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask GPT-5.6-Terra about your finances..."
+                placeholder="Ask AI Co-Pilot about your finances..."
               />
             </div>
             <button type="submit" className={styles.sendBtn} title="Send Message" disabled={!input.trim() && !isRecording}>
@@ -433,7 +433,7 @@ export default function AIAssistant() {
       <button className={styles.trigger} onClick={() => setIsOpen(!isOpen)} title="Open AI Financial Co-Pilot">
         <div className={styles.triggerPulse} />
         {isOpen ? <X size={26} /> : <MessageSquare size={26} />}
-        {!isOpen && <span className={styles.triggerLabel}>Ask GPT-5.6-Terra</span>}
+        {!isOpen && <span className={styles.triggerLabel}>Ask AI Co-Pilot</span>}
       </button>
     </div>
   );

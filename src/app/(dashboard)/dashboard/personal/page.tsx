@@ -422,7 +422,7 @@ export default function PersonalFinancePage() {
               { label: 'Corporate Separation', value: '100% Isolated (0% Commingled)' },
             ],
             auditTrace: [
-              { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via OpenAI Whisper and GPT-5.6-Terra.' },
+              { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via Autonomous AI Engine.' },
               { step: '2. GAAP Expense Segregation', status: 'VERIFIED', agent: 'Compliance Agent', detail: 'Validated 0% commingling with corporate books.' }
             ],
             aiInsights: [
@@ -1264,7 +1264,7 @@ export default function PersonalFinancePage() {
                       { label: 'Active Categories', value: `${personalPieData.length} Categories` },
                     ],
                     auditTrace: [
-                      { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via OpenAI Whisper and GPT-5.6-Terra.' },
+                      { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via Autonomous AI Engine.' },
                       { step: '2. GAAP Expense Segregation', status: 'VERIFIED', agent: 'Compliance Agent', detail: 'Validated 0% commingling with corporate books.' }
                     ],
                     aiInsights: [
@@ -1317,7 +1317,7 @@ export default function PersonalFinancePage() {
                     { label: 'Active Categories', value: `${personalPieData.length} Categories` },
                   ],
                   auditTrace: [
-                    { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via OpenAI Whisper and GPT-5.6-Terra.' },
+                    { step: '1. Receipt & Voice Ingestion', status: 'VERIFIED', agent: 'Personal Finance Agent', detail: 'Transactions categorized via Autonomous AI Engine.' },
                     { step: '2. GAAP Expense Segregation', status: 'VERIFIED', agent: 'Compliance Agent', detail: 'Validated 0% commingling with corporate books.' }
                   ],
                   aiInsights: [

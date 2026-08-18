@@ -177,7 +177,7 @@ export default function LandingPage() {
             <span className="text-gradient">runs itself.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            EliteBooks is an enterprise-grade AI financial operating system powered by GPT-5.6-Terra and OpenAI Whisper voice engine. Autonomous agents and interactive voice triggers handle invoicing, expenses, payroll, reporting, FinOps, and personal wealth — backed by total manual control and continuous SOC 1 & SOC 2 Type II trust controls.
+            EliteBooks is an enterprise-grade AI financial operating system powered by autonomous agents and interactive voice triggers that handle invoicing, expenses, payroll, reporting, FinOps, and personal wealth — backed by total manual control and continuous SOC 1 & SOC 2 Type II trust controls.
           </p>
           <div className={styles.heroActions}>
             <Link href="/signup" className={`btn btn-primary btn-lg ${styles.heroCta}`} id="hero-signup-btn">
@@ -259,7 +259,7 @@ export default function LandingPage() {
       <section className={styles.agentsSection} id="agents">
         <div className={styles.sectionHeader}>
           <h2>10 AI Agents. Zero Effort.</h2>
-          <p>Specialized domain agents powered by GPT-5.6-Terra collaborate autonomously to manage every aspect of your enterprise finances.</p>
+          <p>Specialized domain agents collaborate autonomously to manage every aspect of your enterprise finances.</p>
         </div>
         <div className={styles.agentGrid}>
           {agents.map((agent) => (

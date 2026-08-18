@@ -507,7 +507,7 @@ export default function ExpensesPage() {
                 <div className="exp-ai-header">
                   <Bot size={18} />
                   <span>Agentic AI Insights</span>
-                  <div className="ai-badge">GPT-5.6-Terra</div>
+                  <div className="ai-badge">Autonomous AI</div>
                 </div>
                 <div className="exp-ai-body">
                   <div className="ai-insight">
