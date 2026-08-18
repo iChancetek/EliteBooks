@@ -108,12 +108,12 @@ export default function AIAssistant() {
         },
         body: JSON.stringify({ 
           message: text,
-          messages: messages.slice(-5)
+          messages: [...messages.slice(-5), userMsg]
         })
       });
       
       const data = await res.json();
-      const aiResponse = data.message || "I apologize, but I couldn't process that request at this moment.";
+      const aiResponse = data.answer || data.message || "I apologize, but I couldn't process that request at this moment.";
       
       const aiMsg: Message = { 
         role: 'assistant', 
@@ -121,6 +121,10 @@ export default function AIAssistant() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages((prev) => [...prev, aiMsg]);
+      
+      if (data.predictedQuestions && Array.isArray(data.predictedQuestions) && data.predictedQuestions.length > 0) {
+        setPredictedQuestions(data.predictedQuestions);
+      }
       
       if (autoRead) {
         speakResponse(aiResponse);
