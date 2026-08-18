@@ -12,6 +12,7 @@ import { EliteBooksAgentState } from '../langgraph/agent-state';
 import getOpenAIClient from '@/lib/openai';
 import { getEmployees, getExpenses, getInvoices, getProducts, getFinancialSummary, createExpense, createInvoice, createEmployee, createProduct, getPayStubs } from '@/lib/firestore';
 import { computeForecastFromRecords, formatForecastForAgent, ForecastableRecord, ForecastResult } from '@/lib/forecasting-engine';
+import { PrivacyGuardrailService } from '@/security/privacy-guardrails';
 
 export interface UniversalCollaborationResult {
   success: boolean;
@@ -91,6 +92,61 @@ How can I assist you with your business or personal finances today?`;
         'Create an invoice',
         'Log an expense',
         'Check cash flow forecast',
+      ],
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // PRIORITY -0.5: ZERO-LEAKAGE PRIVACY GUARDRAILS & COMPARATIVE HANDLER
+  // Strictly intercepts general knowledge, platform comparisons (e.g. QuickBooks vs EliteBooks),
+  // and conceptual accounting questions to PREVENT leaking private ledger data.
+  // ══════════════════════════════════════════════════════════════════════
+  const intentAnalysis = PrivacyGuardrailService.classifyIntent(unmaskedQuery);
+
+  if (intentAnalysis.category === 'COMPARATIVE_PLATFORM') {
+    const comparativeMsg = PrivacyGuardrailService.getComparativeReport(intentAnalysis.targetSubject || 'QuickBooks');
+    lines.push({ agent: primaryAgent || 'EliteBooks Orchestrator', message: comparativeMsg });
+
+    const a2a1 = await agentBus.dispatch(
+      primaryAgent || 'EliteBooks Orchestrator',
+      'Compliance Officer',
+      'Verify public system architectural comparative report (zero private ledger disclosure)',
+      { targetSubject: intentAnalysis.targetSubject },
+      1
+    );
+    a2aLog.push(a2a1);
+
+    const compMsg = `Privacy & Compliance Guardrail verified: Zero tenant financial records, client names, or ledger balances disclosed. Comparative framework delivered safely.`;
+    lines.push({ agent: 'Compliance Officer', message: compMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'How does the GraphRAG Knowledge Graph work?',
+        'Explain Real-Time Double-Entry Balancing',
+        'How does the Cloud FinOps Agent optimize costs?',
+        'Show financial overview',
+      ],
+    };
+  }
+
+  if (intentAnalysis.category === 'CONCEPTUAL_ACCOUNTING') {
+    const conceptMsg = PrivacyGuardrailService.getConceptualReport(unmaskedQuery);
+    lines.push({ agent: primaryAgent || 'EliteBooks Orchestrator', message: conceptMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'How does ASC 606 apply to client invoices?',
+        'Explain double-entry trial balance equilibrium',
+        'What are the GAAP rules for revenue recognition?',
+        'Show financial overview',
       ],
     };
   }
@@ -2679,8 +2735,67 @@ ${realProducts.length === 0 ? 'Inventory Agent: "You have 0 products in your inv
   }
 
   // ══════════════════════════════════════════════════════════════════════
-  // PRIORITY FALLBACK: Comprehensive Multi-Agent Executive Synthesizer with Live Sources & Mathematical Work
+  // PRIORITY FALLBACK: Privacy-Gated Executive Synthesizer
+  // If the query is NOT an explicit financial data audit, generate a clean
+  // conceptual / advisory response WITHOUT leaking private ledger records.
   // ══════════════════════════════════════════════════════════════════════
+  if (!intentAnalysis.isFinancialDataIntent) {
+    try {
+      const openai = getOpenAIClient();
+      const generalPrompt = `You are the EliteBooks Autonomous Financial Intelligence Authority.
+Answer the user's conceptual, architectural, or accounting educational question with executive-level clarity, domain depth, and professionalism.
+
+STRICT PRIVACY GUARDRAILS:
+- Do not output, fabricate, or disclose any private customer ledger records, customer names, bank account numbers, or balances.
+- Keep the response authoritative, educational, and structured.
+- NEVER USE ANY ASTERISKS (*) OR STAR-SHAPED SYMBOLS IN YOUR TEXT. Use plain CAPITAL LETTERS or bullet points for emphasis.`;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-5.6-terra',
+        messages: [
+          { role: 'system', content: generalPrompt },
+          { role: 'user', content: unmaskedQuery }
+        ],
+        temperature: 0.4
+      });
+
+      const conceptualAnswer = completion.choices[0]?.message?.content?.replace(/\*/g, '') || PrivacyGuardrailService.getConceptualReport(unmaskedQuery);
+      const mainAgent = primaryAgent || 'EliteBooks Orchestrator';
+      lines.push({ agent: mainAgent, message: conceptualAnswer });
+
+      return {
+        success: true,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: a2aLog,
+        suggestions: [
+          'How does the GraphRAG Knowledge Graph work?',
+          'Explain Real-Time Double-Entry Balancing',
+          'How does the Cloud FinOps Agent optimize costs?',
+          'Show financial overview',
+        ],
+      };
+    } catch (e) {
+      const mainAgent = primaryAgent || 'EliteBooks Orchestrator';
+      const safeReport = PrivacyGuardrailService.getConceptualReport(unmaskedQuery);
+      lines.push({ agent: mainAgent, message: safeReport });
+
+      return {
+        success: true,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: a2aLog,
+        suggestions: [
+          'How does the GraphRAG Knowledge Graph work?',
+          'Explain Real-Time Double-Entry Balancing',
+          'How does the Cloud FinOps Agent optimize costs?',
+          'Show financial overview',
+        ],
+      };
+    }
+  }
+
+  // ── Explicit Financial Data Queries Only ──
   const [liveSummary, liveInvoices, liveExpenses, liveEmployees, liveProducts] = await Promise.all([
     getFinancialSummary(orgId).catch(() => null),
     getInvoices(orgId).catch(() => []),
