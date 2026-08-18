@@ -4,14 +4,17 @@ import { useState, useRef } from 'react';
 import {
   Settings, User, Building2, CreditCard, Bell, Shield, Bot, Globe,
   ImagePlus, Upload, Download, FileSpreadsheet, X, CheckCircle2,
-  AlertTriangle, Trash2, ArrowLeft, Lock, Mail, KeyRound, ShieldCheck
+  AlertTriangle, Trash2, ArrowLeft, Lock, Mail, KeyRound, ShieldCheck,
+  Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/context/ThemeContext';
 import { sendPasswordResetEmail, sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [activePanel, setActivePanel] = useState<string | null>(null);
 
   /* ─── Logo Upload State ─── */
@@ -138,6 +141,7 @@ export default function SettingsPage() {
   const settingsCards = [
     { icon: User, title: 'Profile', desc: 'Name, email, and personal preferences', color: '#3b82f6' },
     { icon: Building2, title: 'Organization', desc: 'Company details, address, and tax info', color: '#10b981' },
+    { icon: Sun, title: 'Appearance & Theme', desc: 'Toggle between Dark and Light mode themes', color: '#f59e0b', panel: 'theme' },
     { icon: ImagePlus, title: 'Brand & Logo', desc: 'Upload your company logo for invoices and dashboard', color: '#f97316', panel: 'logo' },
     { icon: FileSpreadsheet, title: 'Export & Import', desc: 'Excel, Google Sheets, and CSV data management', color: '#22c55e', panel: 'data' },
     { icon: CreditCard, title: 'Billing & Subscription', desc: 'Plan, payment methods, and invoicing', color: '#8b5cf6' },
@@ -167,10 +171,12 @@ export default function SettingsPage() {
             </button>
           )}
           <h1 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-1)' }}>
-            {activePanel === 'logo' ? 'Brand & Logo' : activePanel === 'data' ? 'Export & Import' : activePanel === 'security' ? 'Security & Password' : 'Settings'}
+            {activePanel === 'theme' ? 'Appearance & Theme' : activePanel === 'logo' ? 'Brand & Logo' : activePanel === 'data' ? 'Export & Import' : activePanel === 'security' ? 'Security & Password' : 'Settings'}
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-            {activePanel === 'logo'
+            {activePanel === 'theme'
+              ? 'Customize your visual experience with Dark or Light mode'
+              : activePanel === 'logo'
               ? 'Upload your company logo to personalize invoices and your dashboard'
               : activePanel === 'data'
               ? 'Import and export your financial data in multiple formats'
@@ -180,6 +186,101 @@ export default function SettingsPage() {
           </p>
         </div>
       </div>
+
+      {/* ════════ THEME PANEL ════════ */}
+      {activePanel === 'theme' && (
+        <div className="st-panel animate-fade-in">
+          <div className="glass-card" style={{ padding: '24px' }}>
+            <h3>Interface Theme</h3>
+            <p className="st-desc" style={{ marginBottom: '20px' }}>
+              Select your preferred visual style. Dark Mode is the high-contrast fintech default; Light Mode provides a crisp, daylight-optimized aesthetic.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {/* Dark Mode Option */}
+              <div
+                onClick={() => {
+                  setTheme('dark');
+                  showToast('Dark Mode activated');
+                }}
+                className="glass-card"
+                style={{
+                  padding: '20px',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  border: theme === 'dark' ? '2px solid var(--color-accent-primary)' : '1px solid var(--color-border-secondary)',
+                  background: 'linear-gradient(145deg, #0c1220 0%, #06090f 100%)',
+                  color: '#f1f5f9',
+                  boxShadow: theme === 'dark' ? '0 0 20px rgba(59, 130, 246, 0.3)' : 'none',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Moon size={20} />
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '15px', display: 'block' }}>Dark Mode</strong>
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>Default fintech aesthetic</span>
+                    </div>
+                  </div>
+                  {theme === 'dark' && (
+                    <span style={{ fontSize: '11px', fontWeight: 800, background: '#3b82f6', color: '#fff', padding: '3px 8px', borderRadius: '100px' }}>
+                      Active
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
+                  Deep navy surfaces with glowing glass accents. Recommended for low-light environments and intensive analytics sessions.
+                </p>
+              </div>
+
+              {/* Light Mode Option */}
+              <div
+                onClick={() => {
+                  setTheme('light');
+                  showToast('Light Mode activated');
+                }}
+                className="glass-card"
+                style={{
+                  padding: '20px',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  border: theme === 'light' ? '2px solid var(--color-accent-primary)' : '1px solid var(--color-border-secondary)',
+                  background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+                  color: '#0f172a',
+                  boxShadow: theme === 'light' ? '0 0 20px rgba(37, 99, 235, 0.3)' : 'none',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Sun size={20} />
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '15px', display: 'block', color: '#0f172a' }}>Light Mode</strong>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>Daylight-optimized</span>
+                    </div>
+                  </div>
+                  {theme === 'light' && (
+                    <span style={{ fontSize: '11px', fontWeight: 800, background: '#2563eb', color: '#fff', padding: '3px 8px', borderRadius: '100px' }}>
+                      Active
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: '12px', color: '#475569', margin: 0, lineHeight: 1.4 }}>
+                  Clean slate background with high-contrast text and crisp card outlines. Ideal for bright offices and presentations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* ════════ LOGO PANEL ════════ */}
       {activePanel === 'logo' && (

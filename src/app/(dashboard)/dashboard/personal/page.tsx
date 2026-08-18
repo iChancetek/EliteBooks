@@ -1333,111 +1333,39 @@ export default function PersonalFinancePage() {
 
           <div className="pf-grid">
             {/* Left Column: Forecast & Reasoning */}
-            <div className="pf-main-col">
-              {/* Cash Flow Forecast Area Chart with Deep Dive */}
-              <section 
-                className="glass-card pf-section cursor-pointer hover:border-emerald-500/40 transition-all"
-                onClick={() => setSelectedDeepDive({
-                  id: `personal-cashflow-forecast-${selectedYear}`,
-                  title: `30-Day Household Cash Flow Forecast (${selectedYear === 'All Years' ? 'Forward Trajectory' : selectedYear})`,
+            <div className="pf-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Multi-Period Personal Forecast Engine */}
+              <MultiPeriodForecastCard
+                title="Personal Spend & Wealth Forecast"
+                domain="personal"
+                monthlyData={personalForecast.monthly.dataPoints}
+                quarterlyData={personalForecast.quarterly.dataPoints}
+                annualData={personalForecast.annual.dataPoints}
+                projectedTotal={personalForecast.monthly.projectedTotal}
+                growthRate={personalForecast.monthly.growthRate}
+                confidence={personalForecast.monthly.confidence}
+                trendDirection={personalForecast.monthly.trendDirection}
+                avgMonthlyValue={personalForecast.monthly.avgMonthlyValue}
+                scenarioSummary={personalForecast.monthly.scenarioSummary}
+                onDeepDive={(horizon) => setSelectedDeepDive({
+                  id: `personal-forecast-${horizon}`,
+                  title: `${horizon} Personal Spend Forecast`,
                   module: 'Personal Finance',
-                  subtitle: 'Predictive Liquidity Trajectory & Reserve Health',
+                  subtitle: `${horizon} projection with Base/Bull/Bear scenarios`,
                   type: 'neutral',
-                  status: 'STABLE',
-                  category: 'Treasury & Liquidity',
-                  agentUsed: 'Cash Flow Agent',
-                  description: 'Autonomous forward projection modeling upcoming recurring bills, safe owner draw timing, and liquid checking reserves.',
+                  status: personalForecast.monthly.confidence,
+                  category: 'Forecasting',
+                  agentUsed: 'Forecasting Agent',
+                  description: `Multi-period personal spend projection computed from ${personalForecast.monthly.dataPoints.filter(d => !d.isPredicted).length} historical data points.`,
                   metrics: [
-                    { label: 'Forecast Horizon', value: '30 Days Forward' },
-                    { label: 'Projected End Balance', value: formatCurrency(forecastData[forecastData.length - 1]?.balance || 0) },
-                    { label: 'Emergency Runway', value: totalPersonalSpend > 0 ? '12 Months Liquid' : '0 Months' },
-                    { label: 'Lowest Cash Point', value: formatCurrency(Math.min(...forecastData.map((f: any) => f.balance || 0))) },
+                    { label: 'Avg Monthly', value: formatCurrency(personalForecast.monthly.avgMonthlyValue) },
+                    { label: 'Base Projection', value: formatCurrency(personalForecast.monthly.scenarioSummary.base) },
+                    { label: 'Bull (+15%)', value: formatCurrency(personalForecast.monthly.scenarioSummary.bull) },
+                    { label: 'Bear (-15%)', value: formatCurrency(personalForecast.monthly.scenarioSummary.bear) },
                   ],
-                  auditTrace: [
-                    { step: '1. Bill Schedule Alignment', status: 'VERIFIED', agent: 'Cash Flow Agent', detail: 'Aligned due dates for bills and subscriptions.' },
-                    { step: '2. Distribution Inflow Modeling', status: 'SIMULATED', agent: 'Ledger Agent', detail: 'Modeled executive profit distribution timing.' }
-                  ],
-                  aiInsights: [
-                    'Forecast dynamically updates whenever invoices or personal expenses are logged.'
-                  ]
+                  aiInsights: ['Projection is computed using weighted moving averages from prior transaction history.']
                 })}
-              >
-                <div className="pf-section-header">
-                  <h3><TrendingUp size={18} /> Cash Flow Forecast</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDeepDive({
-                          id: `personal-cashflow-forecast-${selectedYear}`,
-                          title: `30-Day Household Cash Flow Forecast (${selectedYear === 'All Years' ? 'Forward Trajectory' : selectedYear})`,
-                          module: 'Personal Finance',
-                          subtitle: 'Predictive Liquidity Trajectory & Reserve Health',
-                          type: 'neutral',
-                          status: 'STABLE',
-                          category: 'Treasury & Liquidity',
-                          agentUsed: 'Cash Flow Agent',
-                          description: 'Autonomous forward projection modeling upcoming recurring bills, safe owner draw timing, and liquid checking reserves.',
-                          metrics: [
-                            { label: 'Forecast Horizon', value: '30 Days Forward' },
-                            { label: 'Projected End Balance', value: formatCurrency(forecastData[forecastData.length - 1]?.balance || 0) },
-                            { label: 'Emergency Runway', value: totalPersonalSpend > 0 ? '12 Months Liquid' : '0 Months' },
-                            { label: 'Lowest Cash Point', value: formatCurrency(Math.min(...forecastData.map((f: any) => f.balance || 0))) },
-                          ],
-                          auditTrace: [
-                            { step: '1. Bill Schedule Alignment', status: 'VERIFIED', agent: 'Cash Flow Agent', detail: 'Aligned due dates for bills and subscriptions.' },
-                            { step: '2. Distribution Inflow Modeling', status: 'SIMULATED', agent: 'Ledger Agent', detail: 'Modeled executive profit distribution timing.' }
-                          ],
-                          aiInsights: [
-                            'Forecast dynamically updates whenever invoices or personal expenses are logged.'
-                          ]
-                        });
-                      }}
-                      style={{
-                        background: 'rgba(16, 185, 129, 0.15)',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        color: '#10b981',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        padding: '4px 10px',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      Click for Forecast Deep Dive <ChevronRight size={12} />
-                    </button>
-                    <div className="pf-risk-indicator">
-                      <Shield size={14} /> Trust & Safety Verified
-                    </div>
-                  </div>
-                </div>
-                <div style={{ height: '260px', width: '100%', minWidth: 0, minHeight: '260px' }}>
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
-                    <AreaChart data={forecastData}>
-                      <defs>
-                        <linearGradient id="colorBalancePersonal" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" />
-                      <YAxis stroke="rgba(255,255,255,0.3)" tickFormatter={(val) => `$${val.toLocaleString()}`} />
-                      <Tooltip 
-                        contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                        formatter={(val: any) => [formatCurrency(Number(val)), 'Projected Balance']}
-                      />
-                      <ReferenceLine x={forecastData.find(f => f.isPredicted)?.date} stroke="#3b82f6" strokeDasharray="3 3" label={{ value: "Today", fill: "#3b82f6", fontSize: 12 }} />
-                      <Area type="monotone" dataKey="balance" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorBalancePersonal)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </section>
+              />
 
               {/* AI Strategic Advisory */}
               <section className="glass-card pf-section" style={{ marginTop: '2rem' }}>

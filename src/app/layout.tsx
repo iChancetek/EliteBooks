@@ -55,6 +55,7 @@ export const viewport: Viewport = {
 };
 
 import { AuthProvider } from '@/hooks/useAuth';
+import { ThemeProvider } from '@/context/ThemeContext';
 import AIAssistant from '@/components/AIAssistant';
 
 export default function RootLayout({
@@ -64,25 +65,46 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('elitebooks-theme');
+                  if (saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body suppressHydrationWarning>
         <AuthProvider>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'Organization',
-                name: 'EliteBooks',
-                url: 'https://elitebooks.us',
-                logo: 'https://elitebooks.us/NewIcon.png',
-                description: 'AI-native autonomous accounting platform.',
-              }),
-            }}
-          />
-          {children}
-          <AIAssistant />
+          <ThemeProvider>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'Organization',
+                  name: 'EliteBooks',
+                  url: 'https://elitebooks.us',
+                  logo: 'https://elitebooks.us/NewIcon.png',
+                  description: 'AI-native autonomous accounting platform.',
+                }),
+              }}
+            />
+            {children}
+            <AIAssistant />
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
+

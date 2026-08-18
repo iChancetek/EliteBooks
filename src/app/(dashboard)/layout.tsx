@@ -5,20 +5,36 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Sparkles, Home, FileText, Receipt, Users, BarChart3, Package,
-  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck, Mail, Wallet, TrendingUp
+  Settings, LogOut, Menu, X, ChevronLeft, Bell, Search, Bot, ShieldCheck, Mail, Wallet, TrendingUp,
+  Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/context/ThemeContext';
 import AutonomousAgentWidget from '@/components/AutonomousAgentWidget';
 import { GlobalCommandPalette } from '@/components/GlobalCommandPalette';
+import NotificationsPopover from '@/components/NotificationsPopover';
+import { AIBusinessFeedService } from '@/lib/feed-service';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, signOut, isSuperAdmin } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendStatus, setResendStatus] = useState('');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    try {
+      const items = AIBusinessFeedService.getFeedItems();
+      setNotificationCount(items.length);
+    } catch (e) {
+      setNotificationCount(0);
+    }
+  }, [isNotificationsOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,26 +54,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     try {
       const { sendEmailVerification } = await import('firebase/auth');
       await sendEmailVerification(user);
-      setResendStatus('Verification email sent! Please check your inbox.');
+      setResendStatus('Verification email sent! Check your inbox.');
     } catch (err: any) {
-      setResendStatus('Failed to send email. Please try again later.');
+      setResendStatus('Failed to resend. Try again later.');
     } finally {
       setResending(false);
     }
   };
 
-  const handleCheckVerification = async () => {
-    if (user) {
-      try {
-        await user.reload();
-        window.location.reload();
-      } catch (err) {
-        console.error('Error reloading user:', err);
-      }
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
-  // Enforcement: If user exists but email is NOT verified, block access
   const isVerified = user?.emailVerified || user?.providerData?.[0]?.providerId === 'google.com';
 
   const navItems = [
@@ -72,41 +84,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/personal', label: 'Personal', icon: Wallet },
   ];
 
-  if (isSuperAdmin) {
-    navItems.push({ href: '/dashboard/admin', label: 'Admin', icon: ShieldCheck });
-  }
-
   return (
     <div className="dash-layout">
-      <AutonomousAgentWidget />
-      
-      {/* Mobile Overlay */}
-      {mobileOpen && (
-        <div className="dash-overlay" onClick={() => setMobileOpen(false)} />
-      )}
+      {mobileOpen && <div className="dash-mobile-overlay" onClick={() => setMobileOpen(false)} />}
 
-      {/* Sidebar */}
       <aside className={`dash-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="dash-sidebar-header">
-          <Link href="/dashboard" className="dash-logo">
-            <div className="dash-logo-icon">
-              <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+          <Link href="/dashboard" className="dash-brand">
+            <div className="dash-brand-icon">
+              <Sparkles size={18} />
             </div>
-            {!collapsed && <span className="dash-logo-text">EliteBooks</span>}
+            {!collapsed && <span className="dash-brand-text">EliteBooks</span>}
           </Link>
-          <button
-            className="dash-collapse-btn desktop-only"
+          <button 
+            className="dash-collapse-btn desktop-only" 
             onClick={() => setCollapsed(!collapsed)}
-            aria-label="Toggle sidebar"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <ChevronLeft size={16} style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            <ChevronLeft size={16} className={collapsed ? 'rotate-180' : ''} />
           </button>
-          <button className="dash-close-btn mobile-only" onClick={() => setMobileOpen(false)}>
-            <X size={20} />
+          <button className="dash-collapse-btn mobile-only" onClick={() => setMobileOpen(false)}>
+            <X size={18} />
           </button>
         </div>
 
-        <nav className="dash-nav">
+        <nav className="dash-nav" id="main-navigation">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
@@ -116,39 +118,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className={`dash-nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => setMobileOpen(false)}
                 title={collapsed ? item.label : undefined}
+                id={`nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
               >
-                <item.icon size={20} />
-                {!collapsed && <span>{item.label}</span>}
-                {isActive && <div className="dash-nav-indicator" />}
+                <item.icon size={20} className="dash-nav-icon" />
+                {!collapsed && <span className="dash-nav-label">{item.label}</span>}
               </Link>
             );
           })}
+          {isSuperAdmin && (
+            <Link
+              href="/dashboard/admin"
+              className={`dash-nav-item ${pathname.startsWith('/dashboard/admin') ? 'active' : ''}`}
+              onClick={() => setMobileOpen(false)}
+              title={collapsed ? 'Super Admin' : undefined}
+              id="nav-super-admin"
+              style={{
+                color: '#f59e0b',
+                background: pathname.startsWith('/dashboard/admin') ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                borderColor: pathname.startsWith('/dashboard/admin') ? 'rgba(245, 158, 11, 0.3)' : 'transparent',
+              }}
+            >
+              <ShieldCheck size={20} className="dash-nav-icon" style={{ color: '#f59e0b' }} />
+              {!collapsed && <span className="dash-nav-label">Super Admin</span>}
+            </Link>
+          )}
         </nav>
 
-        <div className="dash-sidebar-footer">
-          <div className={`dash-agent-status ${collapsed ? 'collapsed' : ''}`}>
-            <Bot size={16} />
+        <AutonomousAgentWidget />
+
+        <div className="dash-user">
+          <div className="dash-user-info">
+            <div className="dash-avatar">
+              <span>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</span>
+            </div>
             {!collapsed && (
-              <>
-                <span>AI Agents Active</span>
-                <span className="status-dot status-dot-active" />
-              </>
+              <div className="dash-user-details">
+                <span className="dash-user-name">{user?.displayName || 'User'}</span>
+                <span className="dash-user-email">{user?.email}</span>
+              </div>
             )}
           </div>
-          <button 
-            className="dash-nav-item dash-logout" 
-            onClick={signOut}
-            title={collapsed ? 'Sign Out' : undefined}
-          >
-            <LogOut size={20} />
-            {!collapsed && <span>Sign Out</span>}
-          </button>
+          {!collapsed && (
+            <button className="dash-logout-btn" onClick={handleLogout} title="Log out" aria-label="Log out">
+              <LogOut size={16} />
+            </button>
+          )}
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className={`dash-main ${collapsed ? 'sidebar-collapsed' : ''}`}>
-        {/* Header */}
         <header className="dash-header">
           <button className="dash-menu-btn mobile-only" onClick={() => setMobileOpen(true)}>
             <Menu size={22} />
@@ -159,13 +177,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               type="text" 
               placeholder="Search or ask anything..." 
               className="dash-search-input" 
-              id="dash-search"
               readOnly
               onClick={() => setIsCommandPaletteOpen(true)}
             />
             <kbd className="dash-search-kbd">⌘K</kbd>
           </div>
-          <div className="dash-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="dash-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
             <a 
               href="https://famio.us" 
               target="_blank" 
@@ -191,16 +208,78 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Sparkles size={12} style={{ color: '#ec4899' }} />
               famio.us
             </a>
-            <button className="btn btn-icon btn-ghost" id="notifications-btn" aria-label="Notifications">
-              <Bell size={20} />
+
+            <button
+              onClick={toggleTheme}
+              className="btn btn-icon btn-ghost"
+              id="theme-toggle-btn"
+              aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              style={{
+                borderRadius: '10px',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {theme === 'dark' ? (
+                <Sun size={18} style={{ color: '#f59e0b' }} />
+              ) : (
+                <Moon size={18} style={{ color: '#6366f1' }} />
+              )}
             </button>
+
+            <div style={{ position: 'relative' }}>
+              <button
+                className={`btn btn-icon btn-ghost ${isNotificationsOpen ? 'active' : ''}`}
+                id="notifications-btn"
+                aria-label="Notifications"
+                onClick={() => setIsNotificationsOpen(prev => !prev)}
+                style={{
+                  borderRadius: '10px',
+                  width: '36px',
+                  height: '36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isNotificationsOpen ? 'var(--color-accent-subtle)' : 'transparent',
+                  color: isNotificationsOpen ? 'var(--color-accent-primary)' : 'var(--color-text-primary)',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <Bell size={19} />
+                {notificationCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: '#f59e0b',
+                      boxShadow: '0 0 8px rgba(245, 158, 11, 0.8)',
+                    }}
+                  />
+                )}
+              </button>
+
+              <NotificationsPopover
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
+              />
+            </div>
+
             <div className="dash-avatar" id="user-avatar" title={user?.displayName || 'User'}>
               <span>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</span>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="dash-content">
           {!isVerified && (
             <div className="verification-banner">
