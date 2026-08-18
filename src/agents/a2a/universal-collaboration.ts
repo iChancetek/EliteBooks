@@ -1385,10 +1385,10 @@ Treasury Agent modeled inflow distributions and debt obligations. Dispatching to
       transcriptLines: lines,
       a2aMessages: a2aLog,
       suggestions: [
-        'Explain Total Invoiced Revenue ($457,400.00)',
-        'Break down Operating Expenses ($3,751.19)',
-        'What is our Net Operating Profit?',
-        'Provide 30/60/90-Day Treasury Forecast',
+        'Explain total invoiced revenue and collections',
+        'Break down operating expenses by category',
+        'What is our net operating profit?',
+        'Provide 30/60/90-day treasury forecast',
       ],
     };
   }

@@ -49,15 +49,6 @@ export default function PageAgentCopilot({
   };
 
   const getInsightPrompt = (insight: string, idx: number) => {
-    if (insight.toLowerCase().includes('revenue')) {
-      return `Analyze Quarterly Revenue ($210,500, +12.4% YoY) and enterprise expansion drivers.`;
-    }
-    if (insight.toLowerCase().includes('margin') || insight.toLowerCase().includes('profit')) {
-      return `Break down 40.9% operating margin expansion and profitability drivers.`;
-    }
-    if (insight.toLowerCase().includes('treasury') || insight.toLowerCase().includes('cash reserves')) {
-      return `Provide 30/60/90-Day Treasury Forecast and $182,000 cash reserves analysis.`;
-    }
     return `Investigate and provide multi-agent GraphRAG deep dive for: "${insight}"`;
   };
 

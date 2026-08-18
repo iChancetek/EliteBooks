@@ -335,7 +335,7 @@ export default function ExecutiveReportCard({
                 'Why did expenses increase this month?',
                 'Walk me through creating an expense',
                 'Forecast 90-day cash flow',
-                'Create a client invoice for Acme $12,000',
+                'How do I create a new invoice?',
               ]
           ).map((s) => (
             <button
