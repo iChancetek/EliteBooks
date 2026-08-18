@@ -36,11 +36,30 @@ export default function AIAssistant() {
     // Load messages from localStorage on mount
     const saved = localStorage.getItem('elite_chat_history');
     if (saved) {
-      setMessages(JSON.parse(saved));
+      try {
+        const parsed: Message[] = JSON.parse(saved);
+        // Cleanse any old cached greetings containing model names or old phrasing
+        const sanitized = parsed.map((m) => {
+          if (m.role === 'assistant' && (m.content.includes('powered by') || m.content.includes('GPT-5.6-Terra') || m.content.includes('general ledger, double-entry reconciliations'))) {
+            return {
+              ...m,
+              content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist you today?'
+            };
+          }
+          return m;
+        });
+        setMessages(sanitized);
+      } catch (e) {
+        setMessages([{ 
+          role: 'assistant', 
+          content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist you today?',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      }
     } else {
       setMessages([{ 
         role: 'assistant', 
-        content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
+        content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist you today?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     }
@@ -257,7 +276,7 @@ export default function AIAssistant() {
 
     const initial: Message[] = [{ 
       role: 'assistant', 
-      content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',
+      content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot**. How can I assist you today?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }];
     setMessages(initial);
