@@ -235,6 +235,26 @@ export default function AIAssistant() {
   };
 
   const clearHistory = () => {
+    if (messages.length > 1) {
+      try {
+        const { AgentSessionManager } = require('@/lib/agent-session-manager');
+        const session = AgentSessionManager.createNewSession('EliteBooks AI Co-Pilot', messages[1]?.content?.slice(0, 30) || 'Co-Pilot Chat');
+        messages.forEach((m: Message) => {
+          AgentSessionManager.appendTurn(session.id, {
+            id: `turn_${Date.now()}_${Math.random()}`,
+            sender: m.role === 'user' ? 'user' : 'agent',
+            query: m.role === 'user' ? m.content : undefined,
+            message: m.content,
+            agentUsed: 'EliteBooks AI Co-Pilot',
+            timestamp: m.timestamp || 'Just now',
+          });
+        });
+        AgentSessionManager.deleteSession(session.id);
+      } catch (e) {
+        console.warn('Session archiving skipped:', e);
+      }
+    }
+
     const initial: Message[] = [{ 
       role: 'assistant', 
       content: 'Hello! I am your **EliteBooks Autonomous Finance Co-Pilot** powered by **GPT-5.6-Terra**. How can I assist with your general ledger, double-entry reconciliations, or strategic tax planning today?',

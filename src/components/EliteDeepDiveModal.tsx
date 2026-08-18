@@ -65,7 +65,7 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
   onAskAgent
 }) => {
   const [activeTab, setActiveTab] = useState<'financial' | 'audit' | 'strategic'>('financial');
-  const { isLoading: isAiLoading, response: aiResponse, sendMessage: sendModalAiMessage } = useAgent();
+  const { isLoading: isAiLoading, response: aiResponse, turns, sendMessage: sendModalAiMessage } = useAgent();
   const [hasAsked, setHasAsked] = useState(false);
 
   if (!item) return null;
@@ -333,11 +333,13 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
                 <Loader2 size={16} className="pulse-animation" />
                 <span style={{ fontSize: '12px', fontWeight: 700 }}>Autonomous Multi-Agent Analysis in progress...</span>
               </div>
-            ) : aiResponse ? (
+            ) : (aiResponse || turns.length > 0) ? (
               <ExecutiveReportCard
-                content={aiResponse.message}
-                agentUsed={agentName}
-                suggestions={aiResponse.suggestions}
+                turns={turns}
+                content={aiResponse?.message || ''}
+                agentUsed={aiResponse?.agentUsed || agentName}
+                suggestions={aiResponse?.suggestions}
+                onSuggestionClick={(s) => sendModalAiMessage(s)}
               />
             ) : null}
           </div>

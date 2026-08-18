@@ -38,7 +38,7 @@ const quickActions = [
 export default function DashboardHome() {
   const { user } = useAuth();
   const [command, setCommand] = useState('');
-  const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
+  const { isLoading, response, turns, startNewSession, error, sendMessage, clearResponse } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveData | null>(null);
   const forecast = useForecast('cashflow');
@@ -284,12 +284,14 @@ export default function DashboardHome() {
         </form>
 
         {/* Agent Response */}
-        {response && (
+        {(response || turns.length > 0) && (
           <ExecutiveReportCard
-            content={response.message}
-            agentUsed={response.agentUsed || 'CFO Agent'}
-            suggestions={response.suggestions}
+            turns={turns}
+            content={response?.message || ''}
+            agentUsed={response?.agentUsed || 'CFO Agent'}
+            suggestions={response?.suggestions}
             onSuggestionClick={(s) => sendMessage(s)}
+            onStartNewSession={() => startNewSession('CFO Agent')}
             onClear={clearResponse}
             onOpenCreationModal={(type) => {
               setCreationModalType(type);

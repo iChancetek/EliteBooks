@@ -24,7 +24,7 @@ export default function PageAgentCopilot({
   onAction,
   isLoading: parentLoading,
 }: PageAgentCopilotProps) {
-  const { sendMessage, isLoading: internalLoading, response, error, clearResponse } = useAgent();
+  const { sendMessage, isLoading: internalLoading, response, turns, startNewSession, error, clearResponse } = useAgent(agentName);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [clickedInsightIndex, setClickedInsightIndex] = useState<number | null>(null);
 
@@ -211,12 +211,14 @@ export default function PageAgentCopilot({
       </div>
 
       {/* Standalone Embedded Response Card (if not handled by parent page) */}
-      {!onAction && response && (
+      {!onAction && (response || turns.length > 0) && (
         <ExecutiveReportCard
-          content={response.message}
-          agentUsed={response.agentUsed || agentName}
-          suggestions={response.suggestions}
+          turns={turns}
+          content={response?.message || ''}
+          agentUsed={response?.agentUsed || agentName}
+          suggestions={response?.suggestions}
           onSuggestionClick={(s) => sendMessage(s)}
+          onStartNewSession={() => startNewSession(agentName)}
           onClear={clearResponse}
         />
       )}
