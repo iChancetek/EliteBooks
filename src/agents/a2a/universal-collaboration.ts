@@ -56,6 +56,43 @@ export async function runUniversalAgentCollaboration(
   const partyName = vendorMatch ? vendorMatch[1].trim() : 'Partner Co';
 
   const queryLower = unmaskedQuery.toLowerCase();
+  const trimmedClean = queryLower.replace(/[!.,?]/g, '').trim();
+
+  // ══════════════════════════════════════════════════════════════════════
+  // PRIORITY -1: CONVERSATIONAL GREETING & ONBOARDING HANDLER
+  // Responds naturally to greetings ("hello", "hi", "hey", etc.)
+  // without dumping arbitrary financial formulas.
+  // ══════════════════════════════════════════════════════════════════════
+  const greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings', 'howdy', 'yo', 'sup', 'help'];
+  if (greetings.includes(trimmedClean) || trimmedClean.startsWith('hello ') || trimmedClean.startsWith('hi ') || trimmedClean.startsWith('hey ')) {
+    const greetingMsg = `Hello! I am your EliteBooks Autonomous Financial Intelligence Copilot.
+
+I can assist you with:
+• Invoicing & Accounts Receivable (create, send, track client invoices)
+• Expense Tracking & Receipt Categorization (log corporate & personal expenses)
+• General Ledger & ASC-606 Reconciliations (double-entry postings & trial balance)
+• Payroll & Compensation (gross-to-net calculations & pay runs)
+• Cash Flow & Treasury Forecasting (30/60/90-day liquidity runways)
+• Cloud FinOps (AWS, GCP, Azure infrastructure cost optimization)
+• Personal Wealth Management & Owner Draw Allocation
+
+How can I assist you with your business or personal finances today?`;
+
+    lines.push({ agent: primaryAgent || 'EliteBooks Orchestrator', message: greetingMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'Show financial summary',
+        'Create an invoice',
+        'Log an expense',
+        'Check cash flow forecast',
+      ],
+    };
+  }
 
   // ══════════════════════════════════════════════════════════════════════
   // PRIORITY 0: AUTONOMOUS CREATION & MUTATION HANDLERS
@@ -2257,7 +2294,21 @@ DIRECTIVES:
     };
   } catch (err) {
     const mainAgent = primaryAgent || 'CFO Strategist';
-    lines.push({ agent: mainAgent, message: `Evaluated financial inquiry for "${unmaskedQuery}". Operating cash balance is $13,248.81 with gross revenue of $457,400.00 across 4 active client invoices.` });
+    
+    // Dynamic calculation from real live records instead of static text
+    let dynamicCash = 0;
+    let dynamicRev = 0;
+    let invoiceCount = 0;
+    try {
+      const summary = await getFinancialSummary(orgId);
+      dynamicRev = summary.totalRevenue || 0;
+      dynamicCash = (summary.totalPaid || 0) - (summary.totalExpenses || 0);
+      invoiceCount = summary.invoiceCount || 0;
+    } catch (_) {}
+
+    const responseMsg = `Financial Overview: Total invoiced revenue is $${dynamicRev.toLocaleString(undefined, { minimumFractionDigits: 2 })} across ${invoiceCount} active invoices, with an operating cash balance of $${dynamicCash.toLocaleString(undefined, { minimumFractionDigits: 2 })}. How can I assist you with your finances today?`;
+
+    lines.push({ agent: mainAgent, message: responseMsg });
 
     return {
       success: true,
