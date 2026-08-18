@@ -20,7 +20,11 @@ const levels = [
   { id: 4, name: 'Autonomous', desc: 'Full rule-based execution', icon: Shield, color: '#10b981' },
 ];
 
-export default function PersonalAutopilot() {
+interface PersonalAutopilotProps {
+  year?: string;
+}
+
+export default function PersonalAutopilot({ year = '2026' }: PersonalAutopilotProps) {
   const { user } = useAuth();
   const [level, setLevel] = useState<AutonomyLevel>(2);
   const [showHistory, setShowHistory] = useState(false);
@@ -89,7 +93,7 @@ export default function PersonalAutopilot() {
             <Bot size={24} />
           </div>
           <div>
-            <h3>Financial Autopilot 2026</h3>
+            <h3>Financial Autopilot {year === 'All Years' ? 'Overview' : year}</h3>
             <p>AI-driven proactive household money management & autonomous rebalancing</p>
           </div>
         </div>
