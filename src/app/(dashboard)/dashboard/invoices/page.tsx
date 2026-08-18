@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   FileText, Plus, Search, Filter, Send, Eye, MoreHorizontal,
-  DollarSign, Clock, CheckCircle2, AlertTriangle, ArrowUpRight
+  DollarSign, Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Sparkles
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { Invoice } from '@/types/accounting';
@@ -16,6 +16,8 @@ import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import { AIAssistedCreationModal } from '@/components/AIAssistedCreationModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
 
 const statusConfig: Record<string, { label: string; class: string; icon: React.ElementType }> = {
   draft: { label: 'Draft', class: 'badge-neutral', icon: FileText },
@@ -37,6 +39,7 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
+  const [isAICreateOpen, setIsAICreateOpen] = useState(false);
 
   const fetchInvoices = useCallback(async () => {
     if (!user) return;
@@ -157,8 +160,30 @@ export default function InvoicesPage() {
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} /> Create Invoice
           </button>
+          <VoiceAITrigger
+            label="Create with AI"
+            icon={<Sparkles size={14} />}
+            moduleLabel="Invoicing Agent"
+            placeholder='e.g. "Invoice Acme Corp for $12,000 for Q3 consulting"'
+            examplePrompts={[
+              'Invoice Acme Corp $15,000 for consulting',
+              'Create invoice for Starlight Tech, Net 30',
+              'Bill $8,500 for cloud migration project',
+            ]}
+            accentColor="#3b82f6"
+            onAgentResponse={() => fetchInvoices()}
+          />
         </div>
       </div>
+
+      {isAICreateOpen && (
+        <AIAssistedCreationModal
+          isOpen={isAICreateOpen}
+          onClose={() => setIsAICreateOpen(false)}
+          type="invoice"
+          onSuccess={() => fetchInvoices()}
+        />
+      )}
 
       {/* Colorful Visual Analytics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-6)' }}>

@@ -232,10 +232,20 @@ export default function LearningPage() {
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 06</span>
-              <h2>Multilingual Voice Operations</h2>
+              <h2>Multilingual Voice & Audio Intelligence</h2>
             </div>
             <p>
-              EliteBooks features natural voice interaction powered by OpenAI Whisper and Nova Text-to-Speech. Financial controllers and executives can query reports, review balance sheets, and audit expenses through natural voice in 7 global languages: English, Spanish, Mandarin Chinese, French, German, Japanese, and Portuguese.
+              EliteBooks features natural voice interaction powered by OpenAI Whisper (Speech-to-Text) and Nova HD (Text-to-Speech). Financial controllers, accountants, and executives can speak complex instructions — such as invoicing clients, logging travel receipts, or querying historical variances — in 7 global languages:
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' }}>
+              {['English (en)', 'Español (es)', 'Mandarin Chinese (zh)', 'Français (fr)', 'Deutsch (de)', 'Japanese (ja)', 'Português (pt)'].map((lang) => (
+                <span key={lang} style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '100px', background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#c4b5fd', fontWeight: 600 }}>
+                  {lang}
+                </span>
+              ))}
+            </div>
+            <p>
+              Every operational page is equipped with modular <code>VoiceAITrigger</code> components, allowing instant speech recording, transcript verification, multi-agent reasoning, and synthesized voice feedback.
             </p>
           </section>
 
@@ -273,6 +283,20 @@ export default function LearningPage() {
                 </ul>
               </div>
             </div>
+          </section>
+
+          {/* Chapter 8 */}
+          <section className={styles.chapterCard}>
+            <div className={styles.chapterHeader}>
+              <span className={styles.chapterNumber}>Chapter 08</span>
+              <h2>Dual-Mode Architecture: Manual Rigor & Autonomous Speed</h2>
+            </div>
+            <p>
+              Unlike closed AI black-boxes, EliteBooks provides a pure <strong>Dual-Mode Workflow</strong>. Every single financial operation — from invoice creation to payroll runs and cloud expense categorization — retains full, uncompromised manual control alongside instantaneous AI acceleration.
+            </p>
+            <p>
+              Controllers can manually customize line items, adjust account mappings, or click "Create with AI" to let specialized agents draft GAAP-balanced records in seconds. You are never locked into automated workflows; human oversight remains paramount.
+            </p>
           </section>
         </div>
 

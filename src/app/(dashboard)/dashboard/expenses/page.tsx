@@ -16,6 +16,7 @@ import ColorfulBarChart from '@/components/ColorfulBarChart';
 import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
 
 const categories = [
   { name: 'Cloud Services', icon: Cloud, color: '#0ea5e9', amount: 0 },
@@ -735,6 +736,19 @@ export default function ExpensesPage() {
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} /> Add Expense
           </button>
+          <VoiceAITrigger
+            label="Log with AI"
+            icon={<Sparkles size={14} />}
+            moduleLabel="Expense Agent"
+            placeholder='e.g. "Spent $45 at Starbucks for client meeting"'
+            examplePrompts={[
+              'Logged $120 for office supplies at Staples',
+              'Uber ride to client meeting $34',
+              'Monthly AWS bill $2,400 cloud services',
+            ]}
+            accentColor="#ec4899"
+            onAgentResponse={() => fetchExpenses()}
+          />
         </div>
       </div>
 

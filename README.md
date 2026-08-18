@@ -127,10 +127,22 @@ While EliteBooks automates repetitive financial bookkeeping, it strictly adheres
 
 ---
 
-## 6. MULTILINGUAL VOICE & AUDIO SUITE
+## 6. MULTILINGUAL VOICE ENGINE & DUAL-MODE WORKFLOWS
 
-EliteBooks features an interactive voice engine powered by OpenAI Whisper and natural Text-to-Speech (Nova HD voice):
+EliteBooks features an interactive voice and agentic execution engine powered by OpenAI Whisper and natural Text-to-Speech (Nova HD voice), implemented as a **zero-interference dual-mode architecture**:
 
+### Dual-Mode Flexibility: Manual + AI Workflows
+Every operational module in EliteBooks supports both standard manual entry and instantaneous voice/AI-assisted workflows. Users are never locked into AI-only flows:
+- **Invoices (`/dashboard/invoices`):** Standard manual invoice builder + **"Create with AI"** voice trigger & modal.
+- **Expenses (`/dashboard/expenses`):** Standard manual expense entry + **"Log with AI"** Whisper audio ingestion.
+- **Payroll (`/dashboard/payroll`):** Manual employee setup & run buttons + **"Prepare with AI"** automated compensation prep.
+- **Financial Reports (`/dashboard/reports`):** Comprehensive statements + **Whisper Voice Mic** in the NLP query bar for spoken analytics.
+- **Cloud FinOps (`/dashboard/finops`):** Manual cloud billing entries + **"Log with AI"** FOCUS 1.3 spec intake.
+- **Inventory (`/dashboard/inventory`):** Manual product SKU forms + **"Create with AI"** inventory valuation.
+- **Personal Finance (`/dashboard/personal`):** Manual transaction ledger + **"Add with AI"** household budgeting.
+
+### Voice & Audio Architecture
+- **Interactive Voice AI Triggers (`VoiceAITrigger`):** Additive UI components on every dashboard page enabling one-click speech-to-text recording, agent reasoning, and live audio playback.
 - **Stateful Audio Playback:** Interactive Play, Pause, Resume, and Stop controls across all educational modules, reports, and policy centers.
 - **Multilingual Speech-to-Text (STT):** High-accuracy voice querying powered by Whisper across the **7 Top Global Languages**:
   1. English (`en`)

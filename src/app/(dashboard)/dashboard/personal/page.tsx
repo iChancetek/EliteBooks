@@ -23,6 +23,7 @@ import PageAgentCopilot from '@/components/PageAgentCopilot';
 import PersonalAutopilot from '@/components/PersonalAutopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
 
 export default function PersonalFinancePage() {
   const { user } = useAuth();
@@ -293,6 +294,18 @@ export default function PersonalFinancePage() {
             <Bot size={20} style={{ color: '#10b981' }} className="pulse-animation" />
           </div>
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={16} /> Add Transaction</button>
+          <VoiceAITrigger
+            label="Add with AI"
+            icon={<Sparkles size={14} />}
+            moduleLabel="Personal Finance Agent"
+            placeholder='e.g. "Groceries $120 at Whole Foods"'
+            examplePrompts={[
+              'Groceries $95 at Trader Joe\'s',
+              'Electric bill $180 Duke Energy',
+              'Netflix subscription $15.99',
+            ]}
+            accentColor="#10b981"
+          />
         </div>
       </div>
 

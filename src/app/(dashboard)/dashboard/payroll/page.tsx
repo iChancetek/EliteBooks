@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Users, Plus, Calendar, DollarSign, Clock, CheckCircle2 } from 'lucide-react';
+import { Users, Plus, Calendar, DollarSign, Clock, CheckCircle2, Sparkles } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,7 @@ import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
 
 export default function PayrollPage() {
   const { user } = useAuth();
@@ -194,6 +195,18 @@ export default function PayrollPage() {
           <button className="btn btn-primary" id="run-payroll-btn" onClick={handleRunPayroll} disabled={isLoading || employees.length === 0}>
             <Plus size={16} /> Run Payroll
           </button>
+          <VoiceAITrigger
+            label="Prepare with AI"
+            icon={<Sparkles size={14} />}
+            moduleLabel="Payroll Agent"
+            placeholder='e.g. "Add John Smith, Engineering, $95,000 annual salary"'
+            examplePrompts={[
+              'Add engineer Jane Doe at $120K/yr',
+              'Run payroll for current period',
+              'Calculate Q3 payroll tax withholdings',
+            ]}
+            accentColor="#f59e0b"
+          />
         </div>
       </div>
 

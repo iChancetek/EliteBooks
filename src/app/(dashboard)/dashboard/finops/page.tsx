@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Cloud, Zap, Target, ArrowUpRight, ArrowDownRight, Info, Cpu, Database, Activity, Calendar, Plus } from 'lucide-react';
+import { TrendingUp, Cloud, Zap, Target, ArrowUpRight, ArrowDownRight, Info, Cpu, Database, Activity, Calendar, Plus, Sparkles } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -10,6 +10,7 @@ import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
 
 export default function FinOpsPage() {
   const { user } = useAuth();
@@ -195,6 +196,18 @@ export default function FinOpsPage() {
         <button className="btn btn-primary" onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Plus size={16} /> Log Cloud Cost
         </button>
+        <VoiceAITrigger
+          label="Log with AI"
+          icon={<Sparkles size={14} />}
+          moduleLabel="FinOps Agent"
+          placeholder='e.g. "AWS bill $4,200 for compute and storage"'
+          examplePrompts={[
+            'Log $3,500 AWS compute costs',
+            'GCP bill $1,200 for BigQuery',
+            'Azure VM costs $2,800 this month',
+          ]}
+          accentColor="#8b5cf6"
+        />
       </div>
 
       {/* Colorful Visual Analytics */}

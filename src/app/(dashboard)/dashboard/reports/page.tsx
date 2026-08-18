@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles, Network } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, ArrowUpRight, ArrowDownRight, Calendar, Sparkles, Network, Mic, MicOff } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, Brush } from 'recharts';
 import { formatCurrency, formatPercent, parseLocalDate } from '@/lib/utils';
 import DateFilter from '@/components/DateFilter';
@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 import KnowledgeGraphViewer from '@/components/KnowledgeGraphViewer';
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
+import { useVoice } from '@/hooks/useVoice';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#14b8a6', '#6366f1', '#84cc16'];
 
@@ -23,6 +25,16 @@ export default function ReportsPage() {
   const [selectedYear, setSelectedYear] = useState('All Years');
   const [reportData, setReportData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { isRecording, startRecording, stopRecording } = useVoice();
+
+  const handleVoiceMic = async () => {
+    if (isRecording) {
+      const transcription = await stopRecording();
+      if (transcription?.trim()) setNlpQuery(transcription);
+    } else {
+      await startRecording();
+    }
+  };
 
   const fetchReport = useCallback(async () => {
     if (!user) return;
@@ -214,6 +226,24 @@ export default function ReportsPage() {
         />
         <button className="btn btn-primary btn-sm" onClick={handleNlpGenerate} disabled={isGenerating || !nlpQuery.trim()}>
           {isGenerating ? 'Generating...' : 'Generate'}
+        </button>
+        <button
+          onClick={handleVoiceMic}
+          title={isRecording ? 'Stop & Transcribe (Whisper)' : 'Speak your report query'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '6px 10px',
+            borderRadius: 'var(--radius-md)',
+            border: `1px solid ${isRecording ? 'rgba(244, 63, 94, 0.5)' : 'rgba(139, 92, 246, 0.3)'}`,
+            background: isRecording ? 'rgba(244, 63, 94, 0.15)' : 'rgba(139, 92, 246, 0.1)',
+            color: isRecording ? '#fda4af' : '#c4b5fd',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
         </button>
       </div>
 

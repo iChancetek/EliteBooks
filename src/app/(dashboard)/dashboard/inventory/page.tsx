@@ -1,6 +1,6 @@
 'use client';
 
-import { Package, Plus, Search, AlertTriangle, Box, DollarSign } from 'lucide-react';
+import { Package, Plus, Search, AlertTriangle, Box, DollarSign, Sparkles } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useState, useEffect, useCallback } from 'react';
 import DateFilter from '@/components/DateFilter';
@@ -11,6 +11,7 @@ import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
+import VoiceAITrigger from '@/components/VoiceAITrigger';
 
 export default function InventoryPage() {
   const { user } = useAuth();
@@ -151,6 +152,18 @@ export default function InventoryPage() {
             onDateChange={(m, y) => { setSelectedMonth(m); setSelectedYear(y); }} 
           />
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={16} /> Add Product</button>
+          <VoiceAITrigger
+            label="Create with AI"
+            icon={<Sparkles size={14} />}
+            moduleLabel="Inventory Agent"
+            placeholder='e.g. "Add 500 Widget Pro units at $12.50 cost"'
+            examplePrompts={[
+              'Add 200 units of Enterprise Module at $45',
+              'Create product: USB-C Hub, 150 units, $18 cost',
+              'Reorder 300 Accessory Packs at $8.99',
+            ]}
+            accentColor="#10b981"
+          />
         </div>
       </div>
 

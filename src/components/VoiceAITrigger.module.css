@@ -1,0 +1,259 @@
+/* VoiceAITrigger — Additive AI Voice Action Component */
+/* Matches existing EliteBooks design system tokens */
+
+.triggerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  font-family: var(--font-sans);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.10));
+  color: #c4b5fd;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  white-space: nowrap;
+}
+.triggerBtn:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.18));
+  border-color: rgba(139, 92, 246, 0.6);
+  color: #e9d5ff;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2);
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+/* Panel */
+.panel {
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-xl);
+  padding: clamp(14px, 4vw, 24px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.headerIcon {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+}
+.headerTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.headerBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+}
+.headerSubtitle {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+/* Prompt Area */
+.promptArea {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.promptLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.promptRow {
+  display: flex;
+  gap: 8px;
+}
+.promptInput {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  font-family: var(--font-sans);
+}
+.promptInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Voice Record Button */
+.voiceBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.voiceBtn:hover {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+.voiceBtnRecording {
+  background: rgba(244, 63, 94, 0.25) !important;
+  border-color: rgba(244, 63, 94, 0.6) !important;
+  color: #fda4af !important;
+  animation: pulseRec 1.2s ease-in-out infinite;
+}
+@keyframes pulseRec {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
+}
+
+/* Submit Row */
+.submitRow {
+  display: flex;
+  gap: 8px;
+}
+.sendBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  transition: all 0.15s ease;
+  font-family: var(--font-sans);
+}
+.sendBtn:hover {
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+}
+.sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Response Area */
+.responseArea {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 14px;
+}
+.responseHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #10b981;
+}
+.responseText {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* TTS Controls */
+.ttsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ttsBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  color: #6ee7b7;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-sans);
+}
+.ttsBtn:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+/* Loading */
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  padding: 12px 0;
+}

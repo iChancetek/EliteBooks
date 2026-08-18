@@ -3,11 +3,23 @@ import {
   Brain, Zap, Shield, TrendingUp, FileText, DollarSign, 
   Users, BarChart3, ArrowRight, Sparkles, Bot, ChevronRight,
   CreditCard, Receipt, PieChart, Clock, Wallet, ShieldCheck,
-  FileCheck2, Lock, Cloud, Compass, Activity, Layers
+  FileCheck2, Lock, Cloud, Compass, Activity, Layers, Mic, Volume2
 } from 'lucide-react';
 import styles from './page.module.css';
 
 const features = [
+  {
+    icon: Mic,
+    title: 'Voice AI & Speech Operations',
+    description: 'Powered by OpenAI Whisper STT and Nova TTS. Speak naturally in 7 global languages to invoice clients, log expenses, and query reports.',
+    color: '#8b5cf6',
+  },
+  {
+    icon: Zap,
+    title: 'Dual-Mode Hybrid Workflows',
+    description: 'Total manual control meets autonomous AI speed. Switch between traditional manual data entry and one-click AI creation on any page.',
+    color: '#ec4899',
+  },
   {
     icon: FileText,
     title: 'Smart Invoicing',
@@ -165,7 +177,7 @@ export default function LandingPage() {
             <span className="text-gradient">runs itself.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            EliteBooks is an enterprise-grade AI financial operating system powered by GPT-5.6-Terra. Autonomous agents handle invoicing, expenses, payroll, reporting, FinOps, and personal wealth — protected by continuous SOC 1 ICFR and SOC 2 Type II trust controls.
+            EliteBooks is an enterprise-grade AI financial operating system powered by GPT-5.6-Terra and OpenAI Whisper voice engine. Autonomous agents and interactive voice triggers handle invoicing, expenses, payroll, reporting, FinOps, and personal wealth — backed by total manual control and continuous SOC 1 & SOC 2 Type II trust controls.
           </p>
           <div className={styles.heroActions}>
             <Link href="/signup" className={`btn btn-primary btn-lg ${styles.heroCta}`} id="hero-signup-btn">
@@ -179,7 +191,7 @@ export default function LandingPage() {
           </div>
           <div className={styles.heroTrust}>
             <ShieldCheck size={15} color="#10b981" />
-            <span>SOC 1 (SSAE 18) ICFR · SOC 2 Type II · Immutable SHA-256 Audit Trail</span>
+            <span>SOC 1 (SSAE 18) ICFR · SOC 2 Type II · Whisper STT Voice Triggers · SHA-256 Audit Trail</span>
           </div>
         </div>
 
@@ -198,11 +210,11 @@ export default function LandingPage() {
             <div className={styles.commandBody}>
               <div className={styles.commandPrompt}>
                 <Sparkles size={18} className={styles.commandIcon} />
-                <span className={styles.commandText}>What would you like to do?</span>
+                <span className={styles.commandText}>Speak or type your financial request...</span>
                 <span className={styles.commandCursor} />
               </div>
               <div className={styles.commandActions}>
-                {['Track my money', 'Send an invoice', 'Run payroll', 'SOC Compliance Check'].map((action) => (
+                {['"Invoice Acme Corp $15k"', '"Log $120 office lunch"', '"Run current payroll"', 'SOC Compliance Check'].map((action) => (
                   <div key={action} className={styles.commandAction}>
                     <Zap size={14} />
                     <span>{action}</span>
@@ -212,11 +224,11 @@ export default function LandingPage() {
               <div className={styles.commandResponse}>
                 <div className={styles.responseHeader}>
                   <Bot size={14} />
-                  <span>EliteBooks AI (GPT-5.6-Terra)</span>
+                  <span>EliteBooks AI (Voice & Multi-Agent Swarm)</span>
                   <span className={styles.responseBadge}>Verified</span>
                 </div>
                 <p className={styles.responseText}>
-                  All 6 continuous SOC 1 & SOC 2 controls are verified. Double-entry trial balance is in mathematical equilibrium ($0 variance). 3 invoices sent today totaling $8,200.
+                  Voice intent transcribed via Whisper. All 6 continuous SOC 1 & SOC 2 controls verified. Double-entry trial balance is in equilibrium ($0 variance). Prepared invoice draft for Acme Corp ($15,000, Net 30).
                 </p>
               </div>
             </div>
