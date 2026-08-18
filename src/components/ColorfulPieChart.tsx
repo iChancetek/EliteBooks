@@ -60,6 +60,12 @@ export default function ColorfulPieChart({
   centerSubtext,
   formatAsCurrency = true
 }: ColorfulPieChartProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const totalValue = data.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
@@ -76,31 +82,33 @@ export default function ColorfulPieChart({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', height: height, gap: 'var(--space-4)' }}>
-        <div style={{ width: '55%', height: '100%', minWidth: 0, position: 'relative' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={65}
-                outerRadius={95}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {data.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.color}
-                    stroke="rgba(0, 0, 0, 0.4)"
-                    strokeWidth={2}
-                    style={{ outline: 'none' }}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip formatAsCurrency={formatAsCurrency} />} />
-            </PieChart>
-          </ResponsiveContainer>
+        <div style={{ width: '55%', height: '100%', minWidth: 0, minHeight: height, position: 'relative' }}>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={height}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={65}
+                  outerRadius={95}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      stroke="rgba(0, 0, 0, 0.4)"
+                      strokeWidth={2}
+                      style={{ outline: 'none' }}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomPieTooltip formatAsCurrency={formatAsCurrency} />} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
 
           {(centerText || totalValue > 0) && (
             <div style={{

@@ -142,8 +142,8 @@ export default function AdminDashboard() {
           <div className="admin-section-header">
             <h3>User Growth (All Time)</h3>
           </div>
-          <div style={{ height: 240, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: 240, width: '100%', minWidth: 0, minHeight: 240 }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={240}>
               <BarChart data={growthData}>
                 <XAxis dataKey="name" stroke="var(--color-text-tertiary)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-text-tertiary)" fontSize={11} tickLine={false} axisLine={false} />
@@ -162,8 +162,8 @@ export default function AdminDashboard() {
             <h3>User Distribution by Role</h3>
             <ShieldCheck size={16} />
           </div>
-          <div style={{ height: 240, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: 240, width: '100%', minWidth: 0, minHeight: 240 }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={240}>
               <PieChart>
                 <Pie
                   data={userRoleData}

@@ -70,6 +70,12 @@ export default function ColorfulBarChart({
   height = 320,
   formatAsCurrency = true
 }: ColorfulBarChartProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="glass-card" style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -94,8 +100,9 @@ export default function ColorfulBarChart({
       </div>
 
       <div style={{ width: '100%', height: height, minWidth: 0, minHeight: height }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        {mounted && (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={height}>
+            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               {series.map((s) => (
                 <linearGradient key={s.key} id={`grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">

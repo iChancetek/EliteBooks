@@ -30,24 +30,43 @@ export async function POST(request: NextRequest) {
 
     const lastMessage = messages[messages.length - 1].content;
     
-    // 1. Generate embedding for the user query
-    const queryVector = await generateEmbedding(lastMessage);
-    
-    // 2. Search for relevant context in Pinecone (Help Docs + Long-term Memory)
-    const [searchResults, memories] = await Promise.all([
-      querySimilar(queryVector, namespace, 4),
-      retrieveMemory(lastMessage, 'agent-memory', 3)
-    ]);
-    
-    const context = searchResults.matches
-      .map((match: any) => match.metadata.text)
-      .join('\n\n---\n\n');
+    // 1. Search for relevant context in Pinecone (Help Docs + Long-term Memory) with graceful fallback
+    let context = '';
+    let memoryContext = 'No relevant long-term memories found.';
+    let searchResults: any = { matches: [] };
 
-    const memoryContext = memories.length > 0
-      ? memories.map((m: any) => `[Memory from ${m.metadata.timestamp}]: ${m.text}`).join('\n')
-      : 'No relevant long-term memories found.';
+    try {
+      const queryVector = await generateEmbedding(lastMessage);
+      const [res, mem] = await Promise.all([
+        querySimilar(queryVector, namespace, 4).catch((err: any) => {
+          console.warn('[RAG API Pinecone querySimilar skipped]:', err.message);
+          return { matches: [] };
+        }),
+        retrieveMemory(lastMessage, 'agent-memory', 3).catch((err: any) => {
+          console.warn('[RAG API retrieveMemory skipped]:', err.message);
+          return [];
+        }),
+      ]);
 
-    // 3. Define Tools for Platform Info Gathering
+      searchResults = res || { matches: [] };
+      if (searchResults.matches && Array.isArray(searchResults.matches)) {
+        context = searchResults.matches
+          .map((match: any) => match.metadata?.text || '')
+          .filter(Boolean)
+          .join('\n\n---\n\n');
+      }
+
+      const memories = Array.isArray(mem) ? mem : [];
+      if (memories.length > 0) {
+        memoryContext = memories
+          .map((m: any) => `[Memory from ${m.metadata?.timestamp || 'prior interaction'}]: ${m.text}`)
+          .join('\n');
+      }
+    } catch (vectorErr: any) {
+      console.warn('[RAG API Vector Search Skipped / Degraded Gracefully]:', vectorErr.message);
+    }
+
+    // 2. Define Tools for Platform Info Gathering
     const tools = [
       {
         type: 'function',

@@ -268,8 +268,8 @@ export default function ReportsPage() {
               >Yearly</button>
             </div>
           </div>
-          <div style={{ height: 300, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: 300, width: '100%', minWidth: 0, minHeight: 300 }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <BarChart data={chartView === 'monthly' ? displayHistoricalMonthly : displayHistoricalYearly} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey={chartView === 'monthly' ? 'label' : 'year'} stroke="var(--color-text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis 
@@ -297,8 +297,8 @@ export default function ReportsPage() {
 
         <div className="rpt-section glass-card-static">
           <h3>Expense Distribution</h3>
-          <div style={{ height: 300, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: 300, width: '100%', minWidth: 0, minHeight: 300 }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <PieChart>
                 <Pie
                   data={Object.entries(expenseCategories).map(([name, value]) => ({ name, value }))}
