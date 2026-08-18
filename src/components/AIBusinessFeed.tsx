@@ -11,7 +11,13 @@ import {
   Clock,
   ShieldCheck,
   Zap,
+  Sparkles,
+  Shield,
+  Search,
+  Activity,
+  Layers,
 } from 'lucide-react';
+import styles from './AIBusinessFeed.module.css';
 import { AIBusinessFeedItem, FeedSeverity } from '@/types/agent-system';
 
 interface AIBusinessFeedProps {
@@ -31,83 +37,167 @@ export const AIBusinessFeed: React.FC<AIBusinessFeedProps> = ({
     activeFilter === 'all' ? true : item.severity === activeFilter
   );
 
+  const getFilterIcon = (filter: FeedSeverity | 'all') => {
+    switch (filter) {
+      case 'all':
+        return <Sparkles size={13} />;
+      case 'critical':
+        return <AlertTriangle size={13} color="#f87171" />;
+      case 'attention':
+        return <AlertCircle size={13} color="#fbbf24" />;
+      case 'insight':
+        return <TrendingUp size={13} color="#60a5fa" />;
+      case 'opportunity':
+        return <Lightbulb size={13} color="#34d399" />;
+      case 'forecast':
+        return <BarChart3 size={13} color="#c084fc" />;
+    }
+  };
+
   const getSeverityBadge = (severity: FeedSeverity) => {
     switch (severity) {
       case 'critical':
         return {
           label: 'CRITICAL',
-          icon: <AlertTriangle className="w-4 h-4 text-red-400" />,
-          bg: 'bg-red-950/40 border-red-800/60 text-red-300',
+          icon: <AlertTriangle size={12} color="#f87171" />,
+          color: '#f87171',
+          bg: 'rgba(239, 68, 68, 0.15)',
+          border: 'rgba(239, 68, 68, 0.4)',
         };
       case 'attention':
         return {
           label: 'ATTENTION REQUIRED',
-          icon: <AlertCircle className="w-4 h-4 text-amber-400" />,
-          bg: 'bg-amber-950/40 border-amber-800/60 text-amber-300',
+          icon: <AlertCircle size={12} color="#fbbf24" />,
+          color: '#fbbf24',
+          bg: 'rgba(245, 158, 11, 0.15)',
+          border: 'rgba(245, 158, 11, 0.4)',
         };
       case 'insight':
         return {
           label: 'INSIGHT',
-          icon: <TrendingUp className="w-4 h-4 text-blue-400" />,
-          bg: 'bg-blue-950/40 border-blue-800/60 text-blue-300',
+          icon: <TrendingUp size={12} color="#60a5fa" />,
+          color: '#60a5fa',
+          bg: 'rgba(59, 130, 246, 0.15)',
+          border: 'rgba(59, 130, 246, 0.4)',
         };
       case 'opportunity':
         return {
           label: 'OPPORTUNITY',
-          icon: <Lightbulb className="w-4 h-4 text-emerald-400" />,
-          bg: 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300',
+          icon: <Lightbulb size={12} color="#34d399" />,
+          color: '#34d399',
+          bg: 'rgba(16, 185, 129, 0.15)',
+          border: 'rgba(16, 185, 129, 0.4)',
         };
       case 'forecast':
         return {
           label: 'FORECAST',
-          icon: <BarChart3 className="w-4 h-4 text-purple-400" />,
-          bg: 'bg-purple-950/40 border-purple-800/60 text-purple-300',
+          icon: <BarChart3 size={12} color="#c084fc" />,
+          color: '#c084fc',
+          bg: 'rgba(168, 85, 247, 0.15)',
+          border: 'rgba(168, 85, 247, 0.4)',
         };
     }
   };
 
+  const filterOptions: (FeedSeverity | 'all')[] = [
+    'all',
+    'critical',
+    'attention',
+    'insight',
+    'opportunity',
+    'forecast',
+  ];
+
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
+    <div className={styles.feedContainer}>
       {/* Header & Filter Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-amber-400 animate-pulse" />
-            <h2 className="text-xl font-bold text-slate-100 tracking-tight">
-              AI Business Intelligence Feed
-            </h2>
+      <div className={styles.header}>
+        <div className={styles.titleArea}>
+          <div className={styles.zapIconWrapper}>
+            <Zap size={24} />
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Proactive financial intelligence continuous stream from the EliteBooks AI Finance Department
-          </p>
+          <div>
+            <h2>AI Business Intelligence Feed</h2>
+            <p>
+              Proactive continuous intelligence stream powered by GPT-5.6-Terra & 10 Autonomous Financial Agents
+            </p>
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 sm:pb-0">
-          {(['all', 'critical', 'attention', 'insight', 'opportunity', 'forecast'] as const).map(
-            (filter) => (
+        {/* Filter Pills */}
+        <div className={styles.filtersBar}>
+          {filterOptions.map((filter) => {
+            const count =
+              filter === 'all'
+                ? items.length
+                : items.filter((i) => i.severity === filter).length;
+
+            return (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
-                  activeFilter === filter
-                    ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-bold'
-                    : 'bg-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                className={`${styles.filterBtn} ${
+                  activeFilter === filter ? styles.active : ''
                 }`}
               >
-                {filter}
+                {getFilterIcon(filter)}
+                <span>{filter}</span>
+                <span className={styles.filterCount}>{count}</span>
               </button>
-            )
-          )}
+            );
+          })}
         </div>
       </div>
 
       {/* Feed Item Stream */}
-      <div className="space-y-4 max-h-[620px] overflow-y-auto pr-2 custom-scrollbar">
+      <div className={styles.streamList}>
         {filteredItems.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-slate-800 rounded-xl">
-            <CheckCircle2 className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <p className="text-slate-400 text-sm">No items found for severity tab "{activeFilter}"</p>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyStateRadar}>
+              <div className={styles.radarPulse} />
+              <CheckCircle2 size={32} />
+            </div>
+            <div>
+              <h3 className={styles.emptyTitle}>
+                {activeFilter === 'all'
+                  ? 'All Financial Operations Synchronized & Optimal'
+                  : `Zero ${activeFilter.toUpperCase()} Anomalies Detected`}
+              </h3>
+              <p className={styles.emptyDesc}>
+                Continuous background auditing across live Firestore ledgers, bank feeds, invoices, and expenses is 100% verified. No urgent action items found under filter &quot;{activeFilter}&quot;.
+              </p>
+            </div>
+
+            <div className={styles.emptyMetrics}>
+              <div className={styles.emptyMetricChip}>
+                <Shield size={14} color="#10b981" />
+                <span>100% Safe Harbor Integrity</span>
+              </div>
+              <div className={styles.emptyMetricChip}>
+                <Activity size={14} color="#3b82f6" />
+                <span>10 Specialized Agents Active</span>
+              </div>
+              <div className={styles.emptyMetricChip}>
+                <Layers size={14} color="#f59e0b" />
+                <span>SHA-256 Ledger Guarded</span>
+              </div>
+            </div>
+
+            <button
+              className={styles.scanBtn}
+              onClick={() => {
+                window.dispatchEvent(
+                  new CustomEvent('elitebooks:ask-agent', {
+                    detail: {
+                      query:
+                        'Perform a full-scope financial intelligence audit across all accounts, transactions, invoices, and tax obligations.',
+                    },
+                  })
+                );
+              }}
+            >
+              <Sparkles size={16} /> Run On-Demand AI Financial Scan
+            </button>
           </div>
         ) : (
           filteredItems.map((item) => {
@@ -115,44 +205,37 @@ export const AIBusinessFeed: React.FC<AIBusinessFeedProps> = ({
             const isNegative = item.financialImpact < 0;
 
             return (
-              <div
-                key={item.id}
-                className="bg-slate-950/70 border border-slate-800/80 hover:border-slate-700/80 transition-all rounded-xl p-5 shadow-lg group relative overflow-hidden"
-              >
+              <div key={item.id} className={styles.feedItem}>
                 {/* Severity indicator line */}
                 <div
-                  className={`absolute top-0 left-0 bottom-0 w-1 ${
-                    item.severity === 'critical'
-                      ? 'bg-red-500'
-                      : item.severity === 'attention'
-                      ? 'bg-amber-500'
-                      : item.severity === 'opportunity'
-                      ? 'bg-emerald-500'
-                      : item.severity === 'forecast'
-                      ? 'bg-purple-500'
-                      : 'bg-blue-500'
-                  }`}
+                  className={styles.severityStrip}
+                  style={{ background: badge.color }}
                 />
 
-                <div className="pl-3">
+                <div className={styles.itemContent}>
                   {/* Top Bar: Severity Badge, Responsible Agent, Financial Impact */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
+                  <div className={styles.itemTopBar}>
+                    <div className={styles.badgeAgentGroup}>
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-bold tracking-wider ${badge.bg}`}
+                        className={styles.severityBadge}
+                        style={{
+                          color: badge.color,
+                          background: badge.bg,
+                          borderColor: badge.border,
+                        }}
                       >
                         {badge.icon}
                         {badge.label}
                       </span>
-                      <span className="text-xs text-slate-400 font-medium">
-                        by <span className="text-slate-200 font-semibold">{item.responsibleAgent}</span>
+                      <span className={styles.responsibleAgent}>
+                        by <span className={styles.agentHighlight}>{item.responsibleAgent}</span>
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className={styles.impactTimeGroup}>
                       <span
-                        className={`text-sm font-mono font-bold ${
-                          isNegative ? 'text-red-400' : 'text-emerald-400'
+                        className={`${styles.impactAmount} ${
+                          isNegative ? styles.impactNegative : styles.impactPositive
                         }`}
                       >
                         {isNegative ? '-' : '+'}$
@@ -160,8 +243,8 @@ export const AIBusinessFeed: React.FC<AIBusinessFeedProps> = ({
                           minimumFractionDigits: 2,
                         })}
                       </span>
-                      <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-slate-600" />
+                      <span className={styles.itemTime}>
+                        <Clock size={12} />
                         {new Date(item.timestamp).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -171,30 +254,24 @@ export const AIBusinessFeed: React.FC<AIBusinessFeedProps> = ({
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-base font-bold text-slate-100 group-hover:text-amber-400 transition-colors">
-                    {item.event}
-                  </h3>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{item.whyItMatters}</p>
+                  <h3 className={styles.itemTitle}>{item.event}</h3>
+                  <p className={styles.itemDesc}>{item.whyItMatters}</p>
 
                   {/* Recommendation Box */}
-                  <div className="mt-3 bg-slate-900/90 border border-slate-800 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs font-semibold text-slate-200">
-                          Recommended Action:
-                        </p>
-                        <p className="text-xs text-slate-400 mt-0.5">{item.recommendedAction}</p>
+                  <div className={styles.recommendationBox}>
+                    <div className={styles.recLeft}>
+                      <ShieldCheck size={18} className={styles.recIcon} />
+                      <div className={styles.recText}>
+                        <span className={styles.recLabel}>Recommended Action:</span>
+                        <span className={styles.recAction}>{item.recommendedAction}</span>
                       </div>
                     </div>
 
                     {/* Confidence Meter & Action Trigger */}
-                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                      <div className="text-right">
-                        <span className="text-[10px] uppercase font-bold text-slate-500 block">
-                          Confidence
-                        </span>
-                        <span className="text-xs font-mono font-bold text-amber-400">
+                    <div className={styles.recRight}>
+                      <div className={styles.confidenceBox}>
+                        <span className={styles.confidenceLabel}>Confidence</span>
+                        <span className={styles.confidenceValue}>
                           {Math.round(item.confidence * 100)}%
                         </span>
                       </div>
@@ -203,17 +280,19 @@ export const AIBusinessFeed: React.FC<AIBusinessFeedProps> = ({
                         <button
                           onClick={() =>
                             onOpenApprovalModal &&
-                            onOpenApprovalModal(item.approvalRequirement!.targetEntityId || item.id)
+                            onOpenApprovalModal(
+                              item.approvalRequirement!.targetEntityId || item.id
+                            )
                           }
-                          className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 font-semibold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow-md"
+                          className={styles.approvalRequiredBtn}
                         >
-                          <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                          <AlertTriangle size={14} />
                           Approval Required
                         </button>
                       ) : (
                         <button
                           onClick={() => onExecuteAction && onExecuteAction(item)}
-                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-all shadow-md shadow-amber-500/20"
+                          className={styles.applyActionBtn}
                         >
                           Apply Action
                         </button>

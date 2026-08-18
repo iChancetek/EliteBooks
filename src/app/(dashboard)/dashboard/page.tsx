@@ -463,46 +463,97 @@ export default function DashboardHome() {
       </section>
 
       {/* Primary Intelligence Section: Feed, Approvals, & Audit */}
-      <section className="space-y-6">
+      <section style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('feed')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'feed'
-                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Zap className="w-4 h-4" />
-              AI Business Intelligence Feed ({feedItems.length})
-            </button>
+        <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '14px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <button
+            onClick={() => setActiveTab('feed')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: 'none',
+              whiteSpace: 'nowrap',
+              background: activeTab === 'feed' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(255, 255, 255, 0.05)',
+              color: activeTab === 'feed' ? '#0f172a' : 'rgba(255, 255, 255, 0.7)',
+              boxShadow: activeTab === 'feed' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Zap size={16} />
+            <span>AI Business Intelligence Feed</span>
+            <span style={{ 
+              fontSize: '10px', 
+              fontWeight: 800, 
+              padding: '2px 7px', 
+              borderRadius: '100px', 
+              background: activeTab === 'feed' ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+              color: activeTab === 'feed' ? '#0f172a' : '#ffffff'
+            }}>
+              {feedItems.length}
+            </span>
+          </button>
 
-            <button
-              onClick={() => setActiveTab('approvals')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'approvals'
-                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Pending HITL Approvals ({pendingApprovals.filter(p => p.status === 'pending').length})
-            </button>
+          <button
+            onClick={() => setActiveTab('approvals')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: 'none',
+              whiteSpace: 'nowrap',
+              background: activeTab === 'approvals' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(255, 255, 255, 0.05)',
+              color: activeTab === 'approvals' ? '#0f172a' : 'rgba(255, 255, 255, 0.7)',
+              boxShadow: activeTab === 'approvals' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <ShieldCheck size={16} />
+            <span>Pending HITL Approvals</span>
+            <span style={{ 
+              fontSize: '10px', 
+              fontWeight: 800, 
+              padding: '2px 7px', 
+              borderRadius: '100px', 
+              background: activeTab === 'approvals' ? 'rgba(0, 0, 0, 0.25)' : pendingApprovals.filter(p => p.status === 'pending').length > 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+              color: activeTab === 'approvals' ? '#0f172a' : pendingApprovals.filter(p => p.status === 'pending').length > 0 ? '#f87171' : '#ffffff'
+            }}>
+              {pendingApprovals.filter(p => p.status === 'pending').length}
+            </span>
+          </button>
 
-            <button
-              onClick={() => setActiveTab('audit')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'audit'
-                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              SHA-256 Audit Center
-            </button>
-          </div>
+          <button
+            onClick={() => setActiveTab('audit')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: 'none',
+              whiteSpace: 'nowrap',
+              background: activeTab === 'audit' ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255, 255, 255, 0.05)',
+              color: activeTab === 'audit' ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+              boxShadow: activeTab === 'audit' ? '0 4px 14px rgba(16, 185, 129, 0.35)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Layers size={16} />
+            <span>SHA-256 Audit Center</span>
+          </button>
         </div>
 
         {/* Tab Content Display */}
@@ -519,44 +570,75 @@ export default function DashboardHome() {
         )}
 
         {activeTab === 'approvals' && (
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-amber-400" />
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.7))',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            borderRadius: '24px',
+            padding: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <ShieldCheck size={20} color="#f59e0b" />
               Human-in-the-Loop Pending Approvals Drawer
             </h3>
-            <div className="space-y-4">
-              {pendingApprovals.map((req) => (
-                <div
-                  key={req.id}
-                  className="bg-slate-950/70 border border-slate-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-red-500/20 border border-red-500/40 text-red-300 text-[10px] font-bold rounded uppercase">
-                        {req.status}
-                      </span>
-                      <h4 className="text-base font-bold text-slate-100">{req.title}</h4>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">{req.description}</p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
-                      <span>Agent: <strong className="text-slate-200">{req.responsibleAgent}</strong></span>
-                      <span>Impact: <strong className="text-red-400">${Math.abs(req.financialImpact).toLocaleString()}</strong></span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <button
-                      onClick={() => {
-                        setActiveApprovalRequest(req);
-                        setIsApprovalModalOpen(true);
-                      }}
-                      className="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-amber-400 transition-all"
-                    >
-                      Review & Authorize
-                    </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {pendingApprovals.filter(p => p.status === 'pending').length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '36px 16px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '16px', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                  <ShieldCheck size={32} color="#10b981" style={{ margin: '0 auto 8px auto' }} />
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>No Pending Authorizations</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
+                    All financial operations, payouts, and automated postings have been verified and approved.
                   </div>
                 </div>
-              ))}
+              ) : (
+                pendingApprovals.map((req) => (
+                  <div
+                    key={req.id}
+                    style={{
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '16px',
+                      padding: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '12px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', textTransform: 'uppercase' }}>
+                          {req.status}
+                        </span>
+                        <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0 }}>{req.title}</h4>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.65)', margin: '4px 0 0 0' }}>{req.description}</p>
+                      <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: 'rgba(255, 255, 255, 0.4)' }}>
+                        <span>Agent: <strong style={{ color: '#ffffff' }}>{req.responsibleAgent}</strong></span>
+                        <span>Impact: <strong style={{ color: '#f87171' }}>${Math.abs(req.financialImpact).toLocaleString()}</strong></span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => {
+                          setActiveApprovalRequest(req);
+                          setIsApprovalModalOpen(true);
+                        }}
+                        className="btn btn-primary"
+                        style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', fontSize: '12px', fontWeight: 800, padding: '8px 16px' }}
+                      >
+                        Review & Authorize
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

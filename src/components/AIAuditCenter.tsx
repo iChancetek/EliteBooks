@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Lock, RefreshCw, Key, Layers } from 'lucide-react';
+import { ShieldCheck, Lock, RefreshCw, Layers, ShieldAlert } from 'lucide-react';
+import styles from './AIAuditCenter.module.css';
 import { auditLock, AuditBlock } from '@/security/audit-lock';
 
 export const AIAuditCenter: React.FC<{ orgId?: string }> = ({ orgId = 'default' }) => {
@@ -22,83 +23,89 @@ export const AIAuditCenter: React.FC<{ orgId?: string }> = ({ orgId = 'default' 
   }, [orgId]);
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
+    <div className={styles.auditContainer}>
       {/* Top Header */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-xl font-bold text-slate-100 tracking-tight">
-              AI Activity & Cryptographic Audit Center
-            </h2>
+      <div className={styles.header}>
+        <div className={styles.titleArea}>
+          <div className={styles.shieldIconWrapper}>
+            <ShieldCheck size={24} />
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Immutable SHA-256 block chain trail recording every observation, tool call, recommendation, and approval
-          </p>
+          <div>
+            <h2>AI Activity & Cryptographic Audit Center</h2>
+            <p>
+              Immutable SHA-256 blockchain recording observations, tool calls, autonomous actions, and human approvals
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className={styles.headerActions}>
           <div
-            className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 ${
-              integrity.isValid
-                ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                : 'bg-red-950/40 border-red-800/60 text-red-300'
+            className={`${styles.integrityBadge} ${
+              integrity.isValid ? styles.integrityValid : styles.integrityInvalid
             }`}
           >
-            <Lock className="w-3.5 h-3.5" />
-            {integrity.isValid ? 'SHA-256 Chain Verified Intact' : 'Chain Tampered Warning'}
+            {integrity.isValid ? <Lock size={13} /> : <ShieldAlert size={13} />}
+            <span>{integrity.isValid ? 'SHA-256 Chain Intact' : 'Chain Warning'}</span>
           </div>
 
           <button
             onClick={loadAuditLogs}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
+            className={styles.refreshBtn}
             title="Refresh Audit Logs"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw size={16} />
           </button>
         </div>
       </div>
 
-      {/* Block Stream Table */}
-      <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1 custom-scrollbar">
+      {/* Block Stream */}
+      <div className={styles.blockList}>
         {blocks.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-slate-800 rounded-xl">
-            <Layers className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <p className="text-slate-400 text-sm">No cryptographic audit blocks logged yet for {orgId}</p>
+          <div className={styles.emptyState}>
+            <Layers size={36} color="rgba(255, 255, 255, 0.4)" />
+            <h3 className={styles.emptyTitle}>Cryptographic Chain Initialized</h3>
+            <p className={styles.emptyDesc}>
+              Genesis block verified. New autonomous operations will append immutable SHA-256 blocks here in real time.
+            </p>
           </div>
         ) : (
           blocks.map((block) => (
-            <div
-              key={block.index}
-              className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-all font-mono text-xs"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded font-bold text-[10px]">
+            <div key={block.index} className={styles.blockCard}>
+              <div className={styles.blockHeader}>
+                <div className={styles.blockTitleGroup}>
+                  <span className={styles.blockIndexBadge}>
                     Block #{block.index}
                   </span>
-                  <span className="text-slate-200 font-bold font-sans">{block.actionType}</span>
+                  <span className={styles.actionType}>{block.actionType}</span>
                 </div>
-                <span className="text-slate-400 text-[11px] font-sans">
-                  Agent: <span className="text-slate-200 font-semibold">{block.agentUsed}</span>
+                <span className={styles.agentName}>
+                  Agent: <strong style={{ color: '#ffffff' }}>{block.agentUsed}</strong>
                 </span>
-                <span className="text-slate-500 text-[10px]">
-                  {new Date(block.timestamp).toLocaleTimeString()}
+                <span className={styles.timestamp}>
+                  {new Date(block.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-slate-900/80 p-2.5 rounded-lg text-[10px] text-slate-400 border border-slate-800/50">
-                <div>
-                  <span className="text-slate-500 block">Payload Hash:</span>
-                  <span className="text-amber-400/90 font-mono block truncate">{block.dataHash}</span>
+              <div className={styles.hashGrid}>
+                <div className={styles.hashItem}>
+                  <span className={styles.hashLabel}>Payload Hash:</span>
+                  <span className={styles.hashValue}>{block.dataHash}</span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block">Previous Hash:</span>
-                  <span className="text-slate-400 font-mono block truncate">{block.previousHash.substring(0, 16)}...</span>
+                <div className={styles.hashItem}>
+                  <span className={styles.hashLabel}>Previous Hash:</span>
+                  <span className={styles.hashValue}>
+                    {block.previousHash.substring(0, 16)}...
+                  </span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block">Block Hash:</span>
-                  <span className="text-emerald-400 font-mono block truncate">{block.blockHash.substring(0, 16)}...</span>
+                <div className={styles.hashItem}>
+                  <span className={styles.hashLabel}>Block Hash:</span>
+                  <span className={styles.blockHashValue}>
+                    {block.blockHash.substring(0, 16)}...
+                  </span>
                 </div>
               </div>
             </div>

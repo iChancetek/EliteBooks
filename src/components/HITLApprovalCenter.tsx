@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   XCircle,
   FileText,
-  DollarSign,
   Lock,
   Cpu,
   X,
@@ -33,122 +32,255 @@ export const HITLApprovalCenter: React.FC<HITLApprovalCenterProps> = ({
   const isNegative = request.financialImpact < 0;
 
   return (
-    <div className="fixed inset-0 z-[10006] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl relative overflow-hidden max-h-[94dvh] overflow-y-auto">
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 10006,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        backgroundColor: 'rgba(10, 15, 29, 0.85)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.9))',
+          border: '1px solid rgba(245, 158, 11, 0.35)',
+          borderRadius: '24px',
+          maxWidth: '680px',
+          width: '100%',
+          padding: '24px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 158, 11, 0.2)',
+          position: 'relative',
+          overflowY: 'auto',
+          maxHeight: 'calc(100dvh - 32px)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header Ribbon */}
-        <div className="bg-amber-500/10 border-b border-amber-500/20 -mx-6 -mt-6 p-4 px-6 mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <ShieldAlert className="w-5 h-5 text-amber-400" />
-            <h3 className="text-base font-bold text-slate-100 tracking-tight">
-              Human-in-the-Loop (HITL) Authorization Required
-            </h3>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: '16px',
+            borderBottom: '1px solid rgba(245, 158, 11, 0.2)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#f59e0b',
+              }}
+            >
+              <ShieldAlert size={20} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+                Human-in-the-Loop (HITL) Authorization
+              </h3>
+              <p style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', margin: '2px 0 0 0' }}>
+                Executive approval required before MCP autonomous ledger execution
+              </p>
+            </div>
           </div>
+
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-800"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'rgba(255, 255, 255, 0.6)',
+              cursor: 'pointer',
+            }}
           >
-            <X className="w-5 h-5" />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Action Overview Card */}
-        <div className="space-y-4">
+        {/* Action Overview */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+              {request.title}
+            </h2>
+            <span
+              style={{
+                fontSize: '18px',
+                fontFamily: 'var(--font-mono, monospace)',
+                fontWeight: 800,
+                color: isNegative ? '#f87171' : '#34d399',
+              }}
+            >
+              {isNegative ? '-' : '+'}$
+              {Math.abs(request.financialImpact).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+          <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.5, margin: 0 }}>
+            {request.description}
+          </p>
+        </div>
+
+        {/* Key Metrics Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '12px',
+            background: 'rgba(15, 23, 42, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '16px',
+            padding: '14px',
+          }}
+        >
           <div>
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold text-slate-100">{request.title}</h2>
-              <span
-                className={`text-lg font-mono font-bold ${
-                  isNegative ? 'text-red-400' : 'text-emerald-400'
-                }`}
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase' }}>
+              Responsible Agent
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+              <Cpu size={14} color="#f59e0b" />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>
+                {request.responsibleAgent}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase' }}>
+              MCP Tool Name
+            </span>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono, monospace)', color: '#fde68a', fontWeight: 600, display: 'block', marginTop: '4px' }}>
+              {request.toolName}
+            </span>
+          </div>
+
+          <div>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase' }}>
+              Confidence Score
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+              <div style={{ flex: 1, background: 'rgba(255, 255, 255, 0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${request.confidenceScore * 100}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #f59e0b, #10b981)',
+                  }}
+                />
+              </div>
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono, monospace)', fontWeight: 800, color: '#ffffff' }}>
+                {Math.round(request.confidenceScore * 100)}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Reasoning */}
+        <div
+          style={{
+            background: 'rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: '14px',
+            padding: '14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+          }}
+        >
+          <div style={{ fontSize: '11px', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <FileText size={14} />
+            AI Governance Rationale
+          </div>
+          <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.75)', lineHeight: 1.5, margin: 0 }}>
+            {request.reasoning}
+          </p>
+        </div>
+
+        {/* Evidence List */}
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '8px' }}>
+            Verified Source Evidence & Proof
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {request.evidence.map((item, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  background: 'rgba(15, 23, 42, 0.5)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                }}
               >
-                {isNegative ? '-' : '+'}$
-                {Math.abs(request.financialImpact).toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mt-1">{request.description}</p>
-          </div>
-
-          {/* Key Metrics Grid */}
-          <div className="grid grid-cols-3 gap-3 bg-slate-950/70 border border-slate-800/80 rounded-xl p-4">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
-                Responsible Agent
-              </span>
-              <div className="flex items-center gap-1.5 mt-1">
-                <Cpu className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-semibold text-slate-200">
-                  {request.responsibleAgent}
-                </span>
+                <Lock size={13} color="#10b981" />
+                <span>{item}</span>
               </div>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
-                MCP Tool Name
-              </span>
-              <span className="text-xs font-mono text-amber-300 font-medium block mt-1">
-                {request.toolName}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
-                Confidence Score
-              </span>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-amber-400 h-full rounded-full"
-                    style={{ width: `${request.confidenceScore * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs font-mono font-bold text-slate-200">
-                  {Math.round(request.confidenceScore * 100)}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Reasoning */}
-          <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-4">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-amber-400" />
-              AI Governance Rationale
-            </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">{request.reasoning}</p>
-          </div>
-
-          {/* Evidence List */}
-          <div>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Verified Source Evidence
-            </h4>
-            <ul className="space-y-1.5">
-              {request.evidence.map((item, idx) => (
-                <li
-                  key={idx}
-                  className="text-xs text-slate-300 flex items-center gap-2 bg-slate-950/40 px-3 py-2 rounded-lg border border-slate-800/50"
-                >
-                  <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            ))}
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            paddingTop: '16px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
           <button
             onClick={() => {
               onReject(request.id);
               onClose();
             }}
-            className="px-4 py-2.5 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
+            style={{
+              padding: '10px 18px',
+              borderRadius: '12px',
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              color: '#fca5a5',
+              fontSize: '12px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s',
+            }}
           >
-            <XCircle className="w-4 h-4" />
+            <XCircle size={15} />
             Reject Action
           </button>
 
@@ -157,9 +289,23 @@ export const HITLApprovalCenter: React.FC<HITLApprovalCenterProps> = ({
               onApprove(request.id);
               onClose();
             }}
-            className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+            style={{
+              padding: '10px 22px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+              transition: 'all 0.2s',
+            }}
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 size={16} />
             Authorize & Execute via MCP
           </button>
         </div>
