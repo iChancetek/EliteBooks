@@ -10,7 +10,8 @@ import { auditLock } from '@/security/audit-lock';
 import { fraudSentinel } from '../guards/fraud-sentinel';
 import { EliteBooksAgentState } from '../langgraph/agent-state';
 import getOpenAIClient from '@/lib/openai';
-import { getEmployees, getExpenses, getInvoices, getProducts, getFinancialSummary, createExpense, createInvoice, createEmployee, createProduct } from '@/lib/firestore';
+import { getEmployees, getExpenses, getInvoices, getProducts, getFinancialSummary, createExpense, createInvoice, createEmployee, createProduct, getPayStubs } from '@/lib/firestore';
+import { computeForecastFromRecords, formatForecastForAgent, ForecastableRecord, ForecastResult } from '@/lib/forecasting-engine';
 
 export interface UniversalCollaborationResult {
   success: boolean;
@@ -1389,6 +1390,168 @@ Treasury Agent modeled inflow distributions and debt obligations. Dispatching to
         'Break down operating expenses by category',
         'What is our net operating profit?',
         'Provide 30/60/90-day treasury forecast',
+      ],
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // DOMAIN AGENT: Autonomous Forecasting Agent
+  // Handles predictive queries: forecast, predict, projection, next month,
+  // next quarter, next year, runway, what will, when will
+  // ══════════════════════════════════════════════════════════════════════
+  const isForecastIntent = (
+    queryLower.includes('forecast') ||
+    queryLower.includes('predict') ||
+    queryLower.includes('projection') ||
+    queryLower.includes('next month') ||
+    queryLower.includes('next quarter') ||
+    queryLower.includes('next year') ||
+    queryLower.includes('runway') ||
+    (queryLower.includes('what will') && (queryLower.includes('be') || queryLower.includes('cost'))) ||
+    (queryLower.includes('when will') && (queryLower.includes('run out') || queryLower.includes('drop') || queryLower.includes('reach'))) ||
+    queryLower.includes('project ') ||
+    queryLower.includes('estimated tax') ||
+    queryLower.includes('burn rate') ||
+    queryLower.includes('how much will')
+  );
+
+  if (isForecastIntent) {
+    // Determine forecast horizon from query context
+    let horizon: 'monthly' | 'quarterly' | 'annual' = 'monthly';
+    if (queryLower.includes('quarter') || queryLower.includes('q1') || queryLower.includes('q2') || queryLower.includes('q3') || queryLower.includes('q4')) {
+      horizon = 'quarterly';
+    } else if (queryLower.includes('year') || queryLower.includes('annual') || queryLower.includes('yoy') || queryLower.includes('12 month') || queryLower.includes('12-month')) {
+      horizon = 'annual';
+    }
+
+    // Determine data domain from query
+    const isRevenue = queryLower.includes('revenue') || queryLower.includes('income') || queryLower.includes('invoice') || queryLower.includes('collection');
+    const isExpense = queryLower.includes('expense') || queryLower.includes('cost') || queryLower.includes('spend') || queryLower.includes('opex') || queryLower.includes('burn');
+    const isPayroll = queryLower.includes('payroll') || queryLower.includes('salary') || queryLower.includes('wage') || queryLower.includes('compensation');
+    const isPersonal = queryLower.includes('personal') || queryLower.includes('household') || queryLower.includes('owner draw');
+    const isCashflow = queryLower.includes('cash') || queryLower.includes('balance') || queryLower.includes('runway') || queryLower.includes('liquidity');
+
+    // Fetch real data from Firestore
+    const [invoices, expenses, payStubs] = await Promise.all([
+      getInvoices(orgId).catch(() => []),
+      getExpenses(orgId).catch(() => []),
+      getPayStubs(orgId).catch(() => []),
+    ]);
+
+    // Convert to ForecastableRecords
+    const revenueRecords: ForecastableRecord[] = (invoices as any[]).map((inv: any) => ({
+      date: inv.date || inv.issueDate || inv.createdAt || new Date().toISOString(),
+      amount: inv.total || inv.amount || 0,
+      category: 'Revenue',
+      type: 'income' as const,
+    }));
+
+    const expenseRecords: ForecastableRecord[] = (expenses as any[])
+      .filter((e: any) => e.status !== 'deleted' && !e.isPersonal)
+      .map((exp: any) => ({
+        date: exp.date || exp.createdAt || new Date().toISOString(),
+        amount: exp.amount || 0,
+        category: exp.category || 'General',
+        type: 'expense' as const,
+      }));
+
+    const personalRecords: ForecastableRecord[] = (expenses as any[])
+      .filter((e: any) => e.status !== 'deleted' && e.isPersonal)
+      .map((exp: any) => ({
+        date: exp.date || exp.createdAt || new Date().toISOString(),
+        amount: exp.amount || 0,
+        category: exp.category || 'Personal',
+        type: 'personal' as const,
+      }));
+
+    const payrollRecords: ForecastableRecord[] = (payStubs as any[]).map((stub: any) => ({
+      date: stub.payDate || stub.createdAt || new Date().toISOString(),
+      amount: stub.netPay || stub.grossPay || stub.amount || 0,
+      category: 'Payroll',
+      type: 'payroll' as const,
+    }));
+
+    // Select appropriate records
+    let targetRecords: ForecastableRecord[];
+    let forecastLabel: string;
+
+    if (isPayroll) {
+      targetRecords = payrollRecords;
+      forecastLabel = 'Payroll & Compensation';
+    } else if (isPersonal) {
+      targetRecords = personalRecords;
+      forecastLabel = 'Personal Household Spend';
+    } else if (isExpense) {
+      targetRecords = expenseRecords;
+      forecastLabel = 'Operating Expenses';
+    } else if (isRevenue) {
+      targetRecords = revenueRecords;
+      forecastLabel = 'Revenue & Collections';
+    } else if (isCashflow) {
+      // Cash flow = revenue - expenses
+      targetRecords = [
+        ...revenueRecords,
+        ...expenseRecords.map(r => ({ ...r, amount: -r.amount })),
+      ];
+      forecastLabel = 'Net Cash Flow';
+    } else {
+      // Default: combined financial overview
+      targetRecords = [...revenueRecords, ...expenseRecords];
+      forecastLabel = 'Financial Activity';
+    }
+
+    // Compute forecast
+    const forecastResult = computeForecastFromRecords(targetRecords, horizon);
+    const forecastText = formatForecastForAgent(forecastResult, forecastLabel);
+
+    // Dispatch A2A messages
+    const a2aForecast = await agentBus.dispatch(
+      'Forecasting Agent',
+      'CFO Strategist',
+      `Deliver ${horizon} ${forecastLabel} projection to Executive Command Center`,
+      { horizon, confidence: forecastResult.confidence, projectedTotal: forecastResult.projectedTotal },
+      1
+    );
+    a2aLog.push(a2aForecast);
+
+    // Use GPT to synthesize the forecast into natural language
+    let aiSynthesis = forecastText;
+    try {
+      const openai = getOpenAIClient();
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-5.6-terra',
+        max_completion_tokens: 800,
+        messages: [
+          {
+            role: 'system',
+            content: `You are the Forecasting Agent for EliteBooks. Synthesize the structured forecast data below into a clear, concise executive response. Reference actual numbers from the data. Present Base/Bull/Bear scenarios. If confidence is INSUFFICIENT_DATA, clearly state that more historical records are needed.`
+          },
+          {
+            role: 'user',
+            content: `User question: "${unmaskedQuery}"\n\nStructured Forecast Data:\n${forecastText}`
+          }
+        ],
+      });
+      aiSynthesis = completion.choices[0]?.message?.content || forecastText;
+    } catch (e) {
+      console.error('[Forecasting Agent] GPT synthesis error, using structured fallback:', e);
+    }
+
+    lines.push({ agent: 'Forecasting Agent', message: aiSynthesis });
+
+    const cfoForecastMsg = `Forecast verified. ${forecastResult.confidence === 'INSUFFICIENT_DATA' ? 'Limited historical data — projections are baseline run-rate estimates only.' : `${horizon} projection completed with ${forecastResult.confidence} confidence across Base/Bull/Bear scenarios.`}`;
+    lines.push({ agent: 'CFO Strategist', message: cfoForecastMsg });
+
+    return {
+      success: true,
+      transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+      transcriptLines: lines,
+      a2aMessages: a2aLog,
+      suggestions: [
+        'Forecast next quarter revenue',
+        'Predict monthly expenses for the next 3 months',
+        'Calculate annual cash runway under bear scenario',
+        'Project payroll costs for next quarter',
       ],
     };
   }

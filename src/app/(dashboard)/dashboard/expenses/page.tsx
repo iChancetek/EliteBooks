@@ -17,6 +17,8 @@ import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 import VoiceAITrigger from '@/components/VoiceAITrigger';
+import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
+import { useForecast } from '@/hooks/useForecast';
 
 const categories = [
   { name: 'Cloud Services', icon: Cloud, color: '#0ea5e9', amount: 0 },
@@ -62,6 +64,7 @@ export default function ExpensesPage() {
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'info' | 'warning' } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
+  const forecast = useForecast('expenses');
 
   const [selectedMonth, setSelectedMonth] = useState('All Months');
   const [selectedYear, setSelectedYear] = useState('All Years');
@@ -799,6 +802,43 @@ export default function ExpensesPage() {
           ))}
         </div>
       </div>
+
+      {/* Autonomous Expense Forecasting Engine */}
+      <MultiPeriodForecastCard
+        title="Operating Expense (OPEX) Forecast"
+        domain="expenses"
+        monthlyData={forecast.monthly.dataPoints}
+        quarterlyData={forecast.quarterly.dataPoints}
+        annualData={forecast.annual.dataPoints}
+        projectedTotal={forecast.monthly.projectedTotal}
+        growthRate={forecast.monthly.growthRate}
+        confidence={forecast.monthly.confidence}
+        trendDirection={forecast.monthly.trendDirection}
+        avgMonthlyValue={forecast.monthly.avgMonthlyValue}
+        scenarioSummary={forecast.monthly.scenarioSummary}
+        onDeepDive={(horizon) => setSelectedDeepDive({
+          id: `expenses-forecast-${horizon}`,
+          title: `${horizon} OPEX Spend Forecast`,
+          module: 'Expenses',
+          subtitle: `${horizon} operating cost projection with scenario corridors`,
+          amount: forecast.monthly.projectedTotal,
+          type: 'negative',
+          status: forecast.monthly.confidence,
+          category: 'Forecasting',
+          agentUsed: 'Forecasting Agent',
+          description: `Deterministic projection of operating expenses using weighted moving average across category disbursements.`,
+          metrics: [
+            { label: 'Avg Monthly Run-Rate', value: formatCurrency(forecast.monthly.avgMonthlyValue) },
+            { label: 'Base Scenario', value: formatCurrency(forecast.monthly.scenarioSummary.base) },
+            { label: 'Bull (+15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bull) },
+            { label: 'Bear (-15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bear) },
+          ],
+          aiInsights: [
+            'Forecasting models incorporate weighted moving averages from historical expenses.',
+            'Vendor contracts and recurring subscriptions are tracked for unexpected inflation.',
+          ]
+        })}
+      />
 
       {/* Search */}
       <div className="exp-filters">

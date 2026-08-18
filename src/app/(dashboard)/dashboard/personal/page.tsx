@@ -25,6 +25,8 @@ import DateFilter from '@/components/DateFilter';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 import VoiceAITrigger from '@/components/VoiceAITrigger';
+import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
+import { useForecast } from '@/hooks/useForecast';
 
 export default function PersonalFinancePage() {
   const { user } = useAuth();
@@ -36,6 +38,7 @@ export default function PersonalFinancePage() {
   const [selectedMonth, setSelectedMonth] = useState('All Months');
   const [selectedYear, setSelectedYear] = useState('2026');
   const [search, setSearch] = useState('');
+  const personalForecast = useForecast('personal');
   const [newTransaction, setNewTransaction] = useState({
     merchant: '',
     amount: '',
@@ -987,7 +990,41 @@ export default function PersonalFinancePage() {
 
       {/* Tab 4: Wealth & Tax Strategy View */}
       {activeTab === 'strategy' && (
-        <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+        <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Personal Finance Forecast Engine */}
+          <MultiPeriodForecastCard
+            title="Personal Wealth Forecast"
+            domain="personal"
+            monthlyData={personalForecast.monthly.dataPoints}
+            quarterlyData={personalForecast.quarterly.dataPoints}
+            annualData={personalForecast.annual.dataPoints}
+            projectedTotal={personalForecast.monthly.projectedTotal}
+            growthRate={personalForecast.monthly.growthRate}
+            confidence={personalForecast.monthly.confidence}
+            trendDirection={personalForecast.monthly.trendDirection}
+            avgMonthlyValue={personalForecast.monthly.avgMonthlyValue}
+            scenarioSummary={personalForecast.monthly.scenarioSummary}
+            onDeepDive={(horizon) => setSelectedDeepDive({
+              id: `personal-forecast-${horizon}`,
+              title: `${horizon} Personal Spend Forecast`,
+              module: 'Personal Finance',
+              subtitle: `${horizon} projection with Base/Bull/Bear scenarios`,
+              type: 'neutral',
+              status: personalForecast.monthly.confidence,
+              category: 'Forecasting',
+              agentUsed: 'Forecasting Agent',
+              description: `Multi-period personal spend projection computed from ${personalForecast.monthly.dataPoints.filter(d => !d.isPredicted).length} historical data points.`,
+              metrics: [
+                { label: 'Avg Monthly', value: formatCurrency(personalForecast.monthly.avgMonthlyValue) },
+                { label: 'Base Projection', value: formatCurrency(personalForecast.monthly.scenarioSummary.base) },
+                { label: 'Bull (+15%)', value: formatCurrency(personalForecast.monthly.scenarioSummary.bull) },
+                { label: 'Bear (-15%)', value: formatCurrency(personalForecast.monthly.scenarioSummary.bear) },
+              ],
+              aiInsights: ['Projection is computed using weighted moving averages from prior transaction history.']
+            })}
+          />
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
           <section className="glass-card pf-section" style={{ padding: '20px' }}>
             <div className="pf-section-header" style={{ marginBottom: '16px' }}>
               <h3><Target size={18} /> {selectedYear === 'All Years' ? 'Long-Term' : selectedYear} Executive Wealth Milestones</h3>
@@ -1098,6 +1135,7 @@ export default function PersonalFinancePage() {
               </button>
             </div>
           </section>
+          </div>{/* Close grid wrapper */}
         </div>
       )}
 

@@ -14,10 +14,13 @@ import InvoiceEditor from '@/components/InvoiceEditor';
 import ColorfulBarChart from '@/components/ColorfulBarChart';
 import ColorfulPieChart from '@/components/ColorfulPieChart';
 import PageAgentCopilot from '@/components/PageAgentCopilot';
+import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
+import { useForecast } from '@/hooks/useForecast';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 import { AIAssistedCreationModal } from '@/components/AIAssistedCreationModal';
 import VoiceAITrigger from '@/components/VoiceAITrigger';
+import { parseLocalDate } from '@/lib/utils';
 
 const statusConfig: Record<string, { label: string; class: string; icon: React.ElementType }> = {
   draft: { label: 'Draft', class: 'badge-neutral', icon: FileText },
@@ -40,6 +43,7 @@ export default function InvoicesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
   const [isAICreateOpen, setIsAICreateOpen] = useState(false);
+  const forecast = useForecast('revenue');
 
   const fetchInvoices = useCallback(async () => {
     if (!user) return;
@@ -103,22 +107,32 @@ export default function InvoicesPage() {
   const totalPaid = invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + (curr.total || 0), 0);
   const totalOutstanding = invoices.filter(i => i.status !== 'paid' && i.status !== 'void').reduce((acc, curr) => acc + (curr.amountDue || curr.total || 0), 0);
 
-  // Invoice Chart Data
-  const monthlyInvoiceData = [
-    { name: 'Jan', Billed: (totalBilled || 457400) * 0.4, Collected: (totalPaid || 457400) * 0.38 },
-    { name: 'Feb', Billed: (totalBilled || 457400) * 0.55, Collected: (totalPaid || 457400) * 0.5 },
-    { name: 'Mar', Billed: (totalBilled || 457400) * 0.7, Collected: (totalPaid || 457400) * 0.68 },
-    { name: 'Apr', Billed: (totalBilled || 457400) * 0.85, Collected: (totalPaid || 457400) * 0.82 },
-    { name: 'May', Billed: (totalBilled || 457400) * 0.95, Collected: (totalPaid || 457400) * 0.92 },
-    { name: 'Jun', Billed: totalBilled || 457400, Collected: totalPaid || 457400 },
-  ];
+  // Dynamic invoice chart data from real records
+  const monthMap: Record<string, { Billed: number; Collected: number }> = {};
+  invoices.forEach((inv: any) => {
+    const dateStr = inv.issueDate || inv.createdAt;
+    if (dateStr) {
+      const m = parseLocalDate(dateStr).toLocaleString('default', { month: 'short' });
+      if (!monthMap[m]) monthMap[m] = { Billed: 0, Collected: 0 };
+      monthMap[m].Billed += (inv.total || 0);
+      if (inv.status === 'paid') {
+        monthMap[m].Collected += (inv.total || 0);
+      }
+    }
+  });
+
+  const monthlyInvoiceData = Object.entries(monthMap).map(([name, vals]) => ({
+    name,
+    Billed: vals.Billed,
+    Collected: vals.Collected,
+  }));
 
   const statusPieData = [
-    { name: 'Paid Collections', value: Math.max(totalPaid, 8500), color: '#10b981' },
-    { name: 'Sent Invoices', value: Math.max(invoices.filter(i => i.status === 'sent').reduce((s, i) => s + (i.total || 0), 0), 4200), color: '#3b82f6' },
-    { name: 'Viewed by Client', value: Math.max(invoices.filter(i => i.status === 'viewed').reduce((s, i) => s + (i.total || 0), 0), 1800), color: '#06b6d4' },
-    { name: 'Overdue Balances', value: Math.max(invoices.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.total || 0), 0), 0), color: '#f43f5e' },
-  ];
+    { name: 'Paid Collections', value: totalPaid, color: '#10b981' },
+    { name: 'Sent Invoices', value: invoices.filter(i => i.status === 'sent').reduce((s, i) => s + (i.total || 0), 0), color: '#3b82f6' },
+    { name: 'Viewed by Client', value: invoices.filter(i => i.status === 'viewed').reduce((s, i) => s + (i.total || 0), 0), color: '#06b6d4' },
+    { name: 'Overdue Balances', value: invoices.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.amountDue || 0), 0), color: '#f43f5e' },
+  ].filter(p => p.value > 0);
 
   return (
     <div className="invoices-page animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -127,14 +141,14 @@ export default function InvoicesPage() {
         agentName="Invoicing Agent Copilot"
         badgeText="Billing Strategy & AR Active"
         insights={[
-          `Accounts Receivable collection rate is operating at 96.8% efficiency.`,
-          `Automated Net-30 payment reminders scheduled for active billing clients.`,
-          `First-time client verification policy enforced ($10,000 threshold).`
+          `Total invoiced revenue is ${formatCurrency(totalBilled)} across ${invoices.length} active invoices.`,
+          `Collections secured at ${formatCurrency(totalPaid)} (${totalBilled > 0 ? ((totalPaid / totalBilled) * 100).toFixed(1) : '0.0'}% collected).`,
+          `Outstanding AR balance is ${formatCurrency(totalOutstanding)}.`,
         ]}
         suggestedActions={[
+          'Forecast next quarter revenue',
           'Draft payment reminder emails',
-          'Export AR aging breakdown',
-          'Create recurring invoice template'
+          'Export AR aging breakdown'
         ]}
         color="#3b82f6"
       />
@@ -190,7 +204,7 @@ export default function InvoicesPage() {
         <ColorfulBarChart
           title="Monthly Billed vs Collected Revenue"
           subtitle="Real-time cash collection efficiency and invoicing volume"
-          data={monthlyInvoiceData}
+          data={monthlyInvoiceData.length > 0 ? monthlyInvoiceData : [{ name: 'Current', Billed: totalBilled, Collected: totalPaid }]}
           series={[
             { key: 'Billed', label: 'Gross Billed ($)', color: '#3b82f6' },
             { key: 'Collected', label: 'Cash Collected ($)', color: '#10b981' },
@@ -199,11 +213,48 @@ export default function InvoicesPage() {
         <ColorfulPieChart
           title="Invoice Status Distribution"
           subtitle="Breakdown by active billing state and AR balance"
-          data={statusPieData}
-          centerText={formatCurrency(totalBilled || 457400)}
+          data={statusPieData.length > 0 ? statusPieData : [{ name: 'Pending Invoices', value: 1, color: '#3b82f6' }]}
+          centerText={formatCurrency(totalBilled)}
           centerSubtext="Total Revenue Billed"
         />
       </div>
+
+      {/* Autonomous Revenue Forecasting Engine */}
+      <MultiPeriodForecastCard
+        title="Revenue & Collections Forecast"
+        domain="revenue"
+        monthlyData={forecast.monthly.dataPoints}
+        quarterlyData={forecast.quarterly.dataPoints}
+        annualData={forecast.annual.dataPoints}
+        projectedTotal={forecast.monthly.projectedTotal}
+        growthRate={forecast.monthly.growthRate}
+        confidence={forecast.monthly.confidence}
+        trendDirection={forecast.monthly.trendDirection}
+        avgMonthlyValue={forecast.monthly.avgMonthlyValue}
+        scenarioSummary={forecast.monthly.scenarioSummary}
+        onDeepDive={(horizon) => setSelectedDeepDive({
+          id: `revenue-forecast-${horizon}`,
+          title: `${horizon} Revenue Projection`,
+          module: 'Invoices',
+          subtitle: `${horizon} invoice billing and cash collection forecast`,
+          amount: forecast.monthly.projectedTotal,
+          type: 'positive',
+          status: forecast.monthly.confidence,
+          category: 'Forecasting',
+          agentUsed: 'Forecasting Agent',
+          description: `Predictive revenue projection based on historical invoicing run-rate and client collection velocity.`,
+          metrics: [
+            { label: 'Avg Monthly Run-Rate', value: formatCurrency(forecast.monthly.avgMonthlyValue) },
+            { label: 'Base Scenario', value: formatCurrency(forecast.monthly.scenarioSummary.base) },
+            { label: 'Bull (+15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bull) },
+            { label: 'Bear (-15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bear) },
+          ],
+          aiInsights: [
+            'Projections adapt dynamically to invoice payment velocity.',
+            'Automated AR payment reminders help keep collections on track.',
+          ]
+        })}
+      />
 
       {/* KPI Cards */}
       <div className="inv-summary">

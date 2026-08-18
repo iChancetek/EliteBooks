@@ -11,6 +11,8 @@ import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 import VoiceAITrigger from '@/components/VoiceAITrigger';
+import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
+import { useForecast } from '@/hooks/useForecast';
 
 export default function FinOpsPage() {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ export default function FinOpsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
+  const forecast = useForecast('finops');
   const [newCloudCost, setNewCloudCost] = useState({
     provider: 'AWS',
     amount: '',
@@ -230,6 +233,43 @@ export default function FinOpsPage() {
           centerSubtext="Total FinOps Spend"
         />
       </div>
+
+      {/* Autonomous FinOps Forecasting Engine */}
+      <MultiPeriodForecastCard
+        title="Cloud Infrastructure & AI Token Run-Rate Forecast"
+        domain="finops"
+        monthlyData={forecast.monthly.dataPoints}
+        quarterlyData={forecast.quarterly.dataPoints}
+        annualData={forecast.annual.dataPoints}
+        projectedTotal={forecast.monthly.projectedTotal}
+        growthRate={forecast.monthly.growthRate}
+        confidence={forecast.monthly.confidence}
+        trendDirection={forecast.monthly.trendDirection}
+        avgMonthlyValue={forecast.monthly.avgMonthlyValue}
+        scenarioSummary={forecast.monthly.scenarioSummary}
+        onDeepDive={(horizon) => setSelectedDeepDive({
+          id: `finops-forecast-${horizon}`,
+          title: `${horizon} Cloud FinOps Forecast`,
+          module: 'FinOps',
+          subtitle: `${horizon} infrastructure and AI token cost projection`,
+          amount: forecast.monthly.projectedTotal,
+          type: 'negative',
+          status: forecast.monthly.confidence,
+          category: 'Forecasting',
+          agentUsed: 'Forecasting Agent',
+          description: `Deterministic projection of AWS, GCP, Azure, and AI API costs based on current compute velocity.`,
+          metrics: [
+            { label: 'Avg Monthly Run-Rate', value: formatCurrency(forecast.monthly.avgMonthlyValue) },
+            { label: 'Base Scenario', value: formatCurrency(forecast.monthly.scenarioSummary.base) },
+            { label: 'Bull (+15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bull) },
+            { label: 'Bear (-15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bear) },
+          ],
+          aiInsights: [
+            'Projections normalize compute, storage, and GPU cluster costs per FOCUS 1.3 standards.',
+            'Reserved instance and savings plan optimizations are factored into scenario modeling.',
+          ]
+        })}
+      />
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>

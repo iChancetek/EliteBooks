@@ -12,6 +12,8 @@ import PageAgentCopilot from '@/components/PageAgentCopilot';
 
 import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModal';
 import VoiceAITrigger from '@/components/VoiceAITrigger';
+import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
+import { useForecast } from '@/hooks/useForecast';
 
 export default function PayrollPage() {
   const { user } = useAuth();
@@ -22,6 +24,7 @@ export default function PayrollPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveItem | null>(null);
+  const forecast = useForecast('payroll');
   const [newEmployee, setNewEmployee] = useState({
     firstName: '',
     lastName: '',
@@ -229,6 +232,43 @@ export default function PayrollPage() {
           centerSubtext="Monthly Payroll"
         />
       </div>
+
+      {/* Autonomous Payroll Forecasting Engine */}
+      <MultiPeriodForecastCard
+        title="Payroll & Compensation Forecast"
+        domain="payroll"
+        monthlyData={forecast.monthly.dataPoints}
+        quarterlyData={forecast.quarterly.dataPoints}
+        annualData={forecast.annual.dataPoints}
+        projectedTotal={forecast.monthly.projectedTotal}
+        growthRate={forecast.monthly.growthRate}
+        confidence={forecast.monthly.confidence}
+        trendDirection={forecast.monthly.trendDirection}
+        avgMonthlyValue={forecast.monthly.avgMonthlyValue}
+        scenarioSummary={forecast.monthly.scenarioSummary}
+        onDeepDive={(horizon) => setSelectedDeepDive({
+          id: `payroll-forecast-${horizon}`,
+          title: `${horizon} Compensation Projection`,
+          module: 'Payroll',
+          subtitle: `${horizon} salary, benefits, and tax liability forecast`,
+          amount: forecast.monthly.projectedTotal,
+          type: 'negative',
+          status: forecast.monthly.confidence,
+          category: 'Forecasting',
+          agentUsed: 'Forecasting Agent',
+          description: `Deterministic projection of payroll disbursements, FICA withholdings, and benefit liabilities.`,
+          metrics: [
+            { label: 'Avg Monthly Run-Rate', value: formatCurrency(forecast.monthly.avgMonthlyValue) },
+            { label: 'Base Scenario', value: formatCurrency(forecast.monthly.scenarioSummary.base) },
+            { label: 'Bull (+15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bull) },
+            { label: 'Bear (-15%)', value: formatCurrency(forecast.monthly.scenarioSummary.bear) },
+          ],
+          aiInsights: [
+            'Projections calculate gross-to-net payroll obligations and employer tax burdens.',
+            'Quarterly Form 941 tax reserve buffers are modeled based on current employee headcount.',
+          ]
+        })}
+      />
 
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>

@@ -21,6 +21,8 @@ import { HITLApprovalCenter } from '@/components/HITLApprovalCenter';
 import { AIAuditCenter } from '@/components/AIAuditCenter';
 import { SOCComplianceCenter } from '@/components/SOCComplianceCenter';
 import { AIAssistedCreationModal } from '@/components/AIAssistedCreationModal';
+import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
+import { useForecast } from '@/hooks/useForecast';
 import { AIBusinessFeedService } from '@/lib/feed-service';
 import { AIBusinessFeedItem, HITLApprovalRequest } from '@/types/agent-system';
 
@@ -39,6 +41,7 @@ export default function DashboardHome() {
   const { isLoading, response, error, sendMessage, clearResponse } = useAgent();
   const { isRecording, startRecording, stopRecording } = useVoice();
   const [selectedDeepDive, setSelectedDeepDive] = useState<DeepDiveData | null>(null);
+  const forecast = useForecast('cashflow');
 
   // AI Creation Modal State
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
@@ -460,6 +463,32 @@ export default function DashboardHome() {
           data={categoryPieData}
           centerText={formatCurrency(snapshot.expenses.value)}
           centerSubtext="Total OPEX"
+        />
+      </section>
+
+      {/* Autonomous Forecasting Engine */}
+      <section style={{ marginTop: '1rem' }}>
+        <MultiPeriodForecastCard
+          title="Financial Forecasting Engine"
+          domain="cashflow"
+          monthlyData={forecast.monthly.dataPoints}
+          quarterlyData={forecast.quarterly.dataPoints}
+          annualData={forecast.annual.dataPoints}
+          projectedTotal={forecast.monthly.projectedTotal}
+          growthRate={forecast.monthly.growthRate}
+          confidence={forecast.monthly.confidence}
+          trendDirection={forecast.monthly.trendDirection}
+          avgMonthlyValue={forecast.monthly.avgMonthlyValue}
+          scenarioSummary={forecast.monthly.scenarioSummary}
+          onDeepDive={(horizon) => setSelectedDeepDive({
+            title: `${horizon} Cash Flow Forecast`,
+            type: 'cash',
+            value: forecast.monthly.projectedTotal,
+            change: forecast.monthly.growthRate,
+            icon: TrendingUp,
+            color: '#10b981',
+            reportData: rawReportData,
+          })}
         />
       </section>
 
