@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageSquare, Mic, Send, X, Volume2, VolumeX, Bot, Sparkles, Loader2, Trash2, Copy, Check, Zap } from 'lucide-react';
 import styles from './AIAssistant.module.css';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,42 +54,9 @@ export default function AIAssistant() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  useEffect(() => {
-    // Predict next questions when user receives response
-    if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
-      predictFollowUps(messages[messages.length - 1].content);
-    }
-  }, [messages]);
-
-  const predictFollowUps = async (lastResponse: string) => {
-    try {
-      const res = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ context: lastResponse })
-      });
-      const data = await res.json();
-      if (data.questions) {
-        setPredictedQuestions(data.questions);
-      }
-    } catch (e) {
-      setPredictedQuestions([
-        'Explain this in detail',
-        'Show ledger balance impact',
-        'Forecast 90-day cash flow'
-      ]);
-    }
-  };
-
-  const handleCopyMessage = (content: string, idx: number) => {
-    navigator.clipboard.writeText(content);
-    setCopiedMsgIdx(idx);
-    setTimeout(() => setCopiedMsgIdx(null), 2000);
-  };
-
-  const handleSend = async (textToSend?: string) => {
+  const handleSend = useCallback(async (textToSend?: string) => {
     const text = textToSend || input;
-    if (!text.trim()) return;
+    if (!text || !text.trim()) return;
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsg: Message = { role: 'user', content: text, timestamp: timeStr };
@@ -139,7 +106,65 @@ export default function AIAssistant() {
     } finally {
       setIsTyping(false);
     }
+  }, [input, user, messages, autoRead]);
+
+  // Global event listener for 'elitebooks:ask-agent' and 'elitebooks:open-chat'
+  useEffect(() => {
+    const handleAskAgent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ query?: string }>;
+      setIsOpen(true);
+      if (customEvent.detail?.query) {
+        handleSend(customEvent.detail.query);
+      }
+    };
+
+    const handleOpenChat = () => {
+      setIsOpen(true);
+    };
+
+    window.addEventListener('elitebooks:ask-agent', handleAskAgent as EventListener);
+    window.addEventListener('elitebooks:open-chat', handleOpenChat);
+
+    return () => {
+      window.removeEventListener('elitebooks:ask-agent', handleAskAgent as EventListener);
+      window.removeEventListener('elitebooks:open-chat', handleOpenChat);
+    };
+  }, [handleSend]);
+
+  useEffect(() => {
+    // Predict next questions when user receives response
+    if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      predictFollowUps(messages[messages.length - 1].content);
+    }
+  }, [messages]);
+
+  const predictFollowUps = async (lastResponse: string) => {
+    try {
+      const res = await fetch('/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: lastResponse })
+      });
+      const data = await res.json();
+      if (data.questions) {
+        setPredictedQuestions(data.questions);
+      }
+    } catch (e) {
+      setPredictedQuestions([
+        'Explain this in detail',
+        'Show ledger balance impact',
+        'Forecast 90-day cash flow'
+      ]);
+    }
   };
+
+  const handleCopyMessage = (content: string, idx: number) => {
+    navigator.clipboard.writeText(content);
+    setCopiedMsgIdx(idx);
+    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  };
+
+
 
   const startRecording = async () => {
     try {

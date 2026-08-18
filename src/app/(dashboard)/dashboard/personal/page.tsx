@@ -983,11 +983,6 @@ export default function PersonalFinancePage() {
                     </tbody>
                   </table>
                 </div>
-
-                <EliteDeepDiveModal
-                  item={selectedDeepDive}
-                  onClose={() => setSelectedDeepDive(null)}
-                />
               </section>
             </div>
 
@@ -1223,6 +1218,12 @@ export default function PersonalFinancePage() {
           </div>
         </div>
       )}
+
+      {/* Elite Deep Dive & Strategy Modal */}
+      <EliteDeepDiveModal
+        item={selectedDeepDive}
+        onClose={() => setSelectedDeepDive(null)}
+      />
 
       <style>{`
         .page-personal { max-width: 1280px; margin: 0 auto; padding-bottom: 4rem; }
