@@ -199,7 +199,7 @@ FORMATTING & STYLE RULES (CRITICAL):
 • Respond as an elite financial authority: professional, clear, mathematically accurate, and executive-ready.
 • Use bullet points (•) for lists and key findings.
 • Separate distinct concepts with clear PARAGRAPHS and empty lines.
-• IMPORTANT: DO NOT USE ANY ASTERISKS (*) OR STAR-SHAPED SYMBOLS IN YOUR TEXT. Use plain CAPITAL LETTERS for emphasis.
+• IMPORTANT: DO NOT USE ANY ASTERISKS (*) OR HASH SYMBOLS (#) IN YOUR TEXT. Use bullet points (•) for lists, plain CAPITAL LETTERS for emphasis, and clear section headings. Never use markdown headers (#, ##, ###) or bold asterisks (**, *).
 • Call relevant tools immediately when requested to perform actions or fetch data.
 • At the end of your response, provide 3 suggested follow-up questions in the exact format: [PREDICTED: "Question 1", "Question 2", "Question 3"].
 
@@ -318,8 +318,12 @@ ${context}`;
     // Remove the predicted questions from the visible answer
     finalAnswer = finalAnswer.replace(/\[PREDICTED: .*?\]/, '').trim();
 
-    // Final check for asterisks (safety fallback)
-    finalAnswer = finalAnswer.replace(/\*/g, '');
+    // Final check for asterisks and hash symbols (safety fallback)
+    finalAnswer = finalAnswer
+      .replace(/Account\s+#(\d+)/gi, 'Account $1')
+      .replace(/GL\s+#(\d+)/gi, 'GL $1')
+      .replace(/#(\d+)/g, '$1')
+      .replace(/[*#]/g, '');
 
     // 6. Store this interaction in Long-term Memory
     await storeMemory(

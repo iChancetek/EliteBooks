@@ -424,7 +424,7 @@ export default function ExpensesPage() {
           step: '3. Ledger Alignment & Trial Balance Lock',
           status: 'LOCKED',
           agent: 'Ledger Agent',
-          detail: `Account #5000 series ledger balanced. Total debit balance reconciled at ${formatCurrency(cat.amount)}.`
+          detail: `Account 5000 series ledger balanced. Total debit balance reconciled at ${formatCurrency(cat.amount)}.`
         }
       ],
       aiInsights: [

@@ -2823,7 +2823,7 @@ STRICT PRIVACY GUARDRAILS:
   ).join('\n');
 
   const expensesList = activeExpenses.map((exp: any, idx: number) =>
-    `• Expense #${exp.id ? exp.id.substring(0, 8) : `EXP-${idx + 1}`} | Payee: ${exp.vendor || exp.merchant || 'Vendor'} | Date: ${exp.date || '2026-01-01'} | Category: ${exp.category || 'General'} | Amount: -$${(parseFloat(exp.amount) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} | GL Account: #${exp.glCode || '5010'}`
+    `• Expense ID: ${exp.id ? exp.id.substring(0, 8) : `EXP-${idx + 1}`} | Payee: ${exp.vendor || exp.merchant || 'Vendor'} | Date: ${exp.date || '2026-01-01'} | Category: ${exp.category || 'General'} | Amount: -$${(parseFloat(exp.amount) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} | GL Account: ${exp.glCode || '5010'}`
   ).join('\n');
 
   // Helper to build deterministic, comprehensive response with sources & mathematical work
@@ -2857,16 +2857,16 @@ B. Operating Expenses & Accounts Payable (${activeExpenses.length} Records):
 ${expensesList || '• No operating expenses recorded'}
 
 C. General Ledger Chart of Accounts Grounding:
-• GL Account #1010 (Operating Cash): $${cashBal.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Debit]
-• GL Account #1200 (Accounts Receivable): $${totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Debit]
-• GL Account #4000 (Sales Revenue): $${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Credit]
-• GL Account #5000 (Operating Expenses): $${totalExp.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Debit]
-• GL Account #3000 (Owner Equity / Retained Earnings): $${netProf.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Credit]
+• GL Account 1010 (Operating Cash): $${cashBal.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Debit]
+• GL Account 1200 (Accounts Receivable): $${totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Debit]
+• GL Account 4000 (Sales Revenue): $${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Credit]
+• GL Account 5000 (Operating Expenses): $${totalExp.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Debit]
+• GL Account 3000 (Owner Equity / Retained Earnings): $${netProf.toLocaleString(undefined, { minimumFractionDigits: 2 })} [Credit]
 
 3. 📐 MATHEMATICAL WORK & LEDGER EQUATIONS
 ----------------------------------------------------------------------
 Step 1: Gross Sales Invoiced Calculation
-  Formula: Total Revenue = Σ(Active Invoices)
+  Formula: Total Revenue = Sum(Active Invoices)
   Calculation: ${activeInvoices.map((i: any) => `$${(parseFloat(i.total) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`).join(' + ') || '$0.00'}
   Result = $${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 
@@ -2877,7 +2877,7 @@ Step 2: Cash Realization & Accounts Receivable Split
 Step 3: Net Operating Profit Calculation
   Formula: Net Operating Profit = Gross Revenue ($${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })}) - Total OPEX ($${totalExp.toLocaleString(undefined, { minimumFractionDigits: 2 })})
   Calculation: $${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })} - $${totalExp.toLocaleString(undefined, { minimumFractionDigits: 2 })} = $${netProf.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-  Operating Margin: ($${netProf.toLocaleString(undefined, { minimumFractionDigits: 2 })} / $${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })}) × 100% = ${opMargin}%
+  Operating Margin: ($${netProf.toLocaleString(undefined, { minimumFractionDigits: 2 })} / $${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 })}) x 100% = ${opMargin}%
 
 Step 4: Operating Cash Liquidity Equation
   Formula: Operating Cash = Cleared Collections ($${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2 })}) - Total OPEX ($${totalExp.toLocaleString(undefined, { minimumFractionDigits: 2 })})
@@ -2929,7 +2929,7 @@ MANDATORY RESPONSE REQUIREMENTS:
    SECTION 3: 📐 MATHEMATICAL WORK & LEDGER EQUATIONS (Step-by-step arithmetic formulas, reconciliations, and double-entry balance proofs)
    SECTION 4: 💼 MULTI-AGENT STRATEGIC ACTION PLAN (Specific recommendations from Invoicing, Cash Flow, and Tax agents)
 3. Ground every dollar amount in the live database records above.
-4. NEVER USE ANY ASTERISKS (*) OR STAR-SHAPED SYMBOLS IN YOUR TEXT. Use plain CAPITAL LETTERS or bullet points for emphasis.`;
+4. NEVER USE ANY ASTERISKS (*) OR HASH SYMBOLS (#) IN YOUR TEXT. Use bullet points (•) for lists and plain CAPITAL LETTERS or clear section headings for structure.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-5.6-terra',
@@ -2940,10 +2940,15 @@ MANDATORY RESPONSE REQUIREMENTS:
       temperature: 0.3
     });
 
-    const llmAnswer = completion.choices[0]?.message?.content?.replace(/\*/g, '') || buildDeterministicReport(primaryAgent || 'EliteBooks Orchestrator');
-    const mainAgent = primaryAgent || 'EliteBooks Orchestrator';
+    const rawLlmAnswer = completion.choices[0]?.message?.content || buildDeterministicReport(primaryAgent || 'EliteBooks Orchestrator');
+    const sanitizedAnswer = rawLlmAnswer
+      .replace(/Account\s+#(\d+)/gi, 'Account $1')
+      .replace(/GL\s+#(\d+)/gi, 'GL $1')
+      .replace(/#(\d+)/g, '$1')
+      .replace(/[*#]/g, '');
 
-    lines.push({ agent: mainAgent, message: llmAnswer });
+    const mainAgent = primaryAgent || 'EliteBooks Orchestrator';
+    lines.push({ agent: mainAgent, message: sanitizedAnswer });
 
     return {
       success: true,

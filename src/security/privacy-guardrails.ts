@@ -202,7 +202,7 @@ ASC 606 governs revenue from contracts with customers through a 5-step framework
 4. Allocate the transaction price to the performance obligations.
 5. Recognize revenue when (or as) the entity satisfies a performance obligation.
 
-In EliteBooks, client invoices and milestone contracts are mapped directly to Account #1200 (Accounts Receivable) and Account #4000 (Sales Revenue) strictly in accordance with ASC 606 rules.`;
+In EliteBooks, client invoices and milestone contracts are mapped directly to Account 1200 (Accounts Receivable) and Account 4000 (Sales Revenue) strictly in accordance with ASC 606 rules.`;
     }
 
     if (q.includes('double entry') || q.includes('double-entry')) {

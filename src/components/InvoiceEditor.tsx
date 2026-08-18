@@ -174,10 +174,9 @@ export default function InvoiceEditor({ onClose, onSave, initialData }: InvoiceE
  
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 'var(--space-2)' }}>
                   <div className="form-group">
-                    <label>Invoice #</label>
+                    <label>Invoice Number</label>
                     <div style={{ position: 'relative' }}>
-                      <Hash size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                      <input className="input" style={{ paddingLeft: '30px' }} value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
+                      <input className="input" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
                     </div>
                   </div>
                   <div className="form-group">

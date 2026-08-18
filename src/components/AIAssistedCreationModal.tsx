@@ -136,7 +136,7 @@ export function AIAssistedCreationModal({
       if (data.success) {
         setSuccessMsg(
           isInvoice
-            ? `Invoice #${data.data?.invoiceNumber || 'INV-001'} for ${clientName} ($${invoiceAmount.toLocaleString()}) created & posted to ledger!`
+            ? `Invoice ${data.data?.invoiceNumber || 'INV-001'} for ${clientName} ($${invoiceAmount.toLocaleString()}) created & posted to ledger!`
             : `Expense of $${expenseAmount.toLocaleString()} for ${vendor} logged & reconciled with ledger!`
         );
 

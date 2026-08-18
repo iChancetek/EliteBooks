@@ -329,7 +329,7 @@ export default function PersonalFinancePage() {
             : `No personal transactions recorded for this period. Click "+ Add Transaction" or use AI to track personal spend.`,
           totalOwnerDraw > 0 
             ? `Owner draw distributions tracked at ${formatCurrency(totalOwnerDraw)}.`
-            : `Owner distributions ready for reconciliation against equity account #3000.`
+            : `Owner distributions ready for reconciliation against equity account 3000.`
         ]}
         suggestedActions={[
           'Run personal budget vs owner draw audit',
@@ -512,14 +512,14 @@ export default function PersonalFinancePage() {
             amount: totalOwnerDraw,
             type: 'positive',
             status: totalOwnerDraw > 0 ? 'BALANCED' : 'NO_DRAWS',
-            category: 'Owner Equity (#3000)',
+            category: 'Owner Equity (3000)',
             agentUsed: 'Ledger Agent',
             description: totalOwnerDraw > 0
-              ? `Owner distributions disbursed from company profit into personal reserves: ${formatCurrency(totalOwnerDraw)}. Reconciled against general ledger account #3000.`
-              : `No owner distributions recorded for this period. Draws will reflect debits from corporate equity account #3000.`,
+              ? `Owner distributions disbursed from company profit into personal reserves: ${formatCurrency(totalOwnerDraw)}. Reconciled against general ledger account 3000.`
+              : `No owner distributions recorded for this period. Draws will reflect debits from corporate equity account 3000.`,
             metrics: [
               { label: 'Period Distribution', value: formatCurrency(totalOwnerDraw) },
-              { label: 'Corporate Separation', value: '100% Segregated (#3000)' },
+              { label: 'Corporate Separation', value: '100% Segregated (Account 3000)' },
               { label: 'IRS Form 1040-ES Basis', value: 'Tax Optimized' },
               { label: 'Net Cash Retention', value: formatCurrency(Math.max(0, totalOwnerDraw - totalPersonalSpend)) },
             ],
@@ -1169,7 +1169,7 @@ export default function PersonalFinancePage() {
                       { label: 'Tax Safe Harbor Buffer (25%)', value: formatCurrency(totalPersonalSpend * 0.25) },
                     ],
                     auditTrace: [
-                      { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account #3000.' },
+                      { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account 3000.' },
                       { step: '2. Personal OPEX Isolation', status: 'ISOLATED', agent: 'Personal Finance Agent', detail: 'Household expenses filtered out of business P&L per GAAP rules.' },
                       { step: '3. Form 1040-ES Safe Harbor Audit', status: 'QUALIFIED', agent: 'Compliance Agent', detail: 'Evaluated quarterly estimated tax adequacy.' }
                     ],
@@ -1222,11 +1222,11 @@ export default function PersonalFinancePage() {
                     { label: "Owner's Distribution Draw", value: formatCurrency(totalOwnerDraw) },
                     { label: 'Net Cash Retention', value: formatCurrency(Math.max(0, totalOwnerDraw - totalPersonalSpend)) },
                     { label: 'Draw Coverage Ratio', value: totalPersonalSpend > 0 ? `${((totalOwnerDraw / totalPersonalSpend) * 100).toFixed(1)}%` : '100.0%' },
-                    { label: 'IRS Corporate Veil Integrity', value: '100% Segregated (#3000)' },
+                    { label: 'IRS Corporate Veil Integrity', value: '100% Segregated (Account 3000)' },
                     { label: 'Tax Safe Harbor Buffer (25%)', value: formatCurrency(totalPersonalSpend * 0.25) },
                   ],
                   auditTrace: [
-                    { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account #3000.' },
+                    { step: '1. General Ledger Draw Tracking', status: 'VERIFIED', agent: 'Ledger Agent', detail: 'Tracked debits against Owner Equity account 3000.' },
                     { step: '2. Personal OPEX Isolation', status: 'ISOLATED', agent: 'Personal Finance Agent', detail: 'Household expenses filtered out of business P&L per GAAP rules.' },
                     { step: '3. Form 1040-ES Safe Harbor Audit', status: 'QUALIFIED', agent: 'Compliance Agent', detail: 'Evaluated quarterly estimated tax adequacy.' }
                   ],

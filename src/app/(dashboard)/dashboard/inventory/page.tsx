@@ -296,7 +296,7 @@ export default function InventoryPage() {
                   status: p.quantity <= p.reorderPoint ? 'Low Stock Warning' : 'In Stock & Healthy',
                   category: 'Supply Chain & Stock Valuation',
                   agentUsed: 'Inventory Agent',
-                  description: `Inventory stock item ${p.name} tracked under warehouse asset account #1300. Unit sales price: ${formatCurrency(p.unitPrice)}, Unit cost: ${formatCurrency(p.costPrice)}.`,
+                  description: `Inventory stock item ${p.name} tracked under warehouse asset account 1300. Unit sales price: ${formatCurrency(p.unitPrice)}, Unit cost: ${formatCurrency(p.costPrice)}.`,
                   metrics: [
                     { label: 'Current Quantity', value: `${p.quantity} Units` },
                     { label: 'Reorder Point', value: `${p.reorderPoint} Units` },

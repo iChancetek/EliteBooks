@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Copy, Check, Terminal, ChevronRight, Layers, FileText } from 'lucide-react';
+import { Copy, Check, Terminal, Layers } from 'lucide-react';
 import styles from './RichMessageContent.module.css';
 
 interface RichMessageContentProps {
@@ -17,10 +17,21 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  // Helper to format inline bold, codes, and currency pills
+  // Helper to format inline bold, codes, and strip any stray * or # symbols
   const formatInline = (text: string): React.ReactNode => {
+    if (!text) return text;
+
+    // First sanitize Account #1010 -> Account 1010, GL #5000 -> GL 5000, Expense #EXP -> Expense EXP
+    let cleanText = text
+      .replace(/Account\s+#(\d+)/gi, 'Account $1')
+      .replace(/GL\s+#(\d+)/gi, 'GL $1')
+      .replace(/Invoice\s+#/gi, 'Invoice ')
+      .replace(/Expense\s+#/gi, 'Expense ')
+      .replace(/Block\s+#/gi, 'Block ')
+      .replace(/#(\d+)/g, '$1');
+
     // Split by inline code `...`
-    const codeParts = text.split(/(`[^`]+`)/g);
+    const codeParts = cleanText.split(/(`[^`]+`)/g);
 
     return codeParts.map((part, pIdx) => {
       if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
@@ -35,35 +46,37 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
       const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
       return boldParts.map((bPart, bIdx) => {
         if (bPart.startsWith('**') && bPart.endsWith('**') && bPart.length > 4) {
-          const inner = bPart.slice(2, -2);
+          const inner = bPart.slice(2, -2).replace(/[*#]/g, '');
           return (
             <strong key={`${pIdx}-${bIdx}`} className={styles.strongText}>
               {inner}
             </strong>
           );
         }
-        return bPart;
+        // Strip any stray * or # from normal text
+        const safeText = bPart.replace(/[*#]/g, '');
+        return safeText;
       });
     });
   };
 
   // Parse lines into structured blocks
   const parseBlocks = () => {
-    const lines = (content || '').split('\n');
+    const rawLines = (content || '').split('\n');
     const blocks: React.ReactNode[] = [];
     let i = 0;
     let blockKey = 0;
 
-    while (i < lines.length) {
-      const line = lines[i];
+    while (i < rawLines.length) {
+      let line = rawLines[i];
 
       // Code Block: ```
       if (line.trim().startsWith('```')) {
         const lang = line.trim().replace('```', '') || 'code';
         const codeLines: string[] = [];
         i++;
-        while (i < lines.length && !lines[i].trim().startsWith('```')) {
-          codeLines.push(lines[i]);
+        while (i < rawLines.length && !rawLines[i].trim().startsWith('```')) {
+          codeLines.push(rawLines[i]);
           i++;
         }
         const fullCode = codeLines.join('\n');
@@ -95,8 +108,8 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
       // Table: lines starting with |
       if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
         const tableLines: string[] = [];
-        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
-          tableLines.push(lines[i]);
+        while (i < rawLines.length && rawLines[i].trim().startsWith('|') && rawLines[i].trim().endsWith('|')) {
+          tableLines.push(rawLines[i]);
           i++;
         }
         if (tableLines.length >= 2) {
@@ -135,7 +148,7 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
 
       // Section Headers: #, ##, ###
       if (line.startsWith('### ') || line.startsWith('## ') || line.startsWith('# ')) {
-        const cleanHeader = line.replace(/^#+\s*/, '');
+        const cleanHeader = line.replace(/^#+\s*/, '').replace(/[*#]/g, '');
         blocks.push(
           <div key={`header-${blockKey++}`} className={styles.sectionHeader}>
             <Layers size={14} style={{ color: '#60a5fa' }} />
@@ -146,11 +159,14 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
         continue;
       }
 
-      // Unordered Bullet List: - or *
-      if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+      // Unordered Bullet List: -, *, or •
+      if (line.trim().startsWith('- ') || line.trim().startsWith('* ') || line.trim().startsWith('• ')) {
         const listItems: string[] = [];
-        while (i < lines.length && (lines[i].trim().startsWith('- ') || lines[i].trim().startsWith('* '))) {
-          listItems.push(lines[i].trim().replace(/^[-*]\s+/, ''));
+        while (
+          i < rawLines.length &&
+          (rawLines[i].trim().startsWith('- ') || rawLines[i].trim().startsWith('* ') || rawLines[i].trim().startsWith('• '))
+        ) {
+          listItems.push(rawLines[i].trim().replace(/^[-*•]\s+/, ''));
           i++;
         }
         blocks.push(
@@ -169,8 +185,8 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
       // Numbered List: 1. , 2. 
       if (/^\d+\.\s+/.test(line.trim())) {
         const numItems: string[] = [];
-        while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
-          numItems.push(lines[i].trim().replace(/^\d+\.\s+/, ''));
+        while (i < rawLines.length && /^\d+\.\s+/.test(rawLines[i].trim())) {
+          numItems.push(rawLines[i].trim().replace(/^\d+\.\s+/, ''));
           i++;
         }
         blocks.push(
@@ -188,7 +204,7 @@ export const RichMessageContent: React.FC<RichMessageContentProps> = ({ content 
 
       // Blockquote / Alert: >
       if (line.trim().startsWith('>')) {
-        const quoteText = line.trim().replace(/^>\s*/, '');
+        const quoteText = line.trim().replace(/^>\s*/, '').replace(/[*#]/g, '');
         blocks.push(
           <div key={`quote-${blockKey++}`} className={styles.calloutCard}>
             {formatInline(quoteText)}
