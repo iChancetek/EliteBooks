@@ -37,7 +37,6 @@ export default function ExecutiveReportCard({
   onOpenCreationModal,
 }: ExecutiveReportCardProps) {
   const [copied, setCopied] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('Claude 3.7 Sonnet');
   const [followUpText, setFollowUpText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
