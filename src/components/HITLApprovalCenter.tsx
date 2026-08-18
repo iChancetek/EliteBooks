@@ -33,8 +33,8 @@ export const HITLApprovalCenter: React.FC<HITLApprovalCenterProps> = ({
   const isNegative = request.financialImpact < 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative overflow-hidden">
+    <div className="fixed inset-0 z-[10006] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl relative overflow-hidden max-h-[94dvh] overflow-y-auto">
         {/* Header Ribbon */}
         <div className="bg-amber-500/10 border-b border-amber-500/20 -mx-6 -mt-6 p-4 px-6 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2.5">

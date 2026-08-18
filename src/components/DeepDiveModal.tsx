@@ -117,67 +117,68 @@ export default function DeepDiveModal({ data, onClose, onAskAgent }: DeepDiveMod
       onClick={onClose}
     >
       <div
-        className="glass-card"
+        className="glass-card animate-scale-in"
         style={{
           width: '100%',
           maxWidth: '840px',
-          maxHeight: '90vh',
+          maxHeight: 'calc(100dvh - 32px)',
           overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           background: 'var(--color-bg-elevated, #0f172a)',
           border: `1px solid ${color}40`,
           boxShadow: `0 25px 50px -12px ${color}25, 0 0 30px rgba(0,0,0,0.8)`,
           borderRadius: 'var(--radius-xl, 16px)',
-          padding: '24px',
+          padding: 'clamp(14px, 4vw, 24px)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px',
-          animation: 'scaleIn 0.25s ease-out'
+          gap: '16px',
+          margin: 'auto',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: `${color}20`, padding: '12px', borderRadius: '12px', color: color, display: 'flex' }}>
-              {data.icon ? <data.icon size={24} /> : <BarChart3 size={24} />}
+            <div style={{ background: `${color}20`, padding: '10px', borderRadius: '12px', color: color, display: 'flex' }}>
+              {data.icon ? <data.icon size={22} /> : <BarChart3 size={22} />}
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
                   {data.title} Breakdown
                 </h3>
-                <span className="badge" style={{ background: `${color}20`, color: color, fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '100px', border: `1px solid ${color}40` }}>
-                  <ShieldCheck size={12} style={{ display: 'inline', marginRight: '4px' }} /> Live Ledger Audit
+                <span className="badge" style={{ background: `${color}20`, color: color, fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '100px', border: `1px solid ${color}40` }}>
+                  <ShieldCheck size={11} style={{ display: 'inline', marginRight: '4px' }} /> Live Ledger Audit
                 </span>
               </div>
-              <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.6)', margin: '4px 0 0 0' }}>
+              <p style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.6)', margin: '2px 0 0 0' }}>
                 Comprehensive multi-agent financial audit & real-time analytics
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="btn-icon btn-ghost" style={{ cursor: 'pointer', background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 0.6)' }}>
+          <button onClick={onClose} className="btn-icon btn-ghost" style={{ cursor: 'pointer', background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 0.6)', padding: '6px' }} aria-label="Close modal">
             <X size={20} />
           </button>
         </div>
 
         {/* Value Hero Banner if Metric */}
         {data.value !== undefined && (
-          <div style={{ background: 'rgba(30, 41, 59, 0.6)', borderRadius: '12px', padding: '16px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ background: 'rgba(30, 41, 59, 0.6)', borderRadius: '12px', padding: '14px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
             <div>
-              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
+              <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 }}>
                 Total {data.title} (Live Ledger)
               </span>
-              <div style={{ fontSize: '28px', fontWeight: 800, color: '#ffffff', marginTop: '2px', fontFamily: 'var(--font-mono, monospace)' }}>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', marginTop: '2px', fontFamily: 'var(--font-mono, monospace)' }}>
                 {formatCurrency(data.value)}
               </div>
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', background: `${color}20`, color: color, border: `1px solid ${color}40` }}>
-                <CheckCircle2 size={14} />
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 700, padding: '4px 8px', borderRadius: '8px', background: `${color}20`, color: color, border: `1px solid ${color}40` }}>
+                <CheckCircle2 size={13} />
                 <span>100% Real User Data</span>
               </div>
-              <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
+              <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '2px' }}>
                 Zero mock figures • Double-entry verified
               </div>
             </div>
@@ -185,7 +186,7 @@ export default function DeepDiveModal({ data, onClose, onAskAgent }: DeepDiveMod
         )}
 
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '10px' }}>
+        <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           {[
             { id: 'breakdown', label: 'Itemized Breakdown', icon: PieChart },
             { id: 'overview', label: 'Financial Overview & Formula', icon: Layers },
@@ -198,18 +199,20 @@ export default function DeepDiveModal({ data, onClose, onAskAgent }: DeepDiveMod
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '8px 14px',
+                padding: '8px 12px',
                 borderRadius: '8px',
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 border: 'none',
+                whiteSpace: 'nowrap',
                 background: activeTab === tab.id ? color : 'rgba(255, 255, 255, 0.05)',
                 color: activeTab === tab.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
                 transition: 'all 0.2s',
+                flexShrink: 0,
               }}
             >
-              <tab.icon size={14} />
+              <tab.icon size={13} />
               <span>{tab.label}</span>
             </button>
           ))}

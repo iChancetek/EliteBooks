@@ -124,7 +124,7 @@ export const EliteDeepDiveModal: React.FC<EliteDeepDiveModalProps> = ({
 
       {/* Deep Dive Modal Drawer */}
       <aside
-        className="fixed top-0 right-0 h-full w-full max-w-2xl bg-slate-950 border-l border-amber-500/30 text-slate-100 shadow-2xl z-[501] overflow-y-auto flex flex-col justify-between animate-slide-in-right p-6 sm:p-8 font-sans"
+        className="fixed top-0 right-0 h-full w-full max-w-2xl bg-slate-950 border-l border-amber-500/30 text-slate-100 shadow-2xl z-[10002] overflow-y-auto flex flex-col justify-between animate-slide-in-right p-4 sm:p-8 pb-24 sm:pb-8 font-sans"
       >
         <div>
           {/* Header Bar */}

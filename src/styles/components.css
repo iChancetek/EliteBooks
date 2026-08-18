@@ -234,9 +234,24 @@
   padding: var(--space-8);
   max-width: 500px;
   width: 100%;
-  max-height: 90vh;
+  max-height: calc(100dvh - 32px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-xl);
+}
+
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  .modal-content {
+    padding: var(--space-5);
+    max-width: calc(100vw - 24px);
+  }
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3) !important;
+  }
 }
 
 .modal-header {
