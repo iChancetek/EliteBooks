@@ -8,7 +8,7 @@ interface UseAgentReturn {
   isLoading: boolean;
   response: AgentResponse | null;
   error: string | null;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string) => Promise<AgentResponse | null>;
   clearResponse: () => void;
 }
 
@@ -18,7 +18,7 @@ export function useAgent(): UseAgentReturn {
   const [response, setResponse] = useState<AgentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sendMessage = useCallback(async (message: string) => {
+  const sendMessage = useCallback(async (message: string): Promise<AgentResponse | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -45,15 +45,19 @@ export function useAgent(): UseAgentReturn {
         throw new Error(data.error || 'Agent request failed');
       }
 
-      setResponse({
+      const agentResponse: AgentResponse = {
         message: data.message,
         agentUsed: data.agentUsed || 'CFO Agent',
         actions: data.actions || [],
         requiresApproval: data.requiresApproval || false,
         suggestions: data.suggestions || [],
-      });
+      };
+
+      setResponse(agentResponse);
+      return agentResponse;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      return null;
     } finally {
       setIsLoading(false);
     }

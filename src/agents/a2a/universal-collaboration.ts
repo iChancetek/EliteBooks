@@ -214,7 +214,164 @@ export async function runUniversalAgentCollaboration(
   // ── Extract Due Date (used across handlers) ──
   const parsedDueDate = parseNaturalDate(unmaskedQuery);
 
-  // ── Autonomous Expense Creation ──
+  // ── Detect if request originates from Personal Finance module ──
+  const isPersonalContext = (
+    primaryAgent === 'Personal Agent' ||
+    primaryAgent === 'Personal Finance Agent' ||
+    queryLower.includes('[personal finance agent context]')
+  );
+
+  // ── Implicit Creation Intent for Personal Module ──
+  // When the user speaks into the Personal Finance "Add with AI" modal,
+  // they often just say "Groceries $95 at Trader Joe's" without a creation
+  // verb. If we have a valid amount AND the request comes from the Personal
+  // module context, treat it as a creation intent unless it's clearly a
+  // question or report request.
+  const isQuestionOrReport = (
+    queryLower.includes('show') || queryLower.includes('report') ||
+    queryLower.includes('list') || queryLower.includes('how much') ||
+    queryLower.includes('what') || queryLower.includes('analyze') ||
+    queryLower.includes('summary') || queryLower.includes('breakdown')
+  );
+  const isPersonalCreationIntent = isPersonalContext && amount !== null && !isQuestionOrReport;
+
+  // ══════════════════════════════════════════════════════════════════════
+  // PERSONAL FINANCE — Autonomous Personal Expense Creation
+  // Must be evaluated BEFORE the business Expense handler so shared
+  // keywords like "groceries", "subscription", "electric" are not
+  // intercepted by the corporate expense handler when the request
+  // originates from the Personal Finance module.
+  // ══════════════════════════════════════════════════════════════════════
+  if (
+    (isCreationIntent || isPersonalCreationIntent) &&
+    (
+      isPersonalContext ||
+      queryLower.includes('personal') ||
+      queryLower.includes('household')
+    ) &&
+    !isQuestionOrReport
+  ) {
+    // ── Personal Category Assignment ──
+    const personalCategoryMap: Record<string, string> = {
+      'groceries': 'Groceries', 'whole foods': 'Groceries', 'trader joe': 'Groceries',
+      'kroger': 'Groceries', 'safeway': 'Groceries', 'aldi': 'Groceries',
+      'walmart': 'Groceries', 'costco': 'Groceries', 'publix': 'Groceries',
+      'hannaford': 'Groceries', 'dollar general': 'Groceries',
+      'rent': 'Rent & Housing', 'mortgage': 'Rent & Housing', 'housing': 'Rent & Housing',
+      'electric': 'Utilities', 'water': 'Utilities', 'internet': 'Utilities',
+      'phone': 'Utilities', 'gas bill': 'Utilities', 'utility': 'Utilities',
+      'duke energy': 'Utilities', 'comcast': 'Utilities', 'verizon': 'Utilities',
+      'at&t': 'Utilities', 'spectrum': 'Utilities',
+      'netflix': 'Subscriptions', 'spotify': 'Subscriptions', 'hulu': 'Subscriptions',
+      'disney': 'Subscriptions', 'apple music': 'Subscriptions', 'youtube': 'Subscriptions',
+      'hbo': 'Subscriptions', 'amazon prime': 'Subscriptions', 'subscription': 'Subscriptions',
+      'restaurant': 'Dining Out', 'doordash': 'Dining Out', 'grubhub': 'Dining Out',
+      'ubereats': 'Dining Out', 'lunch': 'Dining Out', 'dinner': 'Dining Out',
+      'coffee': 'Dining Out', 'starbucks': 'Dining Out', 'chipotle': 'Dining Out',
+      'gym': 'Health & Fitness', 'fitness': 'Health & Fitness', 'yoga': 'Health & Fitness',
+      'doctor': 'Health & Fitness', 'pharmacy': 'Health & Fitness', 'cvs': 'Health & Fitness',
+      'walgreens': 'Health & Fitness',
+      'uber': 'Travel', 'lyft': 'Travel', 'gas': 'Travel', 'parking': 'Travel',
+      'flight': 'Travel', 'hotel': 'Travel', 'airbnb': 'Travel',
+      'insurance': 'Insurance', 'geico': 'Insurance', 'state farm': 'Insurance',
+      'shopping': 'Shopping', 'target': 'Shopping', 'amazon': 'Shopping',
+      'mall': 'Shopping', 'clothing': 'Shopping', 'shoes': 'Shopping',
+      'tuition': 'Education', 'school': 'Education', 'course': 'Education',
+      'entertainment': 'Entertainment', 'movie': 'Entertainment', 'concert': 'Entertainment',
+      'gaming': 'Entertainment', 'tickets': 'Entertainment',
+    };
+    let pCategory = 'Miscellaneous';
+    for (const [keyword, cat] of Object.entries(personalCategoryMap)) {
+      if (queryLower.includes(keyword)) { pCategory = cat; break; }
+    }
+
+    // ── Enhanced Vendor Extraction for Personal ──
+    let pVendor = partyName;
+    const atMatch = unmaskedQuery.match(/(?:at|from|to|vendor|merchant)[:\s]+([A-Za-z0-9&'\-\s]+?)(?:\s+for|\s+on|\s*\$|\.|,|$)/i);
+    if (atMatch) pVendor = atMatch[1].trim();
+    else if (queryLower.includes('whole foods')) pVendor = 'Whole Foods Market';
+    else if (queryLower.includes('trader joe')) pVendor = "Trader Joe's";
+    else if (queryLower.includes('duke energy')) pVendor = 'Duke Energy';
+    else if (queryLower.includes('netflix')) pVendor = 'Netflix';
+    else if (queryLower.includes('spotify')) pVendor = 'Spotify';
+    else if (queryLower.includes('comcast')) pVendor = 'Comcast';
+    else if (queryLower.includes('verizon')) pVendor = 'Verizon';
+    else if (queryLower.includes('starbucks')) pVendor = 'Starbucks';
+    else if (queryLower.includes('costco')) pVendor = 'Costco';
+    else if (queryLower.includes('walmart')) pVendor = 'Walmart';
+    else if (queryLower.includes('target')) pVendor = 'Target';
+    else if (queryLower.includes('amazon')) pVendor = 'Amazon';
+
+    const personalDate = parsedDueDate || new Date().toISOString().split('T')[0];
+
+    try {
+      const createdExpense = await createExpense(orgId, {
+        vendor: pVendor,
+        amount: amount,
+        category: pCategory,
+        date: personalDate,
+        description: unmaskedQuery,
+        paymentMethod: 'Personal Card',
+        aiCategorized: true,
+        aiConfidence: 0.94,
+        status: 'pending',
+        isPersonal: true,
+      });
+
+      const block = auditLock.appendBlock(orgId, 'PERSONAL_EXPENSE_CREATED_VIA_AI', 'Personal Finance Agent', {
+        expenseId: createdExpense.id, vendor: pVendor, amount: amount, category: pCategory,
+      });
+
+      const persMsg = `✅ PERSONAL TRANSACTION SUCCESSFULLY LOGGED
+----------------------------------------------------------------------
+• Record ID: ${createdExpense.id}
+• Vendor: ${pVendor}
+• Amount: $${amount!.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+• Category: ${pCategory} (AI Confidence: 94%)
+• Date: ${personalDate}
+• Account: Personal (separated from corporate ledger)
+• Status: Logged
+
+Personal Finance Agent has recorded this to your personal expense tracker. This transaction is isolated from corporate books per GAAP segregation rules.`;
+
+      lines.push({ agent: 'Personal Finance Agent', message: persMsg });
+
+      const a2a1 = await agentBus.dispatch(
+        'Personal Finance Agent', 'Cash Flow Agent',
+        'Personal transaction logged — excluded from business P&L',
+        { expenseId: createdExpense.id, amount: amount, category: pCategory },
+        1
+      );
+      a2aLog.push(a2a1);
+
+      const cashMsg = `Personal spending of $${amount!.toLocaleString(undefined, { minimumFractionDigits: 2 })} recorded. This transaction is excluded from business P&L calculations.`;
+      lines.push({ agent: 'Cash Flow Agent', message: cashMsg });
+
+      return {
+        success: true,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: a2aLog,
+        auditBlockHash: block.blockHash,
+        suggestions: [
+          'Show personal spending summary',
+          'Add another personal transaction',
+          'Check monthly budget status',
+        ],
+      };
+    } catch (err) {
+      console.error('[Personal Expense Creation Error]', err);
+      lines.push({ agent: 'Personal Finance Agent', message: `⚠️ Failed to log personal transaction: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again or use the manual Add Transaction form.` });
+      return {
+        success: false,
+        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
+        transcriptLines: lines,
+        a2aMessages: a2aLog,
+      };
+    }
+  }
+
+  // ── Autonomous Expense Creation (Business) ──
   if (
     isCreationIntent &&
     (
@@ -651,96 +808,7 @@ Inventory Agent has added this product to your active catalog. Dispatching to Le
     }
   }
 
-  // ── Autonomous Personal Finance Expense Creation ──
-  if (
-    isCreationIntent &&
-    (
-      primaryAgent === 'Personal Finance Agent' ||
-      queryLower.includes('personal') ||
-      queryLower.includes('household') ||
-      queryLower.includes('groceries') ||
-      queryLower.includes('rent ') ||
-      queryLower.includes('mortgage') ||
-      queryLower.includes('utility') || queryLower.includes('utilities')
-    ) &&
-    !queryLower.includes('show') && !queryLower.includes('report') && !queryLower.includes('list')
-  ) {
-    const personalCategoryMap: Record<string, string> = {
-      'groceries': 'Groceries', 'whole foods': 'Groceries', 'trader joe': 'Groceries',
-      'rent': 'Housing', 'mortgage': 'Housing', 'electric': 'Utilities',
-      'water': 'Utilities', 'internet': 'Utilities', 'gas': 'Transportation',
-      'netflix': 'Entertainment', 'spotify': 'Entertainment', 'gym': 'Health & Fitness',
-      'doctor': 'Healthcare', 'pharmacy': 'Healthcare', 'insurance': 'Insurance',
-    };
-    let pCategory = 'Personal Expense';
-    for (const [keyword, cat] of Object.entries(personalCategoryMap)) {
-      if (queryLower.includes(keyword)) { pCategory = cat; break; }
-    }
 
-    let pVendor = partyName;
-    if (queryLower.includes('whole foods')) pVendor = 'Whole Foods Market';
-    else if (queryLower.includes('trader joe')) pVendor = "Trader Joe's";
-    else if (queryLower.includes('duke energy')) pVendor = 'Duke Energy';
-    else if (queryLower.includes('netflix')) pVendor = 'Netflix';
-    else if (queryLower.includes('spotify')) pVendor = 'Spotify';
-
-    const personalDate = parsedDueDate || new Date().toISOString().split('T')[0];
-
-    try {
-      const createdExpense = await createExpense(orgId, {
-        vendor: pVendor,
-        amount: amount,
-        category: pCategory,
-        date: personalDate,
-        description: unmaskedQuery,
-        paymentMethod: 'Personal Card',
-        aiCategorized: true,
-        aiConfidence: 0.94,
-        status: 'pending',
-        isPersonal: true,
-      });
-
-      const block = auditLock.appendBlock(orgId, 'PERSONAL_EXPENSE_CREATED_VIA_AI', 'Personal Finance Agent', {
-        expenseId: createdExpense.id, vendor: pVendor, amount: amount, category: pCategory,
-      });
-
-      const persMsg = `✅ PERSONAL TRANSACTION SUCCESSFULLY LOGGED
-----------------------------------------------------------------------
-• Record ID: ${createdExpense.id}
-• Vendor: ${pVendor}
-• Amount: $${amount!.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-• Category: ${pCategory} (AI Confidence: 94%)
-• Date: ${personalDate}
-• Account: Personal (separated from corporate ledger)
-• Status: Logged
-
-Personal Finance Agent has recorded this to your personal expense tracker. This transaction is isolated from corporate books per GAAP segregation rules.`;
-
-      lines.push({ agent: 'Personal Finance Agent', message: persMsg });
-
-      return {
-        success: true,
-        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-        transcriptLines: lines,
-        a2aMessages: a2aLog,
-        auditBlockHash: block.blockHash,
-        suggestions: [
-          'Show personal spending summary',
-          'Add another personal transaction',
-          'Check monthly budget status',
-        ],
-      };
-    } catch (err) {
-      console.error('[Personal Expense Creation Error]', err);
-      lines.push({ agent: 'Personal Finance Agent', message: `⚠️ Failed to log personal transaction: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again or use the manual Add Transaction form.` });
-      return {
-        success: false,
-        transcript: lines.map((l) => `${l.agent}: "${l.message}"`).join('\n\n'),
-        transcriptLines: lines,
-        a2aMessages: a2aLog,
-      };
-    }
-  }
 
   if (
     (queryLower.includes('report') || queryLower.includes('summary') || queryLower.includes('audit')) &&

@@ -74,9 +74,9 @@ export default function VoiceAITrigger({
   const handleSend = async () => {
     if (!prompt.trim() || isLoading) return;
     const contextMessage = `[${moduleLabel} Context] ${prompt}`;
-    await sendMessage(contextMessage);
-    if (onAgentResponse && response) {
-      onAgentResponse(response);
+    const res = await sendMessage(contextMessage);
+    if (onAgentResponse && res) {
+      onAgentResponse(res);
     }
   };
 

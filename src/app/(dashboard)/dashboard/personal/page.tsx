@@ -305,6 +305,7 @@ export default function PersonalFinancePage() {
               'Netflix subscription $15.99',
             ]}
             accentColor="#10b981"
+            onAgentResponse={() => fetchReport()}
           />
         </div>
       </div>

@@ -112,7 +112,24 @@ export async function routerNode(
   const queryLower = state.userQuery.toLowerCase();
   let targetAgent = 'EliteBooks Orchestrator';
 
-  if (queryLower.includes('invoice') || queryLower.includes('bill')) {
+  // ── PRIORITY 1: Module Context Tags ──
+  // VoiceAITrigger prepends "[ModuleLabel Context]" to every request.
+  // These must be resolved FIRST so keyword-based matching doesn't misroute
+  // (e.g. "Electric bill $180" spoken in the Personal module must NOT route to Invoicing Agent).
+  if (queryLower.includes('[personal finance agent context]')) {
+    targetAgent = 'Personal Agent';
+  } else if (queryLower.includes('[expense agent context]')) {
+    targetAgent = 'Expense Agent';
+  } else if (queryLower.includes('[invoicing agent context]') || queryLower.includes('[invoice agent context]')) {
+    targetAgent = 'Invoicing Agent';
+  } else if (queryLower.includes('[payroll agent context]')) {
+    targetAgent = 'Payroll Agent';
+  } else if (queryLower.includes('[inventory agent context]')) {
+    targetAgent = 'Inventory Agent';
+  } else if (queryLower.includes('[finops agent context]')) {
+    targetAgent = 'FinOps Agent';
+  // ── PRIORITY 2: Keyword-Based Routing (fallback) ──
+  } else if (queryLower.includes('invoice') || queryLower.includes('bill')) {
     targetAgent = 'Invoicing Agent';
   } else if (queryLower.includes('expense') || queryLower.includes('receipt') || queryLower.includes('categorize')) {
     targetAgent = 'Expense Agent';
