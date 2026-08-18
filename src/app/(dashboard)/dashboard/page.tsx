@@ -19,6 +19,7 @@ import ExecutiveReportCard from '@/components/ExecutiveReportCard';
 import { AIBusinessFeed } from '@/components/AIBusinessFeed';
 import { HITLApprovalCenter } from '@/components/HITLApprovalCenter';
 import { AIAuditCenter } from '@/components/AIAuditCenter';
+import { SOCComplianceCenter } from '@/components/SOCComplianceCenter';
 import { AIAssistedCreationModal } from '@/components/AIAssistedCreationModal';
 import { AIBusinessFeedService } from '@/lib/feed-service';
 import { AIBusinessFeedItem, HITLApprovalRequest } from '@/types/agent-system';
@@ -49,7 +50,7 @@ export default function DashboardHome() {
   const [pendingApprovals, setPendingApprovals] = useState<HITLApprovalRequest[]>([]);
   const [activeApprovalRequest, setActiveApprovalRequest] = useState<HITLApprovalRequest | null>(null);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'approvals' | 'audit' | 'soc'>('feed');
 
   const [rawReportData, setRawReportData] = useState<any>(null);
   const [snapshot, setSnapshot] = useState({
@@ -554,6 +555,39 @@ export default function DashboardHome() {
             <Layers size={16} />
             <span>SHA-256 Audit Center</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('soc')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: 'none',
+              whiteSpace: 'nowrap',
+              background: activeTab === 'soc' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : 'rgba(255, 255, 255, 0.05)',
+              color: activeTab === 'soc' ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+              boxShadow: activeTab === 'soc' ? '0 4px 14px rgba(6, 182, 212, 0.35)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <ShieldCheck size={16} />
+            <span>SOC 1 & SOC 2 Governance</span>
+            <span style={{ 
+              fontSize: '10px', 
+              fontWeight: 800, 
+              padding: '2px 7px', 
+              borderRadius: '100px', 
+              background: activeTab === 'soc' ? 'rgba(0, 0, 0, 0.25)' : 'rgba(6, 182, 212, 0.2)',
+              color: activeTab === 'soc' ? '#ffffff' : '#22d3ee'
+            }}>
+              100% READY
+            </span>
+          </button>
         </div>
 
         {/* Tab Content Display */}
@@ -644,6 +678,7 @@ export default function DashboardHome() {
         )}
 
         {activeTab === 'audit' && <AIAuditCenter orgId="default" />}
+        {activeTab === 'soc' && <SOCComplianceCenter />}
       </section>
 
       {/* AI Guided Creation Modal (Human-in-the-Loop) */}
