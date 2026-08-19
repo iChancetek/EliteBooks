@@ -1,23 +1,463 @@
-.legalPage { min-height: 100vh; position: relative; overflow-x: hidden; background: var(--color-bg-primary); }
-.bgMesh { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(147, 51, 234, 0.03) 0%, transparent 100%); pointer-events: none; z-index: 0; }
-.bgOrb1 { position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%); border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+/* ═══════════════════════════════════════════════════════════════
+   EliteBooks — Terms of Service Styles
+   Ultra-Premium Dark-Mode Fintech Aesthetic (Matches /learning)
+   ═══════════════════════════════════════════════════════════════ */
 
-.nav { position: relative; z-index: 10; border-bottom: 1px solid var(--color-border-primary); background: rgba(10, 10, 10, 0.5); backdrop-filter: blur(12px); }
-.navInner { max-width: 1200px; margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
-.logo { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; }
-.logoIcon { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)); border-radius: var(--radius-md); color: white; }
-.logoText { font-weight: var(--weight-bold); font-size: var(--text-lg); color: var(--color-text-primary); letter-spacing: -0.02em; }
+.legalPage {
+  position: relative;
+  min-height: 100vh;
+  background: var(--color-bg-primary, #06090f);
+  color: var(--color-text-primary, #f1f5f9);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-.legalContent { position: relative; z-index: 10; max-width: 800px; margin: 0 auto; padding: var(--space-16) var(--space-6); }
-.legalHeader { text-align: center; margin-bottom: var(--space-12); }
-.legalHeader h1 { font-size: var(--text-4xl); margin-bottom: var(--space-2); background: linear-gradient(to right, #fff, #a1a1aa); -webkit-background-clip: text; color: transparent; }
-.legalHeader p { color: var(--color-text-tertiary); }
+/* ─── Ambient Video & Glow Backgrounds ─── */
+.bgVideo {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+  filter: brightness(0.85) saturate(1.2) blur(2px);
+  opacity: 0.75;
+}
 
-.legalBody { padding: var(--space-10); display: flex; flex-direction: column; gap: var(--space-8); }
-.legalBody section h2 { font-size: var(--text-xl); color: var(--color-text-primary); margin-bottom: var(--space-4); }
-.legalBody section p { color: var(--color-text-secondary); line-height: 1.7; margin-bottom: var(--space-4); }
-.legalBody section ul { color: var(--color-text-secondary); line-height: 1.7; padding-left: var(--space-6); }
-.legalBody section li { margin-bottom: var(--space-2); }
+.videoOverlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.88) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
 
-.footer { border-top: 1px solid var(--color-border-primary); padding: var(--space-8) 0; position: relative; z-index: 10; margin-top: auto; }
-.footerInner { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-6); text-align: center; color: var(--color-text-tertiary); }
+.bgMesh {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+    radial-gradient(at 85% 20%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 85%, rgba(6, 182, 212, 0.1) 0px, transparent 50%),
+    radial-gradient(at 20% 70%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bgOrb1, .bgOrb2, .bgOrb3 {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat 22s ease-in-out infinite;
+}
+
+.bgOrb1 {
+  width: 600px;
+  height: 600px;
+  background: rgba(59, 130, 246, 0.08);
+  top: -150px;
+  right: -150px;
+}
+
+.bgOrb2 {
+  width: 500px;
+  height: 500px;
+  background: rgba(139, 92, 246, 0.07);
+  bottom: 10%;
+  left: -200px;
+  animation-delay: -8s;
+}
+
+.bgOrb3 {
+  width: 450px;
+  height: 450px;
+  background: rgba(6, 182, 212, 0.06);
+  top: 45%;
+  left: 60%;
+  animation-delay: -16s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+/* ─── Sticky Navigation ─── */
+.nav {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(6, 9, 15, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navInner {
+  max-width: var(--container-xl, 1280px);
+  margin: 0 auto;
+  padding: 0 var(--space-6, 24px);
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.logoIcon {
+  width: 38px;
+  height: 38px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.logoIcon:hover {
+  transform: scale(1.08) rotate(3deg);
+}
+
+.logoIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.4));
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navLink:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── Main Content Container ─── */
+.legalContent {
+  position: relative;
+  z-index: 10;
+  max-width: var(--container-xl, 1280px);
+  margin: 0 auto;
+  padding: 40px 24px 100px;
+  width: 100%;
+  flex: 1;
+}
+
+/* ─── Hero Header ─── */
+.legalHeader {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 40px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 24px;
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.15);
+}
+
+.heroBadgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 10px #60a5fa;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.heroTitle {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.75) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroSubtitle {
+  font-size: 18px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ─── Hero Key Metric Cards ─── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 32px 0 48px;
+}
+
+.statCard {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Legal Section Cards Grid ─── */
+.legalGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.legalCard {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 32px 36px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.legalCard:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
+.legalCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.legalIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.legalCardTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+}
+
+.legalCardBody {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.legalCardBody p {
+  margin-bottom: 14px;
+}
+
+.legalCardBody strong {
+  color: #ffffff;
+}
+
+.legalList {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legalListItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ─── High Conversion CTA Footer Banner ─── */
+.ctaBanner {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 28px;
+  padding: 56px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.2);
+  margin-top: 56px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ctaTitle {
+  font-size: 36px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.025em;
+  margin-bottom: 14px;
+}
+
+.ctaSubtitle {
+  font-size: 16.5px;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 640px;
+  margin: 0 auto 30px;
+  line-height: 1.6;
+}
+
+.ctaActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ─── Footer ─── */
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(6, 9, 15, 0.95);
+  padding: 40px 0;
+  margin-top: auto;
+  position: relative;
+  z-index: 10;
+}
+
+.footerInner {
+  max-width: var(--container-xl, 1280px);
+  margin: 0 auto;
+  padding: 0 var(--space-6, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.footerLink {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  color: #ffffff;
+}
+
+/* ─── Responsive Queries ─── */
+@media (max-width: 1024px) {
+  .statsRow { grid-template-columns: repeat(2, 1fr); }
+  .heroTitle { font-size: 38px; }
+  .legalCard { padding: 24px; }
+}
+
+@media (max-width: 768px) {
+  .heroTitle { font-size: 30px; }
+  .heroSubtitle { font-size: 15px; }
+  .navLinks { display: none; }
+  .legalCardTitle { font-size: 19px; }
+  .ctaBanner { padding: 36px 20px; }
+  .ctaTitle { font-size: 26px; }
+}

@@ -8,7 +8,8 @@ import {
   Activity, BookOpen, Search, Send, Clock,
   ChevronDown, ChevronUp, Layers, Receipt, CreditCard,
   Users, BarChart3, Package, Car, FileCheck2, HardHat,
-  Heart, Cloud, DollarSign, Lock, Compass, ArrowRight
+  Heart, Cloud, DollarSign, Lock, Compass, ArrowRight,
+  Headphones, Check
 } from 'lucide-react';
 import styles from './page.module.css';
 import PageVoiceControl from '@/components/PageVoiceControl';
@@ -309,9 +310,22 @@ export default function SupportPage() {
 
   return (
     <div className={styles.supportPage}>
-      {/* Background Effects */}
+      {/* Background Video & Ambient Glows */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className={styles.bgVideo}
+        aria-hidden="true"
+      >
+        <source src="/elitebooks1.mp4" type="video/mp4" />
+      </video>
+      <div className={styles.videoOverlay} aria-hidden="true" />
       <div className={styles.bgMesh} aria-hidden="true" />
       <div className={styles.bgOrb1} aria-hidden="true" />
+      <div className={styles.bgOrb2} aria-hidden="true" />
+      <div className={styles.bgOrb3} aria-hidden="true" />
       
       <PageVoiceControl contentId="support-main-content" pageTitle="Enterprise Support Center & Architecture Knowledge Base" />
 
@@ -325,7 +339,15 @@ export default function SupportPage() {
             <span className={styles.logoText}>EliteBooks</span>
           </Link>
 
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className={styles.navLinks}>
+            <Link href="/features" className={styles.navLink}>Features</Link>
+            <Link href="/learning" className={styles.navLink}>Masterclass</Link>
+            <Link href="/support" className={styles.navLink} style={{ color: '#60a5fa', fontWeight: 700 }}>Support</Link>
+            <Link href="/privacy" className={styles.navLink}>Privacy</Link>
+            <Link href="/terms" className={styles.navLink}>Terms</Link>
+          </div>
+
+          <div className={styles.navActions}>
             <a 
               href="https://famio.us" 
               target="_blank" 
@@ -335,14 +357,11 @@ export default function SupportPage() {
             >
               <Sparkles size={14} style={{ color: '#ec4899' }} /> famio.us
             </a>
-            <Link href="/learning" className="btn btn-secondary btn-sm" style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <BookOpen size={14} /> Masterclass
+            <Link href="/login" className="btn btn-ghost btn-sm" style={{ fontSize: '13px' }}>
+              Sign In
             </Link>
-            <Link href="/dashboard" className="btn btn-secondary btn-sm" style={{ fontSize: '13px' }}>
-              Dashboard
-            </Link>
-            <Link href="/" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
-              <ArrowLeft size={16} /> Home
+            <Link href="/signup" className="btn btn-primary btn-sm" style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Get Started Free <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -351,20 +370,47 @@ export default function SupportPage() {
       {/* Main Content Area */}
       <main className={styles.supportContent} id="support-main-content">
         <div className={styles.supportHeader}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 14px', borderRadius: '100px', background: 'rgba(59,130,246,0.15)', color: '#60a5fa', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '12px' }}>
-            <LifeBuoy size={14} /> Enterprise Support & Architecture Hub
+          <div className={styles.heroBadge}>
+            <span className={styles.heroBadgeDot} />
+            <LifeBuoy size={14} />
+            <span>24/7 Enterprise Assistance · AI Swarm Diagnostics</span>
           </div>
-          <h1>Enterprise Support Center</h1>
-          <p>
-            Explore our comprehensive knowledge base covering the Autonomous Financial Intelligence Architecture, Multi-Agent Swarm, Core Pillars, and In-Depth Masterclass Chapters.
+
+          <h1 className={styles.heroTitle}>
+            Enterprise Support &<br />
+            <span className="text-gradient">Architecture Knowledge Base</span>
+          </h1>
+
+          <p className={styles.heroSubtitle}>
+            Direct assistance from our autonomous AI diagnostics system and certified accounting support team. Explore comprehensive architectural guides, swarm nodes, and masterclass deep dives.
           </p>
+
+          {/* Hero Key Metric Cards */}
+          <div className={styles.statsRow}>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>24/7</div>
+              <div className={styles.statLabel}>Autonomous AI Sentry</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>99.9%</div>
+              <div className={styles.statLabel}>Swarm Pipeline Uptime</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>&lt; 2 Hours</div>
+              <div className={styles.statLabel}>Human CPA SLA Response</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>100%</div>
+              <div className={styles.statLabel}>ICFR Audit Defense</div>
+            </div>
+          </div>
         </div>
 
         {/* Live Multi-Agent Status Banner */}
         <div className={styles.statusBanner}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 10px #10b981' }} />
-            <strong style={{ color: '#ffffff', fontSize: '14px' }}>All AI Swarm Pipelines Operational (99.9% Uptime)</strong>
+            <strong style={{ color: '#ffffff', fontSize: '14px' }}>All AI Swarm Pipelines Operational (Orchestrator, Ledger, FinOps, Compliance)</strong>
           </div>
           <Link href="/learning" style={{ fontSize: '13px', color: '#60a5fa', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
             View Full Interactive Masterclass <ArrowRight size={14} />
@@ -440,7 +486,7 @@ export default function SupportPage() {
                   <textarea 
                     className={styles.formInput} 
                     rows={4} 
-                    placeholder="Describe your inquiry, architecture scenario, or questions..." 
+                    placeholder="Describe your inquiry, architecture scenario, or diagnostic questions..." 
                     value={ticket.message}
                     onChange={e => setTicket({...ticket, message: e.target.value})}
                     required 
@@ -571,22 +617,42 @@ export default function SupportPage() {
           </div>
 
         </div>
+
+        {/* High Conversion CTA Banner */}
+        <div className={styles.ctaBanner}>
+          <h2 className={styles.ctaTitle}>Experience the Autonomous Financial Operating System</h2>
+          <p className={styles.ctaSubtitle}>
+            Transform your enterprise accounting with continuous books quality AI, 10 specialized agents, and SOC 1/2 verified math.
+          </p>
+          <div className={styles.ctaActions}>
+            <Link href="/signup" className="btn btn-primary btn-lg" style={{ padding: '14px 32px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Start Free Trial <ArrowRight size={18} />
+            </Link>
+            <Link href="/learning" className="btn btn-secondary btn-lg" style={{ padding: '14px 32px', fontSize: '15px' }}>
+              Explore Masterclass
+            </Link>
+          </div>
+        </div>
+
       </main>
 
       {/* Footer */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '20px', height: '20px' }} />
-            <span style={{ fontWeight: 800, color: '#ffffff', fontSize: '14px' }}>EliteBooks Support</span>
-            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>&copy; {new Date().getFullYear()} EliteBooks. All rights reserved.</span>
+            <img src="/NewIcon.png" alt="EliteBooks" style={{ width: '22px', height: '22px' }} />
+            <span style={{ fontWeight: 800, color: '#ffffff', fontSize: '15px' }}>EliteBooks Support</span>
+            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>&copy; {new Date().getFullYear()} EliteBooks Financial OS. All rights reserved.</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <Link href="/" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '13px' }}>Home</Link>
-            <Link href="/learning" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Masterclass</Link>
-            <Link href="/dashboard" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '13px' }}>Dashboard</Link>
-            <a href="https://famio.us" target="_blank" rel="noopener noreferrer" style={{ color: '#f472b6', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>famio.us</a>
+          <div className={styles.footerLinks}>
+            <Link href="/" className={styles.footerLink}>Home</Link>
+            <Link href="/features" className={styles.footerLink}>Features</Link>
+            <Link href="/learning" className={styles.footerLink}>Masterclass</Link>
+            <Link href="/support" className={styles.footerLink} style={{ color: '#60a5fa', fontWeight: 700 }}>Support</Link>
+            <Link href="/privacy" className={styles.footerLink}>Privacy</Link>
+            <Link href="/terms" className={styles.footerLink}>Terms</Link>
+            <a href="https://famio.us" target="_blank" rel="noopener noreferrer" className={styles.footerLink} style={{ color: '#f472b6', fontWeight: 700 }}>famio.us</a>
           </div>
         </div>
       </footer>
