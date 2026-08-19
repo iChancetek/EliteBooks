@@ -102,9 +102,9 @@ EliteBooks operates on an enterprise multi-agent framework powered by LangGraph 
 • **Primary Function:** Bridges corporate profitability with founder and executive personal wealth strategy.
 • **Mechanism:** Tracks founder equity draws, calculates estimated quarterly personal tax withholdings (Form 1040-ES), and enforces strict corporate veil segregation against Account 3000 Owner Equity.
 
-### 12. The Fraud Sentinel & Cryptographic PII Vault
-• **Primary Function:** Enterprise-grade threat detection, anomaly mitigation, and data privacy isolation.
-• **Mechanism:** Tokenizes credit card numbers, tax IDs, and banking routing strings with AES-256-GCM encryption. Runs real-time heuristic scans to block anomalous wire transfers and invoice tampering.
+### 12. The Fraud Sentinel & Ephemeral PII/PHI Masking Vault
+• **Primary Function:** Enterprise-grade threat detection, anomaly mitigation, and ephemeral data privacy isolation.
+• **Mechanism:** Masks credit card numbers, tax IDs (SSNs, EINs), banking routing strings, and healthcare PHI policy/claim numbers in RAM with ephemeral in-memory vaulting. Prevents sensitive data from reaching external LLMs while restoring values for authorized internal rendering. Runs real-time heuristic scans to block anomalous wire transfers and invoice tampering.
 
 ---
 
@@ -146,7 +146,7 @@ EliteBooks implements native compliance architectures designed for Big 4 CPA aud
 ### SOC 2 Type II (Trust Services Criteria - Security & AI Processing Integrity)
 • **AI Processing Integrity (Control 2.1):** 100% of autonomous agent recommendations and ledger summaries are mathematically grounded in verified Firestore database records with zero ungrounded numerical synthesis.
 • **Deterministic Rule-Based Math (Control 2.2):** Financial calculations (totals, margins, tax withholdings) are computed by deterministic application code; AI agents are used strictly for natural language synthesis, categorization, and anomaly explanations.
-• **Zero Data Retention & Zero PII Transmission (Control 2.3):** Customer financial datasets and unredacted PII are never sent to external LLMs for training.
+• **Zero Data Retention & Ephemeral PII/PHI Masking (Control 2.3):** Customer financial datasets, employee tax identifiers, and healthcare PHI are masked via an in-process ephemeral vault before outbound AI transmission, ensuring zero third-party training and zero data retention.
 
 ---
 

@@ -98,9 +98,9 @@ export default function SupportPage() {
       title: 'Chapter 07: SOC 1 (ICFR) & SOC 2 Type II Compliance Architecture',
       badge: 'Architecture Chapter',
       badgeColor: '#f59e0b',
-      summary: 'Continuous ICFR invariant verification, ASC-606 checks, and AES-256 PII Vault.',
-      content: `EliteBooks is engineered for enterprise compliance, Big 4 CPA audits, and continuous security reviews:\n\nSOC 1 Type II (Financial ICFR):\n• Double-Entry Invariant: Continuous verification that sum(Debits) == sum(Credits).\n• ASC-606 Compliance: Automated 5-step contract milestone recognition checks.\n• Maker-Checker SoD: AI restricted to advisory role; dual-signature human approval mandatory.\n\nSOC 2 Type II (Trust Criteria):\n• AI Processing Integrity: 100% mathematical grounding in live database ledgers with zero ungrounded hallucinations.\n• PII Tokenization Vault: Real-time in-memory redaction of SSNs, EINs, and bank accounts.\n• Auditor Evidence Exporter: Instant JSON export for Vanta, Drata, and external CPA auditors.`,
-      tags: ['SOC 1 Type II', 'SOC 2 Type II', 'ASC-606', 'PII Vault']
+      summary: 'Continuous ICFR invariant verification, ASC-606 checks, and Ephemeral PII/PHI Vault.',
+      content: `EliteBooks is engineered for enterprise compliance, Big 4 CPA audits, and continuous security reviews:\n\nSOC 1 Type II (Financial ICFR):\n• Double-Entry Invariant: Continuous verification that sum(Debits) == sum(Credits).\n• ASC-606 Compliance: Automated 5-step contract milestone recognition checks.\n• Maker-Checker SoD: AI restricted to advisory role; dual-signature human approval mandatory.\n\nSOC 2 Type II (Trust Criteria):\n• AI Processing Integrity: 100% mathematical grounding in live database ledgers with zero ungrounded hallucinations.\n• Ephemeral PII/PHI Masking Vault: Real-time in-memory redaction of SSNs, EINs, healthcare policy IDs, and bank accounts.\n• Auditor Evidence Exporter: Instant JSON export for Vanta, Drata, and external CPA auditors.`,
+      tags: ['SOC 1 Type II', 'SOC 2 Type II', 'ASC-606', 'PII/PHI Vault']
     },
     {
       id: 'ch-08',
@@ -227,12 +227,12 @@ export default function SupportPage() {
     {
       id: 'agent-fraud',
       category: 'swarm',
-      title: 'Fraud Sentinel & PII Vault — Cryptographic Privacy & Anomaly Guard',
+      title: 'Fraud Sentinel & Ephemeral PII/PHI Vault — Privacy & Anomaly Guard',
       badge: 'Multi-Agent Swarm',
       badgeColor: '#e11d48',
-      summary: 'Tokenizes sensitive financial PII with AES-256-GCM encryption and scans ledger activity for unauthorized wire patterns or tampering.',
-      content: `Tokenizes sensitive financial PII with AES-256-GCM encryption and scans ledger activity for unauthorized wire patterns or tampering.`,
-      tags: ['AES-256-GCM', 'PII Redaction', 'Heuristic Defense']
+      summary: 'Tokenizes sensitive financial PII and healthcare PHI with ephemeral in-memory vaulting and scans ledger activity for unauthorized wire patterns or tampering.',
+      content: `Tokenizes sensitive financial PII and healthcare PHI with ephemeral in-memory vaulting and scans ledger activity for unauthorized wire patterns or tampering.`,
+      tags: ['Ephemeral RAM Vault', 'PII/PHI Masking', 'Heuristic Defense']
     },
 
     // ─── Core Financial Pillars ───
@@ -464,7 +464,7 @@ export default function SupportPage() {
                     <option value="FinOps">Cloud FinOps & Ingestion</option>
                     <option value="Payroll">Payroll & Form 941 Withholdings</option>
                     <option value="Invoicing">Invoicing & Payment Collection</option>
-                    <option value="Security">SOC 1/2 Compliance & PII Vault</option>
+                    <option value="Security">SOC 1/2 Compliance & Ephemeral PII/PHI Vault</option>
                     <option value="Masterclass">Architecture & Masterclass Guide</option>
                   </select>
                 </div>

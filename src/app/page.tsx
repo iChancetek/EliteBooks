@@ -95,8 +95,8 @@ const features = [
   },
   {
     icon: Lock,
-    title: 'Cryptographic PII Security Vault',
-    description: 'AES-256-GCM encryption for bank credentials and tax IDs with real-time heuristic fraud detection.',
+    title: 'Ephemeral PII/PHI Masking Vault',
+    description: 'In-memory tokenization and RAM masking for bank credentials, tax IDs, and healthcare PHI with real-time heuristic fraud detection.',
     color: '#e11d48',
   },
 ];
@@ -113,7 +113,7 @@ const agents = [
   { name: 'Compliance', role: 'Tax & Audit', icon: ShieldCheck, color: '#14b8a6' },
   { name: 'FinOps', role: 'Cloud & GPU Economics', icon: Cloud, color: '#0ea5e9' },
   { name: 'Personal Finance', role: 'Wealth & Draws', icon: DollarSign, color: '#ec4899' },
-  { name: 'Fraud Sentinel', role: 'PII Vault & Security', icon: Lock, color: '#e11d48' },
+  { name: 'Fraud Sentinel', role: 'Ephemeral PII/PHI Vault', icon: Lock, color: '#e11d48' },
 ];
 
 const stats = [

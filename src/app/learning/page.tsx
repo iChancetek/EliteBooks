@@ -239,17 +239,17 @@ export default function LearningPage() {
       }
     },
     {
-      name: 'Fraud Sentinel & PII Vault',
-      role: 'Cryptographic Privacy & Anomaly Guard',
+      name: 'Fraud Sentinel & Ephemeral PII/PHI Vault',
+      role: 'Cryptographic Privacy, PHI Masking & Anomaly Guard',
       category: 'compliance',
       icon: Lock,
       color: '#e11d48',
-      description: 'Tokenizes sensitive financial PII with AES-256-GCM encryption and scans ledger activity for unauthorized wire patterns or tampering.',
-      tags: ['AES-256-GCM', 'PII Redaction', 'Heuristic Defense'],
+      description: 'Tokenizes sensitive financial PII and healthcare PHI with ephemeral in-memory vaulting and scans ledger activity for unauthorized wire patterns or tampering.',
+      tags: ['Ephemeral RAM Vault', 'PII/PHI Masking', 'Heuristic Defense'],
       simulation: {
-        prompt: 'Incoming wire instructions containing routing number and corporate EIN.',
-        action: 'In-memory tokenization executed in 1.2ms. AES-256-GCM encrypted payload saved in cryptographic vault.',
-        result: 'Zero plain-text PII stored. Passed SOC 2 Type II privacy criteria.'
+        prompt: 'Incoming payroll batch containing employee SSNs, direct deposit routing numbers, and health benefit policy IDs.',
+        action: 'In-memory ephemeral tokenization executed in 1.2ms. PII and healthcare PHI masked into ephemeral RAM tokens before LLM transmission.',
+        result: 'Zero plain-text PII/PHI transmitted or stored. Passed SOC 2 Type II privacy and confidentiality criteria.'
       }
     }
   ];
@@ -357,8 +357,8 @@ export default function LearningPage() {
               <div className={styles.statLabel}>Database Grounded Math</div>
             </div>
             <div className={styles.statCard}>
-              <div className={styles.statValue}>AES-256-GCM</div>
-              <div className={styles.statLabel}>Cryptographic PII Vault</div>
+              <div className={styles.statValue}>RAM Vault</div>
+              <div className={styles.statLabel}>Ephemeral PII/PHI Vault</div>
             </div>
           </div>
         </section>
@@ -745,7 +745,7 @@ export default function LearningPage() {
                 <li className={styles.socItem}>
                   <CheckCircle2 size={18} style={{ color: '#06b6d4', flexShrink: 0, marginTop: '2px' }} />
                   <div>
-                    <strong>PII Tokenization Vault:</strong> Real-time in-memory redaction of SSNs, EINs, routing numbers, and bank credentials protected by AES-256-GCM encryption.
+                    <strong>Ephemeral PII/PHI Masking Vault:</strong> Real-time in-memory redaction of SSNs, EINs, healthcare policy/claim IDs, routing numbers, and bank credentials protected by ephemeral RAM tokenization.
                   </div>
                 </li>
                 <li className={styles.socItem}>
@@ -955,7 +955,7 @@ export default function LearningPage() {
                 </p>
                 <ul className={styles.chapterList}>
                   <li><strong>SOC 1 Type II (Financial ICFR):</strong> Double-Entry Invariant (sum Debits == sum Credits), ASC-606 5-step milestone checks, and Maker-Checker segregation of duties.</li>
-                  <li><strong>SOC 2 Type II (Trust Criteria):</strong> 100% mathematical database grounding with zero hallucination risk, in-memory PII tokenization vault, and instant auditor evidence export.</li>
+                  <li><strong>SOC 2 Type II (Trust Criteria):</strong> 100% mathematical database grounding with zero hallucination risk, in-memory ephemeral PII/PHI masking vault, and instant auditor evidence export.</li>
                 </ul>
               </div>
             </div>

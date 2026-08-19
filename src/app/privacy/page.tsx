@@ -57,14 +57,14 @@ export default function PrivacyPage() {
     {
       id: 'pii-vault',
       icon: Lock,
-      title: '3. Cryptographic PII Vault (AES-256-GCM)',
+      title: '3. Ephemeral PII/PHI Masking Vault',
       content: (
         <>
           <p>
-            All Personally Identifiable Information (PII), including bank routing numbers, employee Taxpayer Identification Numbers (TINs/SSNs), and credit card tokens, is processed through our dedicated PII Vault. Data is tokenized and encrypted at rest using industry-standard AES-256-GCM authenticated encryption. Decryption keys are managed through isolated Hardware Security Modules (HSM).
+            All Personally Identifiable Information (PII) and Protected Health Information (PHI)—including bank routing numbers, employee Taxpayer Identification Numbers (TINs/SSNs), health benefit policy IDs, and credit card tokens—is processed through our dedicated Ephemeral PII/PHI Masking Vault. Data is tokenized in-memory with automatic TTL expiration.
           </p>
           <p>
-            In-memory tokenization intercepts sensitive parameters before AI agent processing, ensuring model prompts only operate on redacted, non-identifiable numerical arrays.
+            In-memory tokenization intercepts sensitive parameters before AI agent processing, ensuring model prompts only operate on redacted, non-identifiable numerical arrays and ephemeral tokens.
           </p>
         </>
       )
@@ -224,8 +224,8 @@ export default function PrivacyPage() {
           {/* Key Security Stats Row */}
           <div className={styles.statsRow}>
             <div className={styles.statCard}>
-              <div className={styles.statValue}>AES-256-GCM</div>
-              <div className={styles.statLabel}>Cryptographic PII Vault</div>
+              <div className={styles.statValue}>RAM Vault</div>
+              <div className={styles.statLabel}>Ephemeral PII/PHI Vault</div>
             </div>
             <div className={styles.statCard}>
               <div className={styles.statValue}>0% Brokerage</div>
