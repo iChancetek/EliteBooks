@@ -14,9 +14,11 @@ import { EliteDeepDiveModal, DeepDiveItem } from '@/components/EliteDeepDiveModa
 import VoiceAITrigger from '@/components/VoiceAITrigger';
 import MultiPeriodForecastCard from '@/components/MultiPeriodForecastCard';
 import { useForecast } from '@/hooks/useForecast';
+import HRWorkforceDashboard from '@/hr/components/HRWorkforceDashboard';
 
 export default function PayrollPage() {
   const { user } = useAuth();
+  const [payrollViewMode, setPayrollViewMode] = useState<'payroll' | 'hr'>('payroll');
   const [selectedMonth, setSelectedMonth] = useState('All Months');
   const [selectedYear, setSelectedYear] = useState('All Years');
   const [employees, setEmployees] = useState<any[]>([]);
@@ -183,6 +185,52 @@ export default function PayrollPage() {
         color="#f59e0b"
       />
 
+      {/* View Switcher Tabs */}
+      <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px', overflowX: 'auto' }}>
+        <button
+          onClick={() => setPayrollViewMode('payroll')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: 700,
+            border: 'none',
+            cursor: 'pointer',
+            background: payrollViewMode === 'payroll' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(255, 255, 255, 0.05)',
+            color: payrollViewMode === 'payroll' ? '#0f172a' : '#ffffff',
+            boxShadow: payrollViewMode === 'payroll' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
+            transition: 'all 0.2s',
+          }}
+        >
+          Payroll Runs & Paystubs
+        </button>
+        <button
+          onClick={() => setPayrollViewMode('hr')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: 700,
+            border: 'none',
+            cursor: 'pointer',
+            background: payrollViewMode === 'hr' ? 'linear-gradient(135deg, #10b981, #3b82f6)' : 'rgba(255, 255, 255, 0.05)',
+            color: payrollViewMode === 'hr' ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+            boxShadow: payrollViewMode === 'hr' ? '0 4px 14px rgba(16, 185, 129, 0.35)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s',
+          }}
+        >
+          <Sparkles size={14} />
+          <span>Financial HR & Workforce Studio</span>
+        </button>
+      </div>
+
+      {payrollViewMode === 'hr' ? (
+        <HRWorkforceDashboard />
+      ) : (
+        <>
       <div className="page-header">
         <div>
           <h1>Payroll</h1>
@@ -449,6 +497,8 @@ export default function PayrollPage() {
           </>
         )}
       </div>
+      </>
+      )}
 
       <style>{`
         .page-payroll { max-width: 1100px; }

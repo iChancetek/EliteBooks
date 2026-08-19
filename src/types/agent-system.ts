@@ -14,6 +14,7 @@ export type AgentRole =
   | 'Tax Agent'
   | 'Reconciliation Agent'
   | 'Reporting Agent'
+  | 'HR Agent'
   | 'CFO Agent'
   | 'Orchestrator';
 
