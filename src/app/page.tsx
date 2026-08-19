@@ -302,22 +302,24 @@ export default function LandingPage() {
           <h2>10 AI Agents. Zero Effort.</h2>
           <p>Specialized domain agents collaborate autonomously to manage every aspect of your enterprise finances.</p>
         </div>
-        <div className={styles.agentGrid}>
-          {agents.map((agent) => (
-            <div key={agent.name} className={styles.agentCard}>
-              <div className={styles.agentIcon} style={{ background: `${agent.color}20`, color: agent.color }}>
-                <agent.icon size={22} />
+        <div className={styles.carouselContainer}>
+          <div className={styles.agentCarouselTrack}>
+            {[...agents, ...agents].map((agent, i) => (
+              <div key={`${agent.name}-${i}`} className={styles.agentCard}>
+                <div className={styles.agentIcon} style={{ background: `${agent.color}20`, color: agent.color }}>
+                  <agent.icon size={22} />
+                </div>
+                <div className={styles.agentInfo}>
+                  <h4>{agent.name}</h4>
+                  <span>{agent.role}</span>
+                </div>
+                <div className={styles.agentStatus}>
+                  <span className="status-dot status-dot-active" />
+                  <span>Active</span>
+                </div>
               </div>
-              <div className={styles.agentInfo}>
-                <h4>{agent.name}</h4>
-                <span>{agent.role}</span>
-              </div>
-              <div className={styles.agentStatus}>
-                <span className="status-dot status-dot-active" />
-                <span>Active</span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 

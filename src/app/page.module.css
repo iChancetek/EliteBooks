@@ -482,9 +482,30 @@
 .agentsSection {
   position: relative;
   z-index: 1;
-  max-width: var(--container-lg);
+  max-width: var(--container-xl);
   margin: 0 auto;
   padding: var(--space-20) var(--space-6) var(--space-32);
+}
+
+.agentCarouselTrack {
+  display: flex;
+  gap: var(--space-4);
+  width: max-content;
+  animation: scrollAgents 45s linear infinite;
+  will-change: transform;
+}
+
+.agentCarouselTrack:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scrollAgents {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50% - (var(--space-4) / 2)));
+  }
 }
 
 .agentGrid {
@@ -494,6 +515,10 @@
 }
 
 .agentCard {
+  width: 380px;
+  min-width: 380px;
+  max-width: 380px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -508,7 +533,7 @@
 .agentCard:hover {
   background: var(--color-glass-hover);
   border-color: rgba(99, 131, 196, 0.2);
-  transform: translateX(4px);
+  transform: translateY(-4px);
 }
 
 .agentIcon {
@@ -670,6 +695,13 @@
     min-width: 290px;
     max-width: 290px;
     padding: var(--space-6);
+  }
+
+  .agentCard {
+    width: 290px;
+    min-width: 290px;
+    max-width: 290px;
+    padding: var(--space-3) var(--space-4);
   }
 
   .featureGrid { grid-template-columns: 1fr; }
