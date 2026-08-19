@@ -30,6 +30,7 @@ export default function HRWorkforceDashboard() {
   const [classificationAudits] = useState<WorkerClassificationAudit[]>(HRAgentService.auditWorkerClassificationRisk());
 
   const [activeTab, setActiveTab] = useState<'employees' | 'pto' | 'timesheets' | 'benefits' | 'compliance'>('employees');
+  const [personnelFilter, setPersonnelFilter] = useState<'all' | 'w2' | 'contractor'>('all');
 
   // Modals State
   const [isPtoModalOpen, setIsPtoModalOpen] = useState(false);
@@ -293,60 +294,153 @@ export default function HRWorkforceDashboard() {
         </button>
       </div>
 
-      {/* Tab 1: Employee Profiles */}
+      {/* Tab 1: Employee & Contractor Profiles */}
       {activeTab === 'employees' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '14px' }}>
-          {employees.map((emp) => (
-            <div
-              key={emp.id}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Sub-filter tabs */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setPersonnelFilter('all')}
               style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.6))',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '16px',
-                padding: '18px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                color: '#f1f5f9',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: personnelFilter === 'all' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                color: personnelFilter === 'all' ? '#60a5fa' : '#94a3b8',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: personnelFilter === 'all' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255, 255, 255, 0.08)',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>{emp.firstName} {emp.lastName}</h3>
-                  <span style={{ fontSize: '11px', color: '#60a5fa' }}>{emp.jobTitle} • {emp.department}</span>
-                </div>
-                <span style={{
-                  padding: '2px 8px',
-                  borderRadius: '100px',
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  color: '#10b981',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                }}>
-                  FULL-TIME
-                </span>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
-                <div>• Annual Salary: <strong>{formatCurrency(emp.annualSalary || 0)}</strong></div>
-                <div>• Pay Frequency: <strong>{emp.payFrequency}</strong></div>
-                <div>• Form W-4: <strong style={{ color: '#10b981' }}>Verified</strong></div>
-                <div>• Form I-9: <strong style={{ color: '#10b981' }}>Verified</strong></div>
-              </div>
-
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                padding: '10px',
-                borderRadius: '10px',
-                display: 'flex',
-                justifyContent: 'space-between',
+              All Personnel ({employees.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setPersonnelFilter('w2')}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
                 fontSize: '11px',
-              }}>
-                <span>PTO Accrued: <strong>{emp.ptoAccruedDays} Days</strong></span>
-                <span style={{ color: '#10b981' }}>Available: <strong>{emp.ptoAvailableDays} Days</strong></span>
-              </div>
-            </div>
-          ))}
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: personnelFilter === 'w2' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                color: personnelFilter === 'w2' ? '#10b981' : '#94a3b8',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: personnelFilter === 'w2' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              W-2 Employees ({employees.filter((e) => e.employmentType !== 'contractor').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setPersonnelFilter('contractor')}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: personnelFilter === 'contractor' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                color: personnelFilter === 'contractor' ? '#c084fc' : '#94a3b8',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: personnelFilter === 'contractor' ? 'rgba(168, 85, 247, 0.4)' : 'rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              1099 Contractors ({employees.filter((e) => e.employmentType === 'contractor').length})
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
+            {employees
+              .filter((emp) => {
+                if (personnelFilter === 'w2') return emp.employmentType !== 'contractor';
+                if (personnelFilter === 'contractor') return emp.employmentType === 'contractor';
+                return true;
+              })
+              .map((emp) => {
+                const isContractor = emp.employmentType === 'contractor';
+                return (
+                  <div
+                    key={emp.id}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.6))',
+                      border: isContractor ? '1px solid rgba(168, 85, 247, 0.25)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '16px',
+                      padding: '18px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      color: '#f1f5f9',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>{emp.firstName} {emp.lastName}</h3>
+                        <span style={{ fontSize: '11px', color: isContractor ? '#c084fc' : '#60a5fa' }}>
+                          {emp.jobTitle} • {emp.department}
+                        </span>
+                      </div>
+                      <span style={{
+                        padding: '3px 8px',
+                        borderRadius: '100px',
+                        background: isContractor ? 'rgba(168, 85, 247, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                        color: isContractor ? '#c084fc' : '#10b981',
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        border: isContractor ? '1px solid rgba(168, 85, 247, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
+                      }}>
+                        {isContractor ? 'CONTRACTOR (1099)' : 'FULL-TIME (W-2)'}
+                      </span>
+                    </div>
+
+                    {isContractor ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                        <div>• Billing Rate: <strong>${emp.hourlyRate}/hr</strong></div>
+                        <div>• Estimated Volume: <strong>{formatCurrency(emp.annualSalary || 0)}/yr</strong></div>
+                        <div>• Form W-9: <strong style={{ color: '#10b981' }}>Verified (TIN on file)</strong></div>
+                        <div>• Contract Type: <strong style={{ color: '#c084fc' }}>Independent MSA / SOW</strong></div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                        <div>• Annual Salary: <strong>{formatCurrency(emp.annualSalary || 0)}</strong></div>
+                        <div>• Pay Frequency: <strong>{emp.payFrequency}</strong></div>
+                        <div>• Form W-4: <strong style={{ color: '#10b981' }}>Verified</strong></div>
+                        <div>• Form I-9: <strong style={{ color: '#10b981' }}>Verified</strong></div>
+                      </div>
+                    )}
+
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '11px',
+                    }}>
+                      {isContractor ? (
+                        <>
+                          <span style={{ color: '#94a3b8' }}>1099-NEC Threshold: <strong style={{ color: '#10b981' }}>$600 Met (Active Sentry)</strong></span>
+                          <span style={{ color: '#60a5fa' }}>ID: <strong>{emp.employeeNumber}</strong></span>
+                        </>
+                      ) : (
+                        <>
+                          <span>PTO Accrued: <strong>{emp.ptoAccruedDays} Days</strong></span>
+                          <span style={{ color: '#10b981' }}>Available: <strong>{emp.ptoAvailableDays} Days</strong></span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       )}
 

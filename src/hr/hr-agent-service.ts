@@ -1,6 +1,6 @@
 /**
  * EliteBooks Financial HR — HR & Workforce Agentic AI Service
- * Manages employee profiles, PTO balances, project labor timesheets, benefits deductions,
+ * Manages employee & contractor profiles, PTO balances, project labor timesheets, benefits deductions,
  * and autonomous A2A collaboration with the Payroll Agent, Projects Agent, and Tax Agent.
  */
 
@@ -18,6 +18,7 @@ import { StructuredA2AMessage } from '@/types/agent-system';
 
 export class HRAgentService {
   private static defaultEmployees: HREmployeeProfile[] = [
+    // ─── 3 W-2 Full-Time Employees ───
     {
       id: 'emp_001',
       employeeNumber: 'EMP-1001',
@@ -97,6 +98,116 @@ export class HRAgentService {
       createdAt: '2025-09-01T09:00:00Z',
       updatedAt: new Date().toISOString(),
     },
+
+    // ─── 4 1099 Independent Contractors ───
+    {
+      id: 'emp_004',
+      employeeNumber: 'CON-2001',
+      firstName: 'Liam',
+      lastName: 'Gallagher',
+      email: 'liam.gallagher@devops-apex.com',
+      phone: '+1 (555) 789-1020',
+      department: 'Engineering & Cloud',
+      classId: 'cls_cloud_eng',
+      locationId: 'loc_nyc_hq',
+      jobTitle: 'Senior DevOps & SRE Consultant',
+      employmentType: 'contractor',
+      hireDate: '2025-04-10',
+      hourlyRate: 95.0,
+      annualSalary: 98800,
+      payFrequency: 'monthly',
+      w4Status: 'verified', // Form W-9 on file
+      i9Status: 'verified',
+      directDepositConfigured: true,
+      emergencyContactName: 'Fiona Gallagher',
+      emergencyContactPhone: '+1 (555) 789-2222',
+      ptoAccruedDays: 0,
+      ptoUsedDays: 0,
+      ptoAvailableDays: 0,
+      createdAt: '2025-04-10T09:00:00Z',
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'emp_005',
+      employeeNumber: 'CON-2002',
+      firstName: 'Sophia',
+      lastName: 'Al-Mansoor',
+      email: 'sophia@almansoor-design.io',
+      phone: '+1 (555) 890-2345',
+      department: 'Product & Design',
+      classId: 'cls_digital_infra',
+      locationId: 'loc_chicago_studio',
+      jobTitle: 'Principal UI/UX Design Lead',
+      employmentType: 'contractor',
+      hireDate: '2025-07-01',
+      hourlyRate: 85.0,
+      annualSalary: 72250,
+      payFrequency: 'monthly',
+      w4Status: 'verified',
+      i9Status: 'verified',
+      directDepositConfigured: true,
+      emergencyContactName: 'Tariq Al-Mansoor',
+      emergencyContactPhone: '+1 (555) 890-3333',
+      ptoAccruedDays: 0,
+      ptoUsedDays: 0,
+      ptoAvailableDays: 0,
+      createdAt: '2025-07-01T09:00:00Z',
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'emp_006',
+      employeeNumber: 'CON-2003',
+      firstName: 'David K.',
+      lastName: 'Sterling',
+      email: 'dsterling@sterling-mep.com',
+      phone: '+1 (555) 901-3456',
+      department: 'Commercial Construction',
+      classId: 'cls_commercial_const',
+      locationId: 'loc_nyc_hq',
+      jobTitle: 'Structural MEP Engineering Specialist',
+      employmentType: 'contractor',
+      hireDate: '2025-08-15',
+      hourlyRate: 110.0,
+      annualSalary: 114400,
+      payFrequency: 'monthly',
+      w4Status: 'verified',
+      i9Status: 'verified',
+      directDepositConfigured: true,
+      emergencyContactName: 'Katherine Sterling',
+      emergencyContactPhone: '+1 (555) 901-4444',
+      ptoAccruedDays: 0,
+      ptoUsedDays: 0,
+      ptoAvailableDays: 0,
+      createdAt: '2025-08-15T09:00:00Z',
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'emp_007',
+      employeeNumber: 'CON-2004',
+      firstName: 'Amara',
+      lastName: 'Okafor',
+      email: 'amara@okafor-taxadvisors.com',
+      phone: '+1 (555) 012-4567',
+      department: 'Finance & Legal',
+      classId: 'cls_finance_ops',
+      locationId: 'loc_nyc_hq',
+      jobTitle: 'Tax Compliance & 1099 Auditor',
+      employmentType: 'contractor',
+      hireDate: '2025-11-01',
+      hourlyRate: 75.0,
+      annualSalary: 45000,
+      payFrequency: 'monthly',
+      w4Status: 'verified',
+      i9Status: 'verified',
+      directDepositConfigured: true,
+      emergencyContactName: 'Chidi Okafor',
+      emergencyContactPhone: '+1 (555) 012-5555',
+      ptoAccruedDays: 0,
+      ptoUsedDays: 0,
+      ptoAvailableDays: 0,
+      createdAt: '2025-11-01T09:00:00Z',
+      updatedAt: new Date().toISOString(),
+    },
   ];
 
   private static defaultPTORequests: PTORequest[] = [
@@ -162,6 +273,40 @@ export class HRAgentService {
       totalLaborCost: 520.0,
       status: 'manager_approved',
       createdAt: '2026-03-16T17:30:00Z',
+    },
+    {
+      id: 'ts_003',
+      employeeId: 'emp_004',
+      employeeName: 'Liam Gallagher (Contractor)',
+      date: '2026-03-16',
+      hours: 6,
+      projectId: 'proj_apex_cloud',
+      projectName: 'Apex Cloud Migration & Kubernetes Overhaul',
+      classId: 'cls_cloud_eng',
+      className: 'Engineering & Cloud',
+      taskDescription: 'Terraform multi-region cluster automation & observability logging setup',
+      isBillable: true,
+      hourlyLaborRate: 95.0,
+      totalLaborCost: 570.0,
+      status: 'allocated_to_project',
+      createdAt: '2026-03-16T18:00:00Z',
+    },
+    {
+      id: 'ts_004',
+      employeeId: 'emp_006',
+      employeeName: 'David K. Sterling (Contractor)',
+      date: '2026-03-16',
+      hours: 7,
+      projectId: 'proj_hudson_reno',
+      projectName: 'Hudson Commercial Office Renovation',
+      classId: 'cls_commercial_const',
+      className: 'Commercial Construction',
+      taskDescription: 'Mechanical engineering MEP structural load calculations and permit review',
+      isBillable: true,
+      hourlyLaborRate: 110.0,
+      totalLaborCost: 770.0,
+      status: 'allocated_to_project',
+      createdAt: '2026-03-16T18:30:00Z',
     },
   ];
 
@@ -250,7 +395,7 @@ export class HRAgentService {
 
     // Deduct available days from employee
     const emp = this.defaultEmployees.find((e) => e.id === req.employeeId);
-    if (emp) {
+    if (emp && emp.employmentType !== 'contractor') {
       const days = req.totalHours / 8;
       emp.ptoUsedDays += days;
       emp.ptoAvailableDays = Math.max(0, emp.ptoAccruedDays - emp.ptoUsedDays);
@@ -329,26 +474,29 @@ export class HRAgentService {
    * Compute workforce executive summary metrics
    */
   public static getWorkforceMetrics(): WorkforceSummaryMetrics {
-    const employees = this.defaultEmployees;
-    const totalSalaries = employees.reduce((s, e) => s + (e.annualSalary || 0), 0);
+    const all = this.defaultEmployees;
+    const w2Employees = all.filter((e) => e.employmentType === 'full_time' || e.employmentType === 'part_time');
+    const contractors = all.filter((e) => e.employmentType === 'contractor');
+
+    const totalSalaries = w2Employees.reduce((s, e) => s + (e.annualSalary || 0), 0);
     const monthlyGrossPayroll = totalSalaries / 12;
 
     const totalMonthlyBenefits = this.defaultBenefitPlans.reduce(
-      (s, bp) => s + bp.employerMonthlyMatch * employees.length,
+      (s, bp) => s + bp.employerMonthlyMatch * w2Employees.length,
       0
     );
 
     const pendingPTO = this.defaultPTORequests.filter((r) => r.status === 'pending').length;
-    const docCompliance = HRComplianceEngine.auditTaxDocumentCompliance(employees);
+    const docCompliance = HRComplianceEngine.auditTaxDocumentCompliance(all);
 
     return {
-      totalHeadcount: employees.length,
-      fullTimeCount: employees.filter((e) => e.employmentType === 'full_time').length,
-      partTimeCount: employees.filter((e) => e.employmentType === 'part_time').length,
-      contractorCount: 4, // sample active contractor engagements
+      totalHeadcount: w2Employees.length,
+      fullTimeCount: w2Employees.filter((e) => e.employmentType === 'full_time').length,
+      partTimeCount: w2Employees.filter((e) => e.employmentType === 'part_time').length,
+      contractorCount: contractors.length,
       totalMonthlyPayrollDisbursement: Math.round(monthlyGrossPayroll),
       totalMonthlyBenefitsCost: Math.round(totalMonthlyBenefits),
-      averageFullyLoadedLaborRate: 72.50,
+      averageFullyLoadedLaborRate: 78.50,
       benefitsBurdenRatioPercent: monthlyGrossPayroll > 0
         ? parseFloat(((totalMonthlyBenefits / monthlyGrossPayroll) * 100).toFixed(1))
         : 0,
@@ -362,9 +510,10 @@ export class HRAgentService {
    */
   public static auditWorkerClassificationRisk(): WorkerClassificationAudit[] {
     const sampleContractors = [
-      { name: 'Apex Engineering LLC', totalPaid: 62000, invoiceCount: 14, isExclusive: true },
-      { name: 'Skyline HVAC Systems Corp', totalPaid: 26000, invoiceCount: 4, isExclusive: false },
-      { name: 'Vanguard Legal Advisors', totalPaid: 1800, invoiceCount: 2, isExclusive: false },
+      { name: 'Liam Gallagher (DevOps Consultant)', totalPaid: 62000, invoiceCount: 14, isExclusive: true },
+      { name: 'David K. Sterling (MEP Specialist)', totalPaid: 26000, invoiceCount: 4, isExclusive: false },
+      { name: 'Sophia Al-Mansoor (UI/UX Lead)', totalPaid: 18400, invoiceCount: 3, isExclusive: false },
+      { name: 'Amara Okafor (Tax Auditor)', totalPaid: 4500, invoiceCount: 2, isExclusive: false },
     ];
     return HRComplianceEngine.auditWorkerClassifications(sampleContractors);
   }
