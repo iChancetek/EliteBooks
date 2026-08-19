@@ -28,11 +28,54 @@ export default function ReceiptMileageHub({
   const [purpose, setPurpose] = useState('');
   const [isBusiness, setIsBusiness] = useState(true);
 
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessingReceipt(true);
+    setExtractedReceipt(null);
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUri = reader.result as string;
+      try {
+        const response = await fetch('/api/intelligence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'ocr_receipt',
+            payload: {
+              fileName: file.name,
+              fileDataUri: dataUri,
+            },
+          }),
+        });
+        const data = await response.json();
+        if (data.success && data.data) {
+          setExtractedReceipt(data.data);
+        } else {
+          // Fallback
+          const fallback = await ReceiptIntelligenceService.processReceiptWithVision(file.name, dataUri);
+          setExtractedReceipt(fallback);
+        }
+      } catch (err) {
+        console.error('Vision API error, fallback heuristic:', err);
+        const fallback = await ReceiptIntelligenceService.processReceiptWithVision(file.name, dataUri);
+        setExtractedReceipt(fallback);
+      } finally {
+        setIsProcessingReceipt(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSimulatedUpload = async (presetFileName: string) => {
     setIsProcessingReceipt(true);
     setExtractedReceipt(null);
     try {
-      const res = await ReceiptIntelligenceService.processReceipt(presetFileName);
+      const res = await ReceiptIntelligenceService.processReceiptWithVision(presetFileName);
       setExtractedReceipt(res);
     } finally {
       setIsProcessingReceipt(false);
@@ -148,6 +191,13 @@ export default function ReceiptMileageHub({
             textAlign: 'center',
             gap: '12px',
           }}>
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
             <div style={{
               width: '48px',
               height: '48px',
@@ -161,8 +211,27 @@ export default function ReceiptMileageHub({
             </div>
             <div>
               <span style={{ fontSize: '13px', fontWeight: 700, display: 'block' }}>Upload or Drop Receipt / Invoice</span>
-              <span style={{ fontSize: '11px', color: '#94a3b8' }}>PNG, JPG, PDF supported up to 25MB</span>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>PNG, JPG, PDF supported up to 25MB • OpenAI Vision OCR</span>
             </div>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+                border: 'none',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.35)',
+              }}
+            >
+              Choose Image / Take Photo
+            </button>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '6px' }}>
               <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700 }}>OR PROCESS SAMPLE DOCUMENT:</span>
               <button

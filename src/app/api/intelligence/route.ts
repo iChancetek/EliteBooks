@@ -82,3 +82,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { action, payload } = body;
+
+    if (action === 'ocr_receipt' || action === 'process_receipt_vision') {
+      const { ReceiptIntelligenceService } = await import('@/intelligence/receipt-intelligence');
+      const result = await ReceiptIntelligenceService.processReceiptWithVision(
+        payload?.fileName || 'receipt.png',
+        payload?.fileDataUri
+      );
+      return NextResponse.json({ success: true, data: result });
+    }
+
+    return NextResponse.json({ success: false, error: 'Unknown intelligence action' }, { status: 400 });
+  } catch (error: any) {
+    console.error('[Intelligence POST Action Error]:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
