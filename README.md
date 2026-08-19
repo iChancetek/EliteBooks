@@ -14,7 +14,20 @@ By combining stateful multi-agent orchestration, cryptographic double-entry inte
 
 ---
 
-## 2. THE MULTI-AGENT SWARM ARCHITECTURE
+## 2. CORE FINANCIAL PILLARS & ESSENTIAL CAPABILITIES
+
+EliteBooks delivers a complete suite of foundational bookkeeping, commerce, and compliance capabilities:
+
+• **Income and Expense Tracking**: Automatically syncs with bank and credit card accounts to log and sort daily spending.
+• **Invoicing and Payments**: Creates custom professional invoices and lets clients pay directly online.
+• **Payroll Services**: Pays employees and handles payroll tax calculations and filings.
+• **Financial Reporting**: Generates profit and loss statements, balance sheets, and cash flow summaries.
+• **Inventory Tracking**: Monitors stock levels in real time as sales and purchases happen (available on higher tiers).
+• **Receipt and Mile Tracking**: Snaps photos of receipts and logs business travel for tax.
+
+---
+
+## 3. THE MULTI-AGENT SWARM ARCHITECTURE
 
 EliteBooks operates on an enterprise multi-agent framework powered by LangGraph state machines, Pinecone GraphRAG, and Model Context Protocol (MCP) clients. Rather than relying on a single monolithic model, EliteBooks deploys specialized domain agents that collaborate seamlessly over an Agent-to-Agent (A2A) message bus:
 
@@ -43,7 +56,7 @@ EliteBooks operates on an enterprise multi-agent framework powered by LangGraph 
 
 ---
 
-## 3. CORE DOMAIN AGENTS & CAPABILITIES
+## 4. CORE DOMAIN AGENTS & CAPABILITIES
 
 ### 1. The Orchestrator Agent (Master Controller & Intent Router)
 • **Primary Function:** Acts as the executive brain of EliteBooks, continuously monitoring user instructions, webhook alerts, banking feeds, and voice transcripts to resolve natural language into deterministic agent graphs.
@@ -95,7 +108,7 @@ EliteBooks operates on an enterprise multi-agent framework powered by LangGraph 
 
 ---
 
-## 4. ELITEBOOKS INTELLIGENCE OPERATING LAYER
+## 5. ELITEBOOKS INTELLIGENCE OPERATING LAYER
 
 EliteBooks Intelligence is a native, additive operating layer working alongside core accounting records:
 
@@ -111,7 +124,7 @@ EliteBooks Intelligence is a native, additive operating layer working alongside 
 
 ---
 
-## 5. FINANCIAL HR & WORKFORCE MODULE
+## 6. FINANCIAL HR & WORKFORCE MODULE
 
 • **Employee Profiles & Document Vault**: Centralized management of W-4, I-9, direct deposit configurations, and emergency contacts.
 • **PTO & Leave Management**: Accrual rules, leave requests, manager approvals, and automated synchronization with the Payroll Agent.
@@ -121,7 +134,7 @@ EliteBooks Intelligence is a native, additive operating layer working alongside 
 
 ---
 
-## 6. SOC 1 (ICFR) & SOC 2 TYPE II CONTINUOUS GOVERNANCE
+## 7. SOC 1 (ICFR) & SOC 2 TYPE II CONTINUOUS GOVERNANCE
 
 EliteBooks implements native compliance architectures designed for Big 4 CPA audits and corporate controllers:
 
@@ -137,7 +150,7 @@ EliteBooks implements native compliance architectures designed for Big 4 CPA aud
 
 ---
 
-## 7. GETTING STARTED & DEVELOPMENT
+## 8. GETTING STARTED & DEVELOPMENT
 
 ### Prerequisites
 • Node.js 18+
@@ -171,5 +184,5 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
-## 8. LICENSE
+## 9. LICENSE
 Proprietary & Confidential — EliteBooks Enterprise Financial Technologies. All rights reserved.

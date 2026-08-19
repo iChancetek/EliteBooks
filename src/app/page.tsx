@@ -4,11 +4,47 @@ import {
   Users, BarChart3, ArrowRight, Sparkles, Bot, ChevronRight,
   CreditCard, Receipt, PieChart, Clock, Wallet, ShieldCheck,
   FileCheck2, Lock, Cloud, Compass, Activity, Layers, Mic, Volume2,
-  HardHat, Heart, FileSpreadsheet
+  HardHat, Heart, FileSpreadsheet, Package, Car, Camera
 } from 'lucide-react';
 import styles from './page.module.css';
 
 const features = [
+  {
+    icon: Receipt,
+    title: 'Income and Expense Tracking',
+    description: 'Automatically syncs with bank and credit card accounts to log and sort daily spending.',
+    color: '#10b981',
+  },
+  {
+    icon: CreditCard,
+    title: 'Invoicing and Payments',
+    description: 'Creates custom professional invoices and lets clients pay directly online.',
+    color: '#3b82f6',
+  },
+  {
+    icon: Users,
+    title: 'Payroll Services',
+    description: 'Pays employees and handles payroll tax calculations and filings.',
+    color: '#f59e0b',
+  },
+  {
+    icon: BarChart3,
+    title: 'Financial Reporting',
+    description: 'Generates profit and loss statements, balance sheets, and cash flow summaries.',
+    color: '#8b5cf6',
+  },
+  {
+    icon: Package,
+    title: 'Inventory Tracking',
+    description: 'Monitors stock levels in real time as sales and purchases happen (available on higher tiers).',
+    color: '#06b6d4',
+  },
+  {
+    icon: Car,
+    title: 'Receipt and Mile Tracking',
+    description: 'Snaps photos of receipts and logs business travel for tax.',
+    color: '#ec4899',
+  },
   {
     icon: Sparkles,
     title: 'EliteBooks Intelligence & KPI Studio',
@@ -50,24 +86,6 @@ const features = [
     title: 'Dual-Mode Hybrid Workflows',
     description: 'Total manual control meets autonomous AI speed. Switch between traditional manual data entry and one-click AI creation on any page.',
     color: '#ec4899',
-  },
-  {
-    icon: FileText,
-    title: 'Smart Invoicing & Accounts Receivable',
-    description: 'AI generates and sends invoices automatically. Accept payments instantly via card, ACH, or bank transfer.',
-    color: '#3b82f6',
-  },
-  {
-    icon: Receipt,
-    title: 'Expense Tracking & Receipt OCR',
-    description: 'Bank syncing, optical receipt capture, and IRS Section 162 categorization. Every dollar tracked with over 95% AI confidence.',
-    color: '#10b981',
-  },
-  {
-    icon: Users,
-    title: 'Payroll Automation',
-    description: 'Calculate, deduct, and distribute payroll automatically with Form 941 liability accruals and FICA tax compliance.',
-    color: '#f59e0b',
   },
   {
     icon: FileCheck2,

@@ -3,12 +3,58 @@ import {
   Sparkles, ArrowLeft, Bot, ShieldCheck, 
   Layers, Cpu, Cloud, DollarSign, 
   Receipt, Users, Lock, Compass, Activity, FileText, CheckCircle2,
-  FileCheck2, ShieldAlert, HardHat, Heart, Calculator, FileSpreadsheet, Camera
+  FileCheck2, ShieldAlert, HardHat, Heart, Calculator, FileSpreadsheet,
+  Package, Car, CreditCard, BarChart3, Camera
 } from 'lucide-react';
 import styles from './page.module.css';
 import PageVoiceControl from '@/components/PageVoiceControl';
 
 export default function LearningPage() {
+  const coreFeatures = [
+    {
+      title: 'Income and Expense Tracking',
+      description: 'Automatically syncs with bank and credit card accounts to log and sort daily spending.',
+      icon: Receipt,
+      color: '#10b981',
+      badge: 'Core Banking Sync',
+    },
+    {
+      title: 'Invoicing and Payments',
+      description: 'Creates custom professional invoices and lets clients pay directly online.',
+      icon: CreditCard,
+      color: '#3b82f6',
+      badge: 'Instant Card & ACH',
+    },
+    {
+      title: 'Payroll Services',
+      description: 'Pays employees and handles payroll tax calculations and filings.',
+      icon: Users,
+      color: '#f59e0b',
+      badge: 'IRS Circular E & Form 941',
+    },
+    {
+      title: 'Financial Reporting',
+      description: 'Generates profit and loss statements, balance sheets, and cash flow summaries.',
+      icon: BarChart3,
+      color: '#8b5cf6',
+      badge: 'Real-Time GAAP Reports',
+    },
+    {
+      title: 'Inventory Tracking',
+      description: 'Monitors stock levels in real time as sales and purchases happen (available on higher tiers).',
+      icon: Package,
+      color: '#06b6d4',
+      badge: 'Real-Time Stock Sentry',
+    },
+    {
+      title: 'Receipt and Mile Tracking',
+      description: 'Snaps photos of receipts and logs business travel for tax.',
+      icon: Car,
+      color: '#ec4899',
+      badge: 'OpenAI Vision OCR & IRS $0.67/mi',
+    },
+  ];
+
   const agents = [
     {
       name: 'Orchestrator Agent',
@@ -113,7 +159,7 @@ export default function LearningPage() {
       <div className={styles.bgMesh} aria-hidden="true" />
 
       {/* Multilingual Voice Engine Controller */}
-      <PageVoiceControl contentId="learning-main-content" pageTitle="AI Accounting & Intelligence Masterclass" />
+      <PageVoiceControl contentId="learning-main-content" pageTitle="AI Accounting & Financial Intelligence Masterclass" />
 
       {/* Header */}
       <header className={styles.header}>
@@ -133,6 +179,30 @@ export default function LearningPage() {
 
       {/* Main Content */}
       <main className={styles.main} id="learning-main-content">
+        {/* Core Financial Pillars Section */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Core Financial Pillars & Operations</h2>
+          <div className={styles.agentGrid}>
+            {coreFeatures.map((feat) => {
+              const Icon = feat.icon;
+              return (
+                <div key={feat.title} className={styles.agentCard} style={{ borderColor: `${feat.color}30` }}>
+                  <div className={styles.agentHeader}>
+                    <div className={styles.agentIcon} style={{ background: `${feat.color}20`, color: feat.color }}>
+                      <Icon size={24} />
+                    </div>
+                    <div>
+                      <h3 className={styles.agentName}>{feat.title}</h3>
+                      <span style={{ fontSize: '10px', color: feat.color, fontWeight: 700, textTransform: 'uppercase' }}>{feat.badge}</span>
+                    </div>
+                  </div>
+                  <p className={styles.agentDescription}>{feat.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         {/* Agent Grid */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>The Multi-Agent Swarm Department</h2>
@@ -168,13 +238,13 @@ export default function LearningPage() {
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 01</span>
-              <h2>How Autonomous Double-Entry Works</h2>
+              <h2>Income, Expenses & Invoicing Architecture</h2>
             </div>
             <p>
-              In traditional accounting, bookkeepers manually match invoices to bank debits, assign chart-of-accounts codes, and manually balance debits and credits. EliteBooks replaces this with deterministic AI agents grounded in GAAP and ASC-606 standards.
+              EliteBooks establishes continuous bi-directional connectivity with bank and credit card accounts to automatically log and sort daily spending without human intervention.
             </p>
             <p>
-              When a transaction enters the system, the Expense Agent classifies the vendor, checks Section 162 tax deductibility, and routes the record to the Ledger Agent. The Ledger Agent writes mathematically balanced double-entry journals and locks the entry with a SHA-256 cryptographic hash.
+              For accounts receivable, the Invoicing Agent creates custom professional invoices with itemized tax calculations and lets clients pay directly online via integrated card, ACH, or bank transfer links.
             </p>
           </section>
 
@@ -182,26 +252,21 @@ export default function LearningPage() {
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 02</span>
-              <h2>Agent-to-Agent (A2A) Structured Bus</h2>
+              <h2>Autonomous Payroll & Tax Filings</h2>
             </div>
             <p>
-              Unlike chat-only chatbots that operate in silos, EliteBooks agents collaborate over a shared A2A message bus. For example, when an employee logs hours on a project:
+              Payroll Services automatically pay employees, calculate gross-to-net withholdings pursuant to IRS Circular E, accrue FICA employer matching liabilities, and prepare quarterly Form 941 filings.
             </p>
-            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
-              <li>The <strong>HR Agent</strong> validates the timesheet and approves billable hours.</li>
-              <li>The <strong>Projects Agent</strong> updates direct labor job costs and recalculates the project gross margin.</li>
-              <li>The <strong>Payroll Agent</strong> credits the hours into the upcoming pay cycle with zero human re-keying.</li>
-            </ul>
           </section>
 
           {/* Chapter 3 */}
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 03</span>
-              <h2>Predictive Cash Flow & Monte Carlo Modeling</h2>
+              <h2>Financial Reporting & Real-Time Statements</h2>
             </div>
             <p>
-              Static spreadsheets only show past cash balances. The Cash Flow Agent continuously monitors accounts receivable collection speed, recurring vendor subscriptions, and quarterly payroll liabilities to model cash positions 30, 60, and 90 days into the future.
+              The platform generates real-time profit and loss statements, balance sheets, and cash flow summaries. Every statement is mathematically tied to verified double-entry ledger entries locked with SHA-256 cryptographic hashes.
             </p>
           </section>
 
@@ -209,6 +274,28 @@ export default function LearningPage() {
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 04</span>
+              <h2>Inventory Tracking & Stock Management</h2>
+            </div>
+            <p>
+              For product and commerce enterprises, Inventory Tracking monitors stock levels in real time as sales and purchases happen. Available on higher tiers, this module ensures COGS calculations and inventory valuation remain perfectly balanced.
+            </p>
+          </section>
+
+          {/* Chapter 5 */}
+          <section className={styles.chapterCard}>
+            <div className={styles.chapterHeader}>
+              <span className={styles.chapterNumber}>Chapter 05</span>
+              <h2>Receipt and Mile Tracking</h2>
+            </div>
+            <p>
+              The Receipt and Mile Tracking engine snaps photos of receipts using OpenAI Computer Vision to extract line items and logs business travel using standard IRS mileage deduction rates ($0.67/mile) for automated tax write-offs.
+            </p>
+          </section>
+
+          {/* Chapter 6 */}
+          <section className={styles.chapterCard}>
+            <div className={styles.chapterHeader}>
+              <span className={styles.chapterNumber}>Chapter 06</span>
               <h2>EliteBooks Intelligence & Customizable KPI Studio</h2>
             </div>
             <p>
@@ -219,40 +306,6 @@ export default function LearningPage() {
               <li><strong>Books Quality AI:</strong> Continuous 0–100 Books Health score evaluating duplicate charges, missing receipts, and unallocated costs.</li>
               <li><strong>5-Pillar Explanations:</strong> Every insight explains What Happened, Why It Matters, Supporting Data, Recommended Action, and Confidence.</li>
               <li><strong>Unlimited Classes & Locations:</strong> Multidimensional general ledger segmentation across departments and job sites.</li>
-              <li><strong>AI Receipts & Mileage Engine:</strong> Optical receipt OCR and IRS standard mileage rate ($0.67/mile) business travel tracking.</li>
-            </ul>
-          </section>
-
-          {/* Chapter 5 */}
-          <section className={styles.chapterCard}>
-            <div className={styles.chapterHeader}>
-              <span className={styles.chapterNumber}>Chapter 05</span>
-              <h2>Financial HR & Workforce Intelligence</h2>
-            </div>
-            <p>
-              Combining HR, Payroll, and the General Ledger eliminates the two-system gap common with standalone tools:
-            </p>
-            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
-              <li><strong>PTO & Leave Management:</strong> Accrual tracking and 1-click approvals synchronized with the Payroll Agent.</li>
-              <li><strong>Project Labor Timesheets:</strong> Instant job costing allocation to active projects in Project Management AI.</li>
-              <li><strong>Pre-Tax Benefits:</strong> Health, dental, and 401(k) retirement contributions mapped to general ledger liabilities.</li>
-              <li><strong>Worker Classification Sentinel:</strong> IRS 20-factor evaluation preventing 1099 vs W-2 misclassification penalties.</li>
-            </ul>
-          </section>
-
-          {/* Chapter 6 */}
-          <section className={styles.chapterCard}>
-            <div className={styles.chapterHeader}>
-              <span className={styles.chapterNumber}>Chapter 06</span>
-              <h2>Enterprise ERP Operations: Batch & Excel Sync</h2>
-            </div>
-            <p>
-              Scale high-volume business operations effortlessly:
-            </p>
-            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
-              <li><strong>Batch Processing Studio:</strong> Bulk invoice and expense execution with pre-execution safety previews.</li>
-              <li><strong>Controlled Excel Sync:</strong> Bi-directional CSV/XLSX imports and exports with automated field mapping.</li>
-              <li><strong>1099 Vendor Compliance:</strong> IRS $600 threshold tracker and automated 1099-NEC draft generation.</li>
             </ul>
           </section>
 
