@@ -148,19 +148,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <div className="dash-user">
           <div className="dash-user-info">
-            <div className="dash-avatar">
-              <span>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</span>
+            <div className="dash-avatar-wrapper">
+              <div className="dash-avatar">
+                <span>{user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}</span>
+              </div>
+              <span className="dash-avatar-status-dot" title="Authenticated Session Active" />
             </div>
             {!collapsed && (
               <div className="dash-user-details">
-                <span className="dash-user-name">{user?.displayName || 'User'}</span>
-                <span className="dash-user-email">{user?.email}</span>
+                <span className="dash-user-name" title={user?.displayName || 'User'}>
+                  {user?.displayName || 'Financial Controller'}
+                </span>
+                <span className="dash-user-email" title={user?.email || ''}>
+                  {user?.email || 'controller@elitebooks.io'}
+                </span>
+                <div className="dash-user-badge-row">
+                  <span className="dash-user-role-badge">
+                    <ShieldCheck size={10} />
+                    <span>{isSuperAdmin ? 'Super Admin' : 'Verified Controller'}</span>
+                  </span>
+                </div>
               </div>
             )}
           </div>
           {!collapsed && (
-            <button className="dash-logout-btn" onClick={handleLogout} title="Log out" aria-label="Log out">
-              <LogOut size={16} />
+            <button
+              className="dash-logout-btn"
+              onClick={handleLogout}
+              title="Sign off and terminate active session"
+              aria-label="Sign off"
+            >
+              <LogOut size={14} />
+              <span className="dash-logout-text">Sign Off</span>
             </button>
           )}
         </div>
@@ -508,15 +527,127 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           margin-left: auto;
         }
 
+        .dash-user {
+          margin: 12px 12px 8px 12px;
+          padding: 12px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.9));
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(16px);
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dash-sidebar.collapsed .dash-user {
+          margin: 8px auto;
+          padding: 6px;
+          align-items: center;
+          background: transparent;
+          border: none;
+          box-shadow: none;
+        }
+        .dash-user-info {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 0;
+        }
+        .dash-avatar-wrapper {
+          position: relative;
+          flex-shrink: 0;
+        }
         .dash-avatar {
-          width: 34px; height: 34px;
-          display: flex; align-items: center; justify-content: center;
-          background: var(--gradient-brand);
-          border-radius: var(--radius-full);
-          font-size: var(--text-xs);
-          font-weight: var(--weight-bold);
-          color: white;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 800;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           cursor: pointer;
+        }
+        .dash-avatar-status-dot {
+          position: absolute;
+          bottom: -1px;
+          right: -1px;
+          width: 9px;
+          height: 9px;
+          background: #10b981;
+          border: 2px solid #0f172a;
+          border-radius: 50%;
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+        }
+        .dash-user-details {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+          flex: 1;
+        }
+        .dash-user-name {
+          font-size: 13px;
+          font-weight: 700;
+          color: #f1f5f9;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .dash-user-email {
+          font-size: 11px;
+          color: #94a3b8;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .dash-user-badge-row {
+          margin-top: 2px;
+        }
+        .dash-user-role-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 7px;
+          border-radius: 100px;
+          background: rgba(59, 130, 246, 0.15);
+          border: 1px solid rgba(59, 130, 246, 0.25);
+          color: #60a5fa;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+        }
+        .dash-logout-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          width: 100%;
+          padding: 7px 12px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: #94a3b8;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .dash-logout-btn:hover {
+          background: rgba(239, 68, 68, 0.12);
+          border-color: rgba(239, 68, 68, 0.3);
+          color: #f87171;
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+        .dash-logout-text {
+          font-size: 11px;
+          font-weight: 700;
         }
 
         /* Content */

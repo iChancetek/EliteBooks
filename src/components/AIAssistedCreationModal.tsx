@@ -405,16 +405,16 @@ export function AIAssistedCreationModal({
             </div>
 
             {/* Double-Entry Ledger Preview Badge */}
-            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <ShieldCheck size={16} style={{ color: '#10b981' }} />
                 <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>
                   {isInvoice
-                    ? `Ledger Agent: Debit #1200 Accounts Receivable ($${invoiceAmount.toLocaleString()}) / Credit #4000 Revenue`
-                    : `Ledger Agent: Debit #6000 Operating Expenses ($${expenseAmount.toLocaleString()}) / Credit #1010 Cash`}
+                    ? `Ledger Agent: Debit Account 1200 Accounts Receivable ($${invoiceAmount.toLocaleString()}) / Credit Account 4000 Revenue`
+                    : `Ledger Agent: Debit Account 6000 Operating Expenses ($${expenseAmount.toLocaleString()}) / Credit Account 1010 Cash`}
                 </span>
               </div>
-              <span style={{ fontSize: '11px', color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+              <span style={{ fontSize: '10px', color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '3px 8px', borderRadius: '100px', fontWeight: 800 }}>
                 SHA-256 Intact
               </span>
             </div>
