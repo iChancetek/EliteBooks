@@ -281,16 +281,18 @@ export default function LandingPage() {
           <h2>Everything your business needs.</h2>
           <p>Full QuickBooks-class accounting, supercharged with AI autonomy and continuous SOC compliance.</p>
         </div>
-        <div className={styles.featureGrid}>
-          {features.map((feature, i) => (
-            <div key={feature.title} className={`${styles.featureCard} glass-card animate-fade-in-up stagger-${i + 1}`}>
-              <div className={styles.featureIcon} style={{ background: `${feature.color}15`, color: feature.color }}>
-                <feature.icon size={24} />
+        <div className={styles.carouselContainer}>
+          <div className={styles.carouselTrack}>
+            {[...features, ...features].map((feature, i) => (
+              <div key={`${feature.title}-${i}`} className={`${styles.featureCard} glass-card`}>
+                <div className={styles.featureIcon} style={{ background: `${feature.color}15`, color: feature.color }}>
+                  <feature.icon size={24} />
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
               </div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
