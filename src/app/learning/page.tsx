@@ -3,7 +3,7 @@ import {
   Sparkles, ArrowLeft, Bot, ShieldCheck, 
   Layers, Cpu, Cloud, DollarSign, 
   Receipt, Users, Lock, Compass, Activity, FileText, CheckCircle2,
-  FileCheck2, ShieldAlert
+  FileCheck2, ShieldAlert, HardHat, Heart, Calculator, FileSpreadsheet, Camera
 } from 'lucide-react';
 import styles from './page.module.css';
 import PageVoiceControl from '@/components/PageVoiceControl';
@@ -59,11 +59,27 @@ export default function LearningPage() {
       tags: ['IRS Circular E', 'FICA Match', 'Form 941']
     },
     {
+      name: 'Financial HR & Workforce Agent',
+      role: 'People, PTO, Benefits & Timesheets',
+      icon: Heart,
+      color: '#ec4899',
+      description: 'Synchronizes employee onboarding, PTO approvals with Payroll, project timesheets with Job Costing, benefits deductions, and 1099 vs W-2 worker classification.',
+      tags: ['PTO Sync', 'Benefits Deductions', 'Worker Classification']
+    },
+    {
+      name: 'Projects & Construction Agent',
+      role: 'Job Costing, Retainage & Change Orders',
+      icon: HardHat,
+      color: '#3b82f6',
+      description: 'Tracks project budgets, direct labor/materials/subcontractors, retainage withholdings (5-10%), change orders, and cost-to-complete (ETC) forecasting.',
+      tags: ['Job Costing', 'Retainage Withheld', 'Change Orders']
+    },
+    {
       name: 'Compliance Agent',
       role: 'Audit Defense & Regulatory Verification',
       icon: ShieldCheck,
       color: '#14b8a6',
-      description: 'Continuously audits ledger entries against SEC, FINRA, and multi-state sales tax regulations, compiling full audit defense dossiers.',
+      description: 'Continuously audits ledger entries against SEC, FINRA, and multi-state tax regulations, compiling full audit defense dossiers.',
       tags: ['Audit Dossier', 'Sales Tax', '1099 Tracking']
     },
     {
@@ -97,59 +113,68 @@ export default function LearningPage() {
       <div className={styles.bgMesh} aria-hidden="true" />
 
       {/* Multilingual Voice Engine Controller */}
-      <PageVoiceControl contentId="learning-main-content" pageTitle="AI Accounting Masterclass" />
+      <PageVoiceControl contentId="learning-main-content" pageTitle="AI Accounting & Intelligence Masterclass" />
 
-      <nav className={styles.nav}>
-        <div className={styles.navInner}>
-          <Link href="/" className={styles.logo}>
-            <div className={styles.logoIcon}>
-              <Sparkles size={20} />
-            </div>
-            <span>EliteBooks</span>
-          </Link>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <a 
-              href="https://famio.us" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="btn btn-secondary" 
-              style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', color: '#f472b6', borderColor: 'rgba(236,72,153,0.3)' }}
-            >
-              <Sparkles size={14} style={{ color: '#ec4899' }} /> famio.us
-            </a>
-            <Link href="/dashboard" className="btn btn-secondary" style={{ fontSize: '13px' }}>
-              Enter Dashboard
-            </Link>
-            <Link href="/" className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-              <ArrowLeft size={16} /> Home
-            </Link>
-          </div>
+      {/* Header */}
+      <header className={styles.header}>
+        <Link href="/" className={styles.backLink}>
+          <ArrowLeft size={16} />
+          Back to Home
+        </Link>
+        <div className={styles.heroBadge}>
+          <Sparkles size={14} />
+          <span>Autonomous Financial Intelligence Architecture</span>
         </div>
-      </nav>
+        <h1 className={styles.title}>EliteBooks Masterclass</h1>
+        <p className={styles.subtitle}>
+          A comprehensive architectural guide to autonomous bookkeeping, multi-agent financial swarms, customizable KPI studio, and enterprise ERP capabilities.
+        </p>
+      </header>
 
-      <main className={styles.learningContent} id="learning-main-content">
-        <header className={styles.heroHeader}>
-          <div className={styles.badge}>
-            <Cpu size={14} /> Masterclass Architecture Hub
+      {/* Main Content */}
+      <main className={styles.main} id="learning-main-content">
+        {/* Agent Grid */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>The Multi-Agent Swarm Department</h2>
+          <div className={styles.agentGrid}>
+            {agents.map((agent) => {
+              const Icon = agent.icon;
+              return (
+                <div key={agent.name} className={styles.agentCard}>
+                  <div className={styles.agentHeader}>
+                    <div className={styles.agentIcon} style={{ background: `${agent.color}20`, color: agent.color }}>
+                      <Icon size={24} />
+                    </div>
+                    <div>
+                      <h3 className={styles.agentName}>{agent.name}</h3>
+                      <p className={styles.agentRole}>{agent.role}</p>
+                    </div>
+                  </div>
+                  <p className={styles.agentDescription}>{agent.description}</p>
+                  <div className={styles.agentTags}>
+                    {agent.tags.map((tag) => (
+                      <span key={tag} className={styles.agentTag}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <h1>The Autonomous Accounting Engine</h1>
-          <p>
-            An in-depth technical masterclass on how multi-agent artificial intelligence, double-entry mathematical rigor, and real-time banking feeds combine to deliver self-running corporate accounting.
-          </p>
-        </header>
+        </section>
 
-        <div className={styles.chapterGrid}>
+        {/* Chapters */}
+        <div className={styles.chapterList}>
           {/* Chapter 1 */}
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 01</span>
-              <h2>The Autonomous Accounting Paradigm</h2>
+              <h2>How Autonomous Double-Entry Works</h2>
             </div>
             <p>
-              Traditional financial accounting relies on human operators manually keying in receipts, matching bank statements weeks after transactions clear, and reconciling general ledgers in stressful month-end sprints.
+              In traditional accounting, bookkeepers manually match invoices to bank debits, assign chart-of-accounts codes, and manually balance debits and credits. EliteBooks replaces this with deterministic AI agents grounded in GAAP and ASC-606 standards.
             </p>
             <p>
-              EliteBooks establishes an entirely autonomous paradigm: every business transaction is captured immediately upon occurrence, analyzed for tax deductibility under IRS Section 162, balanced into double-entry debit/credit ledger accounts, and locked with a cryptographic SHA-256 hash.
+              When a transaction enters the system, the Expense Agent classifies the vendor, checks Section 162 tax deductibility, and routes the record to the Ledger Agent. The Ledger Agent writes mathematically balanced double-entry journals and locks the entry with a SHA-256 cryptographic hash.
             </p>
           </section>
 
@@ -157,46 +182,26 @@ export default function LearningPage() {
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 02</span>
-              <h2>The Multi-Agent Swarm Ecosystem</h2>
+              <h2>Agent-to-Agent (A2A) Structured Bus</h2>
             </div>
             <p>
-              EliteBooks replaces monolithic algorithms with a coordinated swarm of 10 specialized autonomous domain agents. Each agent operates with defined jurisdictional authority, communicating via LangGraph state graphs and Agent-to-Agent (A2A) consensus protocols:
+              Unlike chat-only chatbots that operate in silos, EliteBooks agents collaborate over a shared A2A message bus. For example, when an employee logs hours on a project:
             </p>
-
-            <div className={styles.agentsGrid}>
-              {agents.map(ag => (
-                <div key={ag.name} className={styles.agentCard}>
-                  <div className={styles.agentCardHeader}>
-                    <div className={styles.agentIconBox} style={{ background: `${ag.color}20`, color: ag.color }}>
-                      <ag.icon size={20} />
-                    </div>
-                    <div>
-                      <h3>{ag.name}</h3>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{ag.role}</span>
-                    </div>
-                  </div>
-                  <p>{ag.description}</p>
-                  <div className={styles.agentMetrics}>
-                    {ag.tags.map(t => (
-                      <span key={t} className={styles.agentTag}>{t}</span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
+              <li>The <strong>HR Agent</strong> validates the timesheet and approves billable hours.</li>
+              <li>The <strong>Projects Agent</strong> updates direct labor job costs and recalculates the project gross margin.</li>
+              <li>The <strong>Payroll Agent</strong> credits the hours into the upcoming pay cycle with zero human re-keying.</li>
+            </ul>
           </section>
 
           {/* Chapter 3 */}
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 03</span>
-              <h2>Double-Entry Mathematical Rigor</h2>
+              <h2>Predictive Cash Flow & Monte Carlo Modeling</h2>
             </div>
             <p>
-              AI intelligence is worthless in accounting without mathematical certainty. In EliteBooks, no transaction is committed without strict enforcement of Fra Luca Pacioli’s equation: <code>Assets = Liabilities + Equity</code>.
-            </p>
-            <p>
-              When an invoice is issued, the Invoicing Agent debits Accounts Receivable and credits Revenue. When payment is received, the Ledger Agent debits Cash and credits Accounts Receivable. Every journal entry is verified by the Compliance Agent and sealed against historical modification.
+              Static spreadsheets only show past cash balances. The Cash Flow Agent continuously monitors accounts receivable collection speed, recurring vendor subscriptions, and quarterly payroll liabilities to model cash positions 30, 60, and 90 days into the future.
             </p>
           </section>
 
@@ -204,49 +209,51 @@ export default function LearningPage() {
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 04</span>
-              <h2>Cloud FinOps & Unit Economics</h2>
+              <h2>EliteBooks Intelligence & Customizable KPI Studio</h2>
             </div>
             <p>
-              Modern technology businesses incur their largest operating expenses across cloud infrastructure and AI compute. The FinOps Cloud Intelligence Agent tracks granular billing across Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform (GCP), OpenAI, and Anthropic.
+              EliteBooks Intelligence delivers a customized financial operating layer that adapts to your business model:
             </p>
-            <p>
-              Beyond raw expense tracking, FinOps calculates real-time unit economics: determining your exact compute cost per active user, storage cost per tenant, and inference cost per model generation.
-            </p>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
+              <li><strong>Custom KPI Builder:</strong> Evaluate custom formulas (e.g. <code>(NetProfit / Revenue) * 100</code>) with dynamic alert thresholds.</li>
+              <li><strong>Books Quality AI:</strong> Continuous 0–100 Books Health score evaluating duplicate charges, missing receipts, and unallocated costs.</li>
+              <li><strong>5-Pillar Explanations:</strong> Every insight explains What Happened, Why It Matters, Supporting Data, Recommended Action, and Confidence.</li>
+              <li><strong>Unlimited Classes & Locations:</strong> Multidimensional general ledger segmentation across departments and job sites.</li>
+              <li><strong>AI Receipts & Mileage Engine:</strong> Optical receipt OCR and IRS standard mileage rate ($0.67/mile) business travel tracking.</li>
+            </ul>
           </section>
 
           {/* Chapter 5 */}
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 05</span>
-              <h2>Human-in-the-Loop (HITL) Governance</h2>
+              <h2>Financial HR & Workforce Intelligence</h2>
             </div>
             <p>
-              Autonomous execution does not mean unmonitored risk. EliteBooks enforces strict Human-in-the-Loop (HITL) checkpoints for all transactions that exceed preset risk or budget thresholds (such as high-value cloud anomalies or payroll runs).
+              Combining HR, Payroll, and the General Ledger eliminates the two-system gap common with standalone tools:
             </p>
-            <p>
-              When an anomaly is flagged, the agent compiles a verified evidence dossier and presents an interactive authorization request in the Daily Intelligence Feed. Execution only proceeds once the authorized financial controller signs off.
-            </p>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
+              <li><strong>PTO & Leave Management:</strong> Accrual tracking and 1-click approvals synchronized with the Payroll Agent.</li>
+              <li><strong>Project Labor Timesheets:</strong> Instant job costing allocation to active projects in Project Management AI.</li>
+              <li><strong>Pre-Tax Benefits:</strong> Health, dental, and 401(k) retirement contributions mapped to general ledger liabilities.</li>
+              <li><strong>Worker Classification Sentinel:</strong> IRS 20-factor evaluation preventing 1099 vs W-2 misclassification penalties.</li>
+            </ul>
           </section>
 
           {/* Chapter 6 */}
           <section className={styles.chapterCard}>
             <div className={styles.chapterHeader}>
               <span className={styles.chapterNumber}>Chapter 06</span>
-              <h2>Multilingual Voice & Audio Intelligence</h2>
+              <h2>Enterprise ERP Operations: Batch & Excel Sync</h2>
             </div>
             <p>
-              EliteBooks features natural voice interaction powered by OpenAI Whisper (Speech-to-Text) and Nova HD (Text-to-Speech). Financial controllers, accountants, and executives can speak complex instructions — such as invoicing clients, logging travel receipts, or querying historical variances — in 7 global languages:
+              Scale high-volume business operations effortlessly:
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' }}>
-              {['English (en)', 'Español (es)', 'Mandarin Chinese (zh)', 'Français (fr)', 'Deutsch (de)', 'Japanese (ja)', 'Português (pt)'].map((lang) => (
-                <span key={lang} style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '100px', background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#c4b5fd', fontWeight: 600 }}>
-                  {lang}
-                </span>
-              ))}
-            </div>
-            <p>
-              Every operational page is equipped with modular <code>VoiceAITrigger</code> components, allowing instant speech recording, transcript verification, multi-agent reasoning, and synthesized voice feedback.
-            </p>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6 }}>
+              <li><strong>Batch Processing Studio:</strong> Bulk invoice and expense execution with pre-execution safety previews.</li>
+              <li><strong>Controlled Excel Sync:</strong> Bi-directional CSV/XLSX imports and exports with automated field mapping.</li>
+              <li><strong>1099 Vendor Compliance:</strong> IRS $600 threshold tracker and automated 1099-NEC draft generation.</li>
+            </ul>
           </section>
 
           {/* Chapter 7 */}
@@ -256,7 +263,7 @@ export default function LearningPage() {
               <h2>SOC 1 (ICFR) & SOC 2 Type II Compliance Architecture</h2>
             </div>
             <p>
-              EliteBooks is engineered from the ground up for enterprise compliance, Big 4 CPA audits, and rigorous security reviews:
+              EliteBooks is engineered for enterprise compliance, Big 4 CPA audits, and continuous security reviews:
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
               <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', padding: '16px' }}>
@@ -292,10 +299,10 @@ export default function LearningPage() {
               <h2>Dual-Mode Architecture: Manual Rigor & Autonomous Speed</h2>
             </div>
             <p>
-              Unlike closed AI black-boxes, EliteBooks provides a pure <strong>Dual-Mode Workflow</strong>. Every single financial operation — from invoice creation to payroll runs and cloud expense categorization — retains full, uncompromised manual control alongside instantaneous AI acceleration.
+              Unlike closed AI black-boxes, EliteBooks provides a pure <strong>Dual-Mode Workflow</strong>. Every financial operation retains full, uncompromised manual control alongside instantaneous AI acceleration.
             </p>
             <p>
-              Controllers can manually customize line items, adjust account mappings, or click "Create with AI" to let specialized agents draft GAAP-balanced records in seconds. You are never locked into automated workflows; human oversight remains paramount.
+              Controllers can manually customize line items, adjust account mappings, or click "Create with AI" to let specialized agents draft GAAP-balanced records in seconds.
             </p>
           </section>
         </div>

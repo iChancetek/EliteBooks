@@ -3,15 +3,46 @@ import {
   Brain, Zap, Shield, TrendingUp, FileText, DollarSign, 
   Users, BarChart3, ArrowRight, Sparkles, Bot, ChevronRight,
   CreditCard, Receipt, PieChart, Clock, Wallet, ShieldCheck,
-  FileCheck2, Lock, Cloud, Compass, Activity, Layers, Mic, Volume2
+  FileCheck2, Lock, Cloud, Compass, Activity, Layers, Mic, Volume2,
+  HardHat, Heart, FileSpreadsheet
 } from 'lucide-react';
 import styles from './page.module.css';
 
 const features = [
   {
+    icon: Sparkles,
+    title: 'EliteBooks Intelligence & KPI Studio',
+    description: 'Custom mathematical formula evaluator, real-time alert thresholds, and personalized 5-pillar financial explanations.',
+    color: '#f59e0b',
+  },
+  {
+    icon: HardHat,
+    title: 'Project Management & Construction Financials',
+    description: 'Advanced job costing, retainage tracking (5-10%), change orders, and forecast cost-to-complete (ETC) modeling.',
+    color: '#3b82f6',
+  },
+  {
+    icon: Heart,
+    title: 'Financial HR & Workforce Studio',
+    description: 'Integrated employee onboarding, PTO management with payroll sync, project labor timesheets, and benefits deductions.',
+    color: '#ec4899',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Continuous Books Quality AI',
+    description: 'Real-time 0-100 Books Health score, duplicate transaction detection, unallocated cost screening, and quarterly intelligence reports.',
+    color: '#10b981',
+  },
+  {
+    icon: FileSpreadsheet,
+    title: 'Batch Studio & Excel Sync',
+    description: 'High-volume batch invoicing and expense categorization with pre-execution safety previews and bi-directional Excel sync.',
+    color: '#06b6d4',
+  },
+  {
     icon: Mic,
     title: 'Voice AI & Speech Operations',
-    description: 'Powered by OpenAI Whisper STT and Nova TTS. Speak naturally in 7 global languages to invoice clients, log expenses, and query reports.',
+    description: 'Speak naturally in 7 global languages to invoice clients, log expenses, and query reports with zero manual typing.',
     color: '#8b5cf6',
   },
   {
@@ -22,26 +53,20 @@ const features = [
   },
   {
     icon: FileText,
-    title: 'Smart Invoicing',
+    title: 'Smart Invoicing & Accounts Receivable',
     description: 'AI generates and sends invoices automatically. Accept payments instantly via card, ACH, or bank transfer.',
     color: '#3b82f6',
   },
   {
     icon: Receipt,
-    title: 'Expense Tracking',
-    description: 'Bank syncing, OCR receipt capture, and AI categorization. Every dollar tracked without lifting a finger.',
+    title: 'Expense Tracking & Receipt OCR',
+    description: 'Bank syncing, optical receipt capture, and IRS Section 162 categorization. Every dollar tracked with over 95% AI confidence.',
     color: '#10b981',
-  },
-  {
-    icon: BarChart3,
-    title: 'Financial Reports',
-    description: 'Real-time P&L, balance sheets, and cash flow statements. AI explains trends in plain language.',
-    color: '#8b5cf6',
   },
   {
     icon: Users,
     title: 'Payroll Automation',
-    description: 'Calculate, deduct, and distribute payroll automatically. Tax compliance built in.',
+    description: 'Calculate, deduct, and distribute payroll automatically with Form 941 liability accruals and FICA tax compliance.',
     color: '#f59e0b',
   },
   {
@@ -51,16 +76,10 @@ const features = [
     color: '#06b6d4',
   },
   {
-    icon: Shield,
-    title: 'Compliance & Tax',
-    description: 'Automated tax obligation tracking, filing preparation, and audit-ready reports.',
-    color: '#14b8a6',
-  },
-  {
-    icon: Wallet,
-    title: 'Personal Finance & Autopilot',
-    description: 'Track personal accounts and wealth alongside your business. A unified view of your entire financial life.',
-    color: '#6366f1',
+    icon: Lock,
+    title: 'Cryptographic PII Security Vault',
+    description: 'AES-256-GCM encryption for bank credentials and tax IDs with real-time heuristic fraud detection.',
+    color: '#e11d48',
   },
 ];
 
@@ -71,8 +90,10 @@ const agents = [
   { name: 'Invoice', role: 'Billing', icon: FileText, color: '#8b5cf6' },
   { name: 'Cash Flow', role: 'Forecasting', icon: Activity, color: '#06b6d4' },
   { name: 'Payroll', role: 'Compensation', icon: Users, color: '#f59e0b' },
+  { name: 'HR & Workforce', role: 'People & Benefits', icon: Heart, color: '#ec4899' },
+  { name: 'Projects & Job Cost', role: 'Construction & ETC', icon: HardHat, color: '#3b82f6' },
   { name: 'Compliance', role: 'Tax & Audit', icon: ShieldCheck, color: '#14b8a6' },
-  { name: 'FinOps', role: 'Cloud & GPU Unit Economics', icon: Cloud, color: '#0ea5e9' },
+  { name: 'FinOps', role: 'Cloud & GPU Economics', icon: Cloud, color: '#0ea5e9' },
   { name: 'Personal Finance', role: 'Wealth & Draws', icon: DollarSign, color: '#ec4899' },
   { name: 'Fraud Sentinel', role: 'PII Vault & Security', icon: Lock, color: '#e11d48' },
 ];
